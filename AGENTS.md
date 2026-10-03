@@ -1,15 +1,20 @@
-# VERA20k — Project contract
+# Yuri's Revenge 1.001 Rust compatibility — Project contract
 
-VERA20k is a cross-platform Rust reimplementation of the Command & Conquer:
-Yuri's Revenge engine (`gamemd.exe`), using original retail rules and assets.
-The goal is to reproduce native gameplay behavior through a Rust-native architecture,
-while scaling to **20,000 units and 30 players**. VERA20k must build and run on Linux,
-macOS and Windows; keep architecture and dependencies compatible.
+This checkout uses VERA20k as the starting point for a cross-platform Rust
+reimplementation of Command & Conquer: Yuri's Revenge (`gamemd.exe`), using
+original retail rules and assets. The first compatibility baseline is authenticated
+**vanilla Yuri's Revenge 1.001**. Reproduce native behavior as faithfully as possible;
+independent smooth rendering and modern optimization must preserve gameplay.
+Fidelity takes priority over the upstream 20,000-unit/30-player vision. Increased
+limits, balance changes and Ares/Phobos compatibility are later, explicit scopes.
+Build and run on Linux, macOS and Windows; keep dependencies compatible.
 
 All simulation-affecting math must produce identical results across supported
-platforms and CPU architectures for identical state, inputs and RNG. Prefer
-`SimFixed` for simulation calculations; document and validate any differences
-from native precision and rounding.
+platforms and CPU architectures for identical state, inputs and RNG. Choose numeric
+representations by native behavior; use `SimFixed` where equivalence is established.
+Native precision, rounding, overflow, branches, timers and RNG order need executable
+evidence. A documented small numeric difference remains an unresolved compatibility
+gap until its covered range and future-state effects are established.
 
 Development follows complete gameplay mechanisms and their required dependencies,
 with clear ownership of state and shared logic. Native executable behavior and
@@ -17,6 +22,15 @@ retail data establish what the implementation must reproduce.
 
 This contract governs Codex and Claude. Use engineering judgment; skills are optional
 specialized help. Specific user instructions override workflow defaults.
+
+The [agentic master plan](docs/plans/yr1001-masterplan.md) records the accepted
+direction, staged work and completion bar; its sequence is a draft that adapts to
+evidence. Resume from the [current checkpoint](docs/plans/yr1001-checkpoint.md).
+Agents own discovery, engineering, automated tests/native comparisons, review and
+candidate preparation. Humans perform hands-on playtesting and feel/device acceptance.
+Prepare concrete human packets and continue independent work while they wait.
+The plan is not an automatic implementation launch or publication authorization;
+once launched, complete scoped engineering autonomously without routine approvals.
 
 ## Intent and autonomy
 
@@ -103,12 +117,20 @@ Document and validate floating-point use where native behavior requires it.
 Storage order and active-object order are distinct.
 
 All math must preserve simulation determinism across supported platforms and CPU
-architectures for identical state, inputs and RNG. Prefer `SimFixed` for simulation
-math, accepting documented differences from native precision and rounding. Avoid
-x87 emulation unless demonstrated gameplay requirements make it necessary; exact
-native arithmetic alone is not a requirement to emulate x87. Validate affected
-gameplay, range and overflow behavior. Presentation must not affect simulation
-determinism.
+architectures for identical state, inputs and RNG, and native fidelity over the
+required domain. Use `SimFixed` only where its behavior satisfies that contract;
+deterministic native-width/rounding arithmetic belongs to the existing numeric owner
+where required. Establish relevant x87 state/operations before selecting targeted
+emulation; do not emulate an entire CPU by default. Document and resolve differences
+rather than accepting them merely because they are small. Validate gameplay, range,
+overflow and future-state effects. Presentation must not affect simulation determinism.
+
+Simulation admission, legacy presentation/service updates and display sampling have
+explicit clock owners. Rendering frequency must not advance gameplay or consume its
+RNG. Publish immutable committed views and ordered events through existing owners;
+preserve command attribution, same-frame effects, event delivery and load/exit
+lifecycle. A movement `1/15` integration fraction is not proof of universal 15Hz
+wall-clock pacing. Parallel simulation work requires dependency and ordering evidence.
 
 `sim/` never depends on `render/`, `ui/`, `sidebar/`, `audio/` or `net/`.
 App code orchestrates without owning duplicate gameplay. Current module contracts
@@ -205,6 +227,17 @@ Continue task-owned branches and commit validated increments. Never commit/push
 directly to `main`. Publication requires user/goal authority; PRs target `main`.
 Integrate promptly when authorized. Owners resolve conflicts and revalidate.
 Preserve unique/local data; use `sync` for complex cleanup.
+
+For this vanilla compatibility program before remote delivery is configured, an
+explicit execution launch may use one owned `feature/yr1001-integration` branch,
+initially based on fetched `origin/main`. As a narrow exception to the feature-base
+rule, chain branches may start from its validated committed HEAD and integrate
+back into that feature branch before any dependent chain starts. Validate the actual
+integrated candidate, resolve conflicts and revalidate affected scopes; no unmerged
+dependent stack and no commits to local `main`. Preserve the original checkout.
+This local workflow grants no upstream publication authority. Once a user-owned
+delivery repository is configured, use its fetched main and normal sequential PR
+workflow; do not silently change the existing upstream remote.
 
 Choose validation appropriate to the change, considering native fidelity, connected
 production behavior and protection against regressions.
