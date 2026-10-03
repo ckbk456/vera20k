@@ -185,23 +185,14 @@ pub(crate) fn render_game(
         state.renderer.batch_renderer.camera_uniform(),
     );
 
-    // Tactical6D4673 -> LineTrail556D40 updates once per actual composite.
-    // It reads committed Bullet coordinates even when no simulation tick ran.
-    // The ring belongs to presentation and survives only until it fades or loads.
+    // Reproject retained pre-Logic history. Display submissions cannot admit a
+    // Tactical callback, age a ring, sample a newer Bullet or retire a trail.
     let camera = [
         state.match_state.input.camera_x,
         state.match_state.input.camera_y,
     ];
-    let sim = state
-        .match_state
-        .sim_runtime
-        .as_ref()
-        .map(|runtime| runtime.view().simulation());
     let presentation = &mut state.match_state.match_presentation;
-    let segments = presentation.line_trails.composite(|id| {
-        sim.and_then(|sim| sim.projectiles.get(id))
-            .map(|bullet| bullet.position)
-    });
+    let segments = presentation.legacy_composite.line_segments();
     let shroud = presentation.shroud_buffer.as_ref();
     let sandbox = state.match_state.sandbox_full_visibility;
     state.renderer.terrain_draw_renderer.prepare_line_trails(

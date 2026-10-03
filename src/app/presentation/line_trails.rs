@@ -3,7 +3,8 @@
 //! Original ObjectUnlimbo5F5155 ->556A20 allocates a plain ring (no Abstract
 //! identity/RNG), 556B30 detaches, and Tactical6D4673 ->556D40 updates then
 //! draws in reverse registry order. ObjectLoad5F5EED discards the backlink.
-//! Executable evidence: tools/projectile_oracle/line_trail.{py,json,md}.
+//! Executable evidence: tools/projectile_oracle/line_trail.{py,json,md} and
+//! line_trail_steam_cadence.json (actual Main/Tactical admission controls).
 
 use std::collections::HashMap;
 
@@ -83,7 +84,7 @@ impl LineTrails {
     /// Exactly one call per tactical composite, even when no sim frame passed.
     /// Owner absence also detaches, covering a presentation handoff after removal.
     /// Registry compaction is stable and linear; reverse visit order is retained.
-    pub(crate) fn composite(
+    pub(crate) fn advance_legacy_composite(
         &mut self,
         mut coordinate: impl FnMut(u64) -> Option<ProjectileCoord>,
     ) -> &[LineTrailSegment] {
@@ -139,6 +140,12 @@ impl LineTrails {
                 }
             }
         }
+        &self.segments
+    }
+
+    /// Display submission reprojects retained world segments; it never samples,
+    /// ages or retires a ring. Camera and shroud remain display-owned inputs.
+    pub(crate) fn segments(&self) -> &[LineTrailSegment] {
         &self.segments
     }
 }

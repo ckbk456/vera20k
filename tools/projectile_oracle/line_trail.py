@@ -5,12 +5,89 @@ RGB565 surface/Z buffer/camera, admitted Object Unlimbo tail entry. No full game
 """
 import os, json, struct, hashlib
 from pathlib import Path
-from unicorn import UC_HOOK_MEM_WRITE
+from unicorn import Uc, UC_ARCH_X86, UC_MODE_32, UC_HOOK_CODE, UC_HOOK_MEM_WRITE
 from unicorn.x86_const import *
 from tools.projectile_oracle.bridge_render_art_state import ArtStateReader
 from tools.projectile_oracle.bridge_render_inputs import lexical, assets_root
 from tools.spatial_oracle.building_body_rules import SP, INI, RULES, dwords
 from tools.native_oracle import NATIVE_SHA256, run_checked, RET_MAGIC
+from tools import native_oracle
+from tools.input_oracle.fast_scroll import (CLOCK_REGIONS, CLOCK_GLOBAL_READS,
+    CLOCK_GLOBAL_WRITES, ThrottleServices, return_from_sink, STACK_BASE, STACK_SIZE,
+    SCRATCH, SCRATCH_SIZE, STEAM_CLOCK_PROFILE)
+
+# The full caller bodies are guarded; only the listed prepared-scene branches
+# execute. No BulletType reader, launch, collision, or full Windows loader is
+# enrolled by this explicit profile.
+CADENCE_REGIONS = (
+    (0x00421B60, 0x00421C81, "7be2d34557a7b156778538acb80c33b82c572831d0b66b21979cb3733ee74925"),
+    (0x0055E33B, 0x0055E404, "300deba6e9db22d760cb62e540a21f12866c855ff9144ed700c0383e74f797d8"),
+    (0x0055D360, 0x0055DEDC, "f329bdf6634d38b171e5786e2bf1498d61ac0aae73a76bd9d29cf40a8f6d6223"),
+    (0x004F4480, 0x004F45A9, "4a9c13e1beca48c5d0f1f0062a3c88a236362eb7d032cd33e8ddaafcf61481f3"),
+    (0x0053BAE0, 0x0053BAEE, "02dcff77d81ca828dc0ddd138f602079ff2a00a479aa6d174b593e5ea938187d"),
+    (0x004F42F0, 0x004F431E, "24cf5ebaafdac36affc89d9eb451f8cd52434195cb362828728baf65a9573dcc"),
+    (0x006D3D10, 0x006D4B4B, "8ea8378cd9fd143af362b492cf070def04abd58ee770da3abf0a262521d4233b"),
+    (0x00683F66, 0x00683FAA, "aa21a22861208447df26dbb3e5c83208bf78761ed5cea00dbc7a0af52ca023fe"),
+    (0x00623120, 0x00623162, "e2d785673929037e5be333488891aa2289c108a4131650b0dd4f91bc8f81c3b0"),
+    (0x00556940, 0x00556A20, "731afd16de82b6631e6d55b693e6cc71b84366b45f4be3cae734cd7646242aa3"),
+    (0x00556A20, 0x00556E83, "3aa3bf39766dd13173af0f417dafe1755b789bbbd3fffb0b8fae74731ec8c110"),
+    (0x00556F50, 0x00557063, "ddf4ee2451e29e9d32abcd0ceda99de5d0e3aafee2521775347997534bdbb765"),
+    (0x00557090, 0x00557140, "1cdd4246bc47ed240573e6047309d1f0101ef1ccfac27563e030c751d6bbe034"),
+    (0x00557140, 0x00557166, "f26d5ad5016911e9e8163dda6581e871aa8f94e75e09d2fd64ca9407bd4ef804"),
+)
+CADENCE_GLOBALS = tuple((p, 4) for p in (
+    0xA8B230, 0xA8E9A0, 0xA8ED84, 0xA8E2E4, 0xA8B55C,
+    0xA8E308, 0xA8ED72, 0xA8E378, 0xA8D5F8, 0xA8B8B4,
+    0xA8ED9D, 0xABCE08, 0xA8EC08, 0xA8EC0C, 0xA8EC00, 0xA8EC88,
+    0xA8EC04, 0x87F770, 0x82A030, 0xABCE14, 0xA8B560,
+    0xA8B564, 0xA83D49, 0xA8ECD0, 0x8B41C0, 0xA83D48, 0xA8EB78,
+    0xB07784, 0xABCD58, 0xA9FAB0, 0xB0B519, 0xA8ED6B,
+    0xA8EF54, 0xB0E63C, 0xB0CE88, 0x87E8A4, 0x887640, 0x887644,
+)) + ((0x8872FC, 0x70), (0x87F7E8, 0x200), (0x886FA0, 16),
+      (0xB0CE30, 8), (0xABCB50, 0x50), (0xABCD40, 16), (0xABCD88, 16))
+CADENCE_READS = ((0x822CF2, 1), (0x82A034, 4), (0x842900, 4), (0x843108, 1),
+    (0xA8022C, 4), (0xA80238, 4), (0xA83D14, 4), (0xA83D18, 4),
+    (0xA83D4C, 4), (0xA83D54, 4), (0xA83D60, 4), (0xA8B23C, 4),
+    (0xA8B24C, 4), (0xA8B550, 4), (0xA8B558, 4), (0xA8D60E, 1),
+    (0xA8DAB4, 4), (0xA8EBA5, 1), (0xA8EC7C, 4), (0xA8ECBC, 4),
+    (0xA8ECC8, 4), (0xABCB20, 4), (0xABCB24, 4), (0xABCB28, 4),
+    (0xABCB2C, 4), (0xABCDFC, 4), (0xABCE00, 4), (0xABCE04, 4),
+    (0xB054D4, 4), (0xB0CE28, 4), (0xB0CE2C, 4), (0xB0CE7C, 4))
+# GPU/window/scene-family boundaries are supplied, never the ring update,
+# registry lookup, render gate, render-pass dispatch or Main_Tick ordering.
+CADENCE_SINKS = ((0x4F4320, 12), (0x55DEE0, 0), (0x4D2370, 0),
+    (0x6D2B60, 16), (0x6D3660, 16), (0x6D2DE0, 12), (0x6D3470, 12),
+    (0x6D3290, 12), (0x6D3AC0, 12), (0x6D3040, 12), (0x6D3870, 12),
+    (0x7BCB50, 12), (0x410ED0, 12),
+    (0x551A30, 0), (0x55AFB0, 0), (0x54F5C0, 4), (0x637550, 0),
+    (0x5D4430, 0), (0x647260, 0), (0x725C70, 0), (0x637270, 0),
+    (0x5D4D50, 0), (0x48D080, 0), (0x4A4830, 0), (0x53B560, 0),
+    (0x7C978A, 0), (0x7C8E17, 0), (0x7C8B3D, 0), (0x556C00, 0),
+    (0x6D9B50, 16), (0x6D9CE0, 16), (0x6DAD60, 4), (0x6DA9D0, 4),
+    (0x6D5030, 4), (0x53D850, 0), (0x6D8DB0, 4), (0x5FFFA0, 0),
+    (0x550240, 0), (0x4C2830, 0), (0x6591B0, 0), (0x6DBE20, 0),
+    (0x6DA180, 0), (0x637AA0, 0), (0x6D7840, 8), (0x6D4E20, 4), (0x430AC0, 20),
+    (0x5D49A0, 0), (0x6938C0, 0), (0x5BDC80, 8), (0x578AC0, 0),
+    (0x7BCF50, 4), (0x4112D0, 4), (0x6D9A50, 16),
+    (SCRATCH + 0x3000, 4), (SCRATCH + 0x3010, 0), (SCRATCH + 0x3020, 0),
+    (SCRATCH + 0x3100, 8), (SCRATCH + 0x3110, 4), (SCRATCH + 0x3120, 0),
+    (SCRATCH + 0x3130, 0), (SCRATCH + 0x3140, 20))
+STEAM_CADENCE_PROFILE = native_oracle.ExecutionProfile(
+    name="steam-15918130-dragon-prepared-line-trail-cadence-v1",
+    native_sha256=STEAM_CLOCK_PROFILE.native_sha256,
+    regions=CLOCK_REGIONS + CADENCE_REGIONS,
+    entries=tuple((a, (RET_MAGIC,)) for a in (0x55D360, 0x4F4480,
+        0x683F66, 0x623120, 0x556940, 0x5569A0, 0x556A20, 0x556B30, 0x556B50))
+        + ((0x55E160, (0x55E33B,)),),
+    reads=CLOCK_GLOBAL_READS + CADENCE_GLOBALS + CADENCE_READS
+        + ((STACK_BASE, STACK_SIZE), (SCRATCH, SCRATCH_SIZE), (0x7ED0CC, 40)),
+    writes=CLOCK_GLOBAL_WRITES + CADENCE_GLOBALS
+        + ((STACK_BASE, STACK_SIZE), (SCRATCH, SCRATCH_SIZE)),
+    fixture_writes=CLOCK_GLOBAL_READS + CLOCK_GLOBAL_WRITES + CADENCE_GLOBALS
+        + ((STACK_BASE, STACK_SIZE), (SCRATCH, SCRATCH_SIZE)),
+    sinks=CADENCE_SINKS,
+)
+
 
 class TrailMachine(ArtStateReader):
     def __init__(self, detail=2, override=None, pixel=False, width=64, height=96):
@@ -197,6 +274,193 @@ class TrailMachine(ArtStateReader):
         self.cadence_mode=None
         return dict(render_pass=render_pass,reached=hex(reached),unrelated_calls=self.cadence_calls,
             trail_calls=self.calls[before:],state=self.trail_state())
+
+
+class CadenceMachine(TrailMachine):
+    """Prepared already-admitted object; actual caller, registry and ring code.
+
+    Reuses the trail state/read helpers without initializing its full inherited
+    reader stack. Scene virtuals are external boundaries. The native sampler
+    executes; the existing complete pixel corpus owns the draw leaf comparison.
+    """
+
+    def __init__(self, case):
+        self.u = Uc(UC_ARCH_X86, UC_MODE_32)
+        self.image = native_oracle.load_image(self.u, profile=STEAM_CADENCE_PROFILE)
+        self.u.mem_map(STACK_BASE, STACK_SIZE)
+        self.u.mem_map(SCRATCH, SCRATCH_SIZE)
+        self.cursor = SCRATCH + 0x4000
+        self.calls = []; self.freed = []; self.events = []; self.trail = 0
+        self.native_visits = set(); self.boundary_visits = set()
+        self.clock_callers = []
+        self.services = ThrottleServices(case)
+        self.case = case; self.logic_coordinate = None
+        self.owner = self.alloc(0x180); self.tactical = self.alloc(0xE00)
+        self.surface = self.alloc(0x40); self.scenario = self.alloc(0x1200)
+        self.write(self.scenario + 0x11E8, dwords(-1))
+        self.frame = 0x87F7E8
+        self.write(self.owner + 0x9C, dwords(256, 256, 0))
+        surface_vt = self.alloc(0x80); display = self.alloc(0x20)
+        display_vt = self.alloc(0x80); frame_vt = self.alloc(0x80)
+        tactical_vt = self.alloc(0x80)
+        self.write(self.surface, dwords(surface_vt, 64, 96))
+        self.write(surface_vt + 8, dwords(SCRATCH + 0x3140))
+        self.write(surface_vt + 0x5C, dwords(SCRATCH + 0x3100, SCRATCH + 0x3130))
+        self.write(display, dwords(display_vt))
+        self.write(display_vt + 0x3C, dwords(SCRATCH + 0x3100, SCRATCH + 0x3100))
+        self.write(display_vt + 0xC, dwords(SCRATCH + 0x3130, SCRATCH + 0x3130))
+        self.write(self.frame, dwords(frame_vt))
+        self.write(frame_vt + 0x40, dwords(SCRATCH + 0x3110, SCRATCH + 0x3120))
+        self.write(self.tactical, dwords(tactical_vt))
+        self.write(tactical_vt + 0x5C, dwords(SCRATCH + 0x3010))
+        for p in (0x887314, 0x88731C, 0x8872FC): self.write(p, dwords(self.surface))
+        self.write(0x887640, dwords(display)); self.write(0x887324, dwords(self.tactical))
+        self.write(0x886FA0, dwords(0, 0, 64, 96)); self.write(0xB0CE30, dwords(64, 96))
+        self.write(0xA8B230, dwords(self.scenario))
+        self.write(0xA8ED80, b'\x01')
+        for p, v in ((0xA8B238, 5), (0xA8E9A0, 1),
+                     (0xA8E2E4, 0x7FFFFFFF), (0xABCE08, 1),
+                     (0xA8EB60, case.get('speed', 0)), (0xA8EB78, 2),
+                     (0x7E11F0, SCRATCH + 0x3000), (0x7E1530, SCRATCH + 0x3020)):
+            self.write(p, dwords(v))
+        self.callbacks = {a: (lambda u, address=a: self.sink(u, address))
+                          for a, _ in CADENCE_SINKS}
+        self.u.hook_add(UC_HOOK_CODE, self.observe)
+        self.invoke(0x556940, 0); self.invoke(0x5569A0, 0)
+        self.trail = self.alloc(0x210)
+        self.invoke(0x556A20, self.trail)
+        self.invoke(0x556B50, self.trail, (16,))
+        self.write(self.trail, bytes((216, 216, 255)))
+        self.write(self.trail + 4, dwords(self.owner))
+        self.write(self.owner + 0xA8, dwords(self.trail))
+        self.events.clear()
+
+    def write(self, address, blob):
+        self.image.write(address, blob)
+
+    def invoke(self, address, receiver=0, args=()):
+        self.write(SP, dwords(RET_MAGIC, *args))
+        self.u.reg_write(UC_X86_REG_ESP, SP)
+        self.u.reg_write(UC_X86_REG_ECX, receiver)
+        self.u.reg_write(UC_X86_REG_FPCW, 0x0E7F)
+        native_oracle.run_checked(self.u, address, RET_MAGIC, image=self.image,
+            sinks=self.callbacks, count=200000, context={'case': self.case['name'], 'entry': hex(address)})
+
+    def observe(self, u, address, _size, _data):
+        if address in self.callbacks:
+            self.boundary_visits.add(address)
+        else:
+            self.native_visits.add(address)
+        labels = {0x4F4480: 'render', 0x556D40: 'trail_registry',
+                  0x556B70: 'trail_sample', 0x55AFB0: 'logic',
+                  0x647260: 'commands', 0x55DE81: 'frame_increment',
+                  0x55E160: 'throttle', 0x725C70: 'pending_drain'}
+        if address in labels:
+            self.events.append(dict(call=labels[address], frame=self.read32(0xA8ED84),
+                                    owner_xyz=self.ints(self.owner + 0x9C, 3)))
+        if address == 0x6D3D10:
+            self.events.append(dict(call='tactical', render_pass=self.read32(u.reg_read(UC_X86_REG_ESP)+12)))
+
+    def sink(self, u, address):
+        if address == SCRATCH + 0x3020:
+            self.clock_callers.append(f'{self.read32(u.reg_read(UC_X86_REG_ESP)):08X}')
+        if address in (SCRATCH+0x3000, SCRATCH+0x3020, 0x48D080, 0x4A4830,
+                       0x55DEE0, SCRATCH+0x3010):
+            self.services.sink(u, address); return
+        sp = u.reg_read(UC_X86_REG_ESP)
+        if address == 0x7C8E17:
+            return_from_sink(u, 0, self.alloc(self.read32(sp+4))); return
+        if address == 0x7C8B3D:
+            self.freed.append(self.read32(sp+4))
+        if address == 0x4F4320:
+            for pointer in struct.unpack('<3I', u.mem_read(sp+4, 12)):
+                self.write(pointer, dwords(0))
+        if address == 0x55AFB0 and self.logic_coordinate is not None:
+            self.write(self.owner+0x9C, dwords(*self.logic_coordinate))
+        return_from_sink(u, dict(CADENCE_SINKS)[address], 0)
+
+    def frame_visit(self, *, xyz=None, pause_depth=0, gate=0):
+        self.logic_coordinate = xyz
+        self.write(self.scenario+0x62C, dwords(pause_depth))
+        self.write(0xA9FAB0, dwords(gate))
+        before = len(self.events)
+        self.invoke(0x55D360)
+        return self.result(self.events[before:])
+
+    def result(self, events):
+        return dict(events=events, binary_frame=self.read32(0xA8ED84),
+            ring=self.trail_state(), freed=list(self.freed),
+            clock_reads=list(self.services.clock_reads), services=self.services.observed.copy(),
+            time_get_time_return_addresses=list(self.clock_callers),
+            wall_accounting=dict(start_ms=self.read32(0xA8B55C),
+                                 elapsed_sum=self.read32(0xA8B560), calls=self.read32(0xA8B564)))
+
+
+def steam_cadence():
+    cases = []
+    specifications = [
+        dict(name='normal_pre_logic', frame_clock=[0]*10, millisecond_clock=[0]*4,
+             actions=[dict(entry='main', xyz=[512,256,0]), dict(entry='main', xyz=[768,256,0])]),
+        dict(name='scenario_pause', frame_clock=[0]*10, millisecond_clock=[0]*2,
+             actions=[dict(entry='main', pause_depth=1), dict(entry='main', pause_depth=1)]),
+        dict(name='render_suppressed', frame_clock=[0]*14, millisecond_clock=[0]*6,
+             actions=[dict(entry='main', xyz=[512,256,0]), dict(entry='main', gate=1), dict(entry='main')]),
+        dict(name='offline_modal', frame_clock=[0]*14, millisecond_clock=[0]*6,
+             actions=[dict(entry='main', xyz=[512,256,0]), dict(entry='main', xyz=[768,256,0]),
+                      dict(entry='modal_entry'), dict(entry='modal_pump'),
+                      dict(entry='modal_pump'), dict(entry='modal_pump'), dict(entry='main')]),
+        dict(name='wait_no_extra_composite', speed=6, frame_clock=[0,0,0,101,101,101,101],
+             millisecond_clock=[0,0], actions=[dict(entry='main')]),
+        dict(name='stall_no_catch_up', speed=6, frame_clock=[0,5000,5000,5000,5000,5000],
+             millisecond_clock=[0,5000], actions=[dict(entry='main')]),
+        dict(name='uncapped_each_main', frame_clock=[0]*14, millisecond_clock=[0]*6,
+             actions=[dict(entry='main')]*3),
+        dict(name='detach_fade_retire', frame_clock=[0]*74, millisecond_clock=[0]*36,
+             actions=[dict(entry='main', xyz=[512,256,0]), dict(entry='main'),
+                      dict(entry='detach')]+[dict(entry='main')]*16),
+    ]
+    for case in specifications:
+        m = CadenceMachine(case)
+        initial = m.trail_state(); steps = []
+        for action in case['actions']:
+            entry = action['entry']; before = len(m.events)
+            if entry == 'main':
+                output = m.frame_visit(**{k:v for k,v in action.items() if k != 'entry'})
+            else:
+                m.invoke({'modal_entry':0x683F66, 'modal_pump':0x623120,
+                          'detach':0x556B30}[entry], m.trail if entry == 'detach' else 0)
+                output = m.result(m.events[before:])
+            steps.append(dict(input=action, output=output))
+        m.services.require_consumed()
+        cases.append(dict(input=case, initial=initial, steps=steps,
+            native_visited=[f'{p:08X}' for p in sorted(m.native_visits)],
+            supplied_boundaries_reached=[f'{p:08X}' for p in sorted(m.boundary_visits)]))
+    return dict(schema='vera20k.steam-line-trail-cadence.v1',
+        native_sha256=STEAM_CADENCE_PROFILE.native_sha256, fpcw='0E7F', cases=cases,
+        supplied_initial_state=dict(owner_xyz=[256,256,0], color=[216,216,255], decrement=16,
+            detail=2, session_mode=5, active=True, scenario_pause_depth=0,
+            scenario_message_timer_start=-1, frame=0, empty_scene_registries=True),
+        limits=['Prepared already-admitted owner/style; no BulletType reader, actual launch or collision enrollment.',
+                'Scenario pause depth is supplied: nuke/movie producers and timed resume are outside this profile.',
+                'Offline modal begins at its display suffix; audio/pause initialization and Windows loader are outside.',
+                'Scene draw leaves, Logic/commands/pending drain are supplied boundaries; no GPU or full-world parity.',
+                'Clock inputs are explicit Windows uptimes; actual wall cadence and focus/minimize are not proved.'])
+
+
+def cadence_provenance():
+    image = native_oracle.load_image(Uc(UC_ARCH_X86, UC_MODE_32), profile=STEAM_CADENCE_PROFILE)
+    return native_oracle.provenance(image=image,
+        scope='Steam15918130 prepared LineTrail caller admissions: normal/offline pause/modal/gate/wait/stall/detach retirement.',
+        assumptions=['Prepared zeroed scene and already-admitted owner; explicit style copied from legacy DRAGON controls, not a new reader qualification.',
+                     'Scenario depth and disabled message timer are supplied controls, not production pause initialization.',
+                     'FPCW0E7F follows existing LineTrail fixture; this cadence/ring closure uses integer arithmetic.'],
+        substitutions=['Allocator/atexit/delete, GPU/scene drawing, input outputs and Logic/commands/pending drain use declared ABI sinks.',
+                       'Supplied Logic sink changes XYZ only after actual preLogic Tactical callback; no actual movement is enrolled.',
+                       'Windows uptime/Sleep and network/offline service reuse ThrottleServices; native clock shifts, waits and FPS epilogue execute unchanged.',
+                       'LineTrail556C00 drawing is a supplied boundary; existing pixel corpus remains its comparison owner.'],
+        entry_points=dict(main=0x55D360, render=0x4F4480, render_gate=0x53BAE0,
+            tactical=0x6D3D10, trail_registry=0x556D40, sample=0x556B70,
+            modal_display_suffix=0x683F66, modal_pump=0x623120, detach=0x556B30))
 
 def pixel_case(name, delta=(256,0,0), old_z=65535, alpha=127, background=0xffff, camera_offset=(0,0), idle_visits=0, clip=(0,0,64,96), z_origin_y=0):
     m=TrailMachine(pixel=True)
@@ -397,7 +661,16 @@ def metadata():
             'tools/spatial_oracle/building_body_rules.py','tools/native_oracle.py')})
 
 if __name__=='__main__':
-    import argparse
+    import argparse, sys
+    argv = sys.argv[1:]
+    if '--steam-cadence' in argv:
+        argv.remove('--steam-cadence')
+        native_oracle.finish_vectors(steam_cadence,
+            Path(__file__).with_name('line_trail_steam_cadence.json'),
+            provenance=cadence_provenance, argv=argv,
+            source_paths={'producer':Path(__file__), 'shared_runner':Path(native_oracle.__file__),
+                          'clock_services':Path(__file__).parents[1]/'input_oracle'/'fast_scroll.py'})
+        raise SystemExit(0)
     parser=argparse.ArgumentParser();parser.add_argument('--check',action='store_true');args=parser.parse_args()
     result=json.loads(json.dumps(generate()));path=Path(__file__).with_suffix('.json')
     meta=json.loads(json.dumps(metadata()));meta_path=path.with_suffix('.meta.json')

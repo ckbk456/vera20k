@@ -616,6 +616,17 @@ mod tests {
     }
 
     #[test]
+    fn review_regression_score_exit_invokes_joint_presentation_cleanup() {
+        // AppState construction requires window/GPU. This direct-caller source
+        // guard is deliberately separate from the functional owner cleanup test.
+        let source = include_str!("../../shell_main_menu.rs");
+        let route = &source[source.find("fn leave_mission_result_screen(").unwrap()
+            ..source.find("fn resume_shell_after_match(").unwrap()];
+        let compact: String = route.split_whitespace().collect();
+        assert!(compact.contains("legacy_composite.clear()"));
+    }
+
+    #[test]
     fn gsi_13_03_far_tree_unit_near_tree_share_one_integer_ground_order() {
         let order = NativeDisplayOrder::new(&[10, 20, 30]);
         let pass = lower_ground_object_instances(vec![

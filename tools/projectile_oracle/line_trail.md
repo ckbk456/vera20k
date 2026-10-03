@@ -48,8 +48,9 @@ Tactical suffix6D4582..6D4678. With its original53BAE0 gate open, RenderFrame
 calls passes0,1,2; only pass2 reaches LineTrail. A separately supplied pass3
 also reaches it. Peripheral display virtuals, time service, and unrelated
 scene families are substituted. MainThrottle55E160 and pause683EB0 callers
-are inspected, not executed with the OS/network clock. A fixed simulation-Hz
-trail clock is not supported by this evidence.
+were inspected rather than executed in that historical segmented corpus. The
+bounded Steam caller extension below executes their selected caller closure;
+neither corpus establishes a fixed-Hz trail clock.
 
 Original556C00 projects both endpoints through6D2140, supplies
 `-2-AdjustForZ(Z)` and newer-sample strength to4BEAC0. The full original line
@@ -70,6 +71,87 @@ IStream transport is supplied; the whole game loader and post-load scene are
 not executed. The separate joined impact witness
 [`ifv_trail_impact`](ifv_trail_impact.md) reaches556B30 only from
 physical Bullet destruction at ObjectDtor5F3D56; UnInit/conceal keeps it attached.
+
+## Authenticated Steam caller admission extension
+
+`line_trail.py --steam-cadence --check` reproduces
+`line_trail_steam_cadence.json` and its provenance sidecar against Steam15918130
+SHA256 `3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600`.
+Use `--write` only to deliberately regenerate this explicit profile. The global
+historical binary gate and the original reader/pixel corpus remain unchanged.
+
+The profile executes full Main55D360, original RenderFrame4F4480 and gate53BAE0,
+full Tactical6D3D10, the actual registry556D40, ring556B70, native vector resize
+and Find557140, detach556B30, full offline Throttle55E160 through its return,
+the modal display suffix683F66 and offline modal pump623120. It guards original
+code bytes and declares data/fixture/sink boundaries through `native_oracle`.
+Each case saves actual instruction visits separately from supplied boundaries.
+
+Eight controls cover pre-Logic sampling over repeated normal calls, repeated
+Scenario-depth pause, render suppression and recovery, offline modal entry plus
+three pumps, one serviced positive wait, a5000ms stall, repeated uncapped calls,
+and detach through native registry removal/deletion. Normal Main reaches one
+pass2 ring callback before the supplied Logic boundary; the first callback sees
+the old coordinate, and the next sees the Logic sink's previous output. A
+Scenario-depth pause samples without Logic or frame increment. Gate1 skips
+Tactical/ring but proceeds through Logic. Modal entry's SetRedraw2 forced branch
+samples once; its offline pump reaches no Main/Render. The positive offline wait
+services once without another composite; stall still admits one frame/sample.
+The stall also executes Main's signed wall-delta cap1000, independently of the
+ring's single decrement. Commands, frame increment and pending-drain ordering
+are saved; commands/Logic/pending bodies are declared external boundaries.
+
+Both clocks share the existing `fast_scroll.ThrottleServices` input owner. The
+full Throttle FPS epilogue55E33B..55E404 is enrolled here, with actual counter
+storage and its additional clock reads. `clock_reads.reader` identifies the
+shifted-clock or raw-millisecond input stream; direct Main timeGetTime visits
+use the raw stream too. `time_get_time_return_addresses` distinguishes their
+actual caller return addresses. FPCW0E7F is explicit, inherited from the original
+LineTrail fixture; the enrolled cadence/ring arithmetic is integer. No new
+numeric port or clock implementation is introduced.
+
+The shared service refactor rebinds only the prior Steam clock producer hash.
+Its executable rerun preserved `fast_scroll.steam-clock.json` byte for byte:
+file SHA256 `a2afe453663c3684de7573e5fad4fbd0f07e6f4e2cee61ef3afa2e79c5eed7cc`.
+The old producer hash was `2f79be45310677771479ae054376b2e37e733f52548651605dc2b6d68e29b96a`.
+
+The extension supplies an already-admitted owner/style (XYZ256/256/0,
+RGB216/216/255, decrement16, detail2), zeroed scene registries, disabled scenario
+message timer, mode5 and explicit uptime inputs. Those style values are the
+historical reader corpus's DRAGON controls, not a newly qualified Steam reader
+or launch. Allocator, window/input outputs, scene-family drawing and LineTrail
+draw556C00 remain explicit ABI sinks. Rectangle intersection421B60 executes
+unchanged on the forced modal path; no fitted drawing behavior substitutes it.
+This proves bounded caller admission into the existing ring mechanism, not
+Windows initialization, full scene pixels or real wall cadence.
+
+Production now publishes immutable Bullet draw records and world-space trail
+segments together at the normal admitted pre-Logic seam. The existing presentation
+owner retains one immutable `Arc<NativeDisplayOrder>` for every parent family;
+Bullet records and unit/animation/terrain consumers use that same membership/rank
+generation even when Logic removes a peer. Records retain type/frame,
+bridge-ground geometry and lifetime; they never clone Simulation. Modern displays
+only resolve the atlas and reproject current
+camera/shroud. Launch, movement and physical detach after this composite affect
+the next admitted composite; an existing trail can fade after body removal.
+Offline modal entry also publishes once; repeated modal displays/pumps do not
+age it. One joint clear transaction drops order, Bullet bodies and trail history
+on load/new timeline/menu exit, including natural victory/defeat score-screen exit.
+Map/restore seed publishes body/order inputs without aging or restoring trail
+history, so zero-step and paused-load displays retain their admitted objects.
+Existing projection, frame, geometry and draw lowering ports remain shared by
+production and native tests.
+
+Whole R03 stays open. Scenario+62C producers (for example nuke/movie gameplay)
+are absent from the selected runtime, so supplied pause controls cannot become
+a fabricated app pause predicate. When those producers run, native Main can
+continue trail fading without Logic; missing wiring would freeze the effect and
+retain history longer. Timed resume, focus/minimize, native A9FAB0 producer
+branches, network paths and full-scene committed views are also unqualified.
+Other object families still read current simulation geometry, despite sharing
+retained parent ranks, so this selected Bullet body/trail view does not establish
+a complete scene or worker boundary. Native
+ring/caller CPU goldens alone do not establish rendered DRAGON/GPU parity.
 
 ## Coverage and implementation boundaries
 

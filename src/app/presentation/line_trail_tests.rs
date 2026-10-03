@@ -33,7 +33,7 @@ fn native_line_trail_ring_fades_on_each_composite_and_detaches_before_retirement
             if visit == 40 {
                 runtime.detach(7);
             }
-            runtime.composite(|_| Some(last));
+            runtime.advance_legacy_composite(|_| Some(last));
             assert_eq!(
                 runtime.trails.len(),
                 step["registry_count"].as_u64().unwrap() as usize,
@@ -79,11 +79,11 @@ fn native_line_trail_save_load_drops_ring_and_does_not_reconstruct_from_live_own
         assert_eq!(row["postload_registry_count"], 0);
         let mut runtime = LineTrails::default();
         runtime.attach(7, [216, 216, 255], 16, 2);
-        runtime.composite(|_| Some(ProjectileCoord::new(256, 256, 0)));
+        runtime.advance_legacy_composite(|_| Some(ProjectileCoord::new(256, 256, 0)));
         runtime.clear_on_load();
         assert!(
             runtime
-                .composite(|_| Some(ProjectileCoord::new(384, 256, 104)))
+                .advance_legacy_composite(|_| Some(ProjectileCoord::new(384, 256, 104)))
                 .is_empty()
         );
         assert!(runtime.trails.is_empty());
@@ -109,8 +109,12 @@ fn native_line_trail_registry_emits_reverse_attached_order() {
                 2,
             );
         }
-        assert!(runtime.composite(|_| Some(origin)).is_empty());
-        let actual = runtime.composite(|_| {
+        assert!(
+            runtime
+                .advance_legacy_composite(|_| Some(origin))
+                .is_empty()
+        );
+        let actual = runtime.advance_legacy_composite(|_| {
             Some(ProjectileCoord::new(
                 origin.x + delta.x,
                 origin.y + delta.y,
@@ -130,4 +134,89 @@ fn native_line_trail_registry_emits_reverse_attached_order() {
             );
         }
     }
+}
+
+#[test]
+fn authenticated_caller_admissions_retain_history_across_display_schedules() {
+    let corpus: Value = serde_json::from_str(include_str!(
+        "../../../tools/projectile_oracle/line_trail_steam_cadence.json"
+    ))
+    .unwrap();
+    for displays in [0, 1, 7, 240] {
+        for case in corpus["cases"].as_array().unwrap() {
+            let mut runtime = LineTrails::default();
+            let initial = &case["initial"]["trail"];
+            runtime.attach(
+                7,
+                std::array::from_fn(|i| initial["rgb"][i].as_u64().unwrap() as u8),
+                initial["decrement"].as_i64().unwrap() as i32,
+                2,
+            );
+            let mut xyz = coord(&corpus["supplied_initial_state"]["owner_xyz"]);
+            for step in case["steps"].as_array().unwrap() {
+                if step["input"]["entry"] == "detach" {
+                    runtime.detach(7);
+                }
+                let samples = step["output"]["events"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .filter(|event| event["call"] == "trail_sample")
+                    .count();
+                for _ in 0..samples {
+                    runtime.advance_legacy_composite(|_| Some(xyz));
+                }
+                let native = &step["output"]["ring"];
+                assert_eq!(
+                    runtime.trails.len(),
+                    native["registry_count"].as_u64().unwrap() as usize,
+                    "{}: {}",
+                    case["input"]["name"],
+                    step["input"]
+                );
+                if let Some(actual) = runtime.trails.first() {
+                    assert_eq!(
+                        actual.head,
+                        native["trail"]["head"].as_u64().unwrap() as usize
+                    );
+                    for (actual, native) in actual
+                        .samples
+                        .iter()
+                        .zip(native["trail"]["ring"].as_array().unwrap())
+                    {
+                        assert_eq!(actual.coord, coord(&native["xyz"]));
+                        assert_eq!(actual.strength, native["strength"].as_i64().unwrap() as i32);
+                    }
+                    let retained = actual.samples;
+                    for index in 0..displays {
+                        // Production display lowering can reproject camera/shroud
+                        // every frame; it only receives this immutable segment slice.
+                        for segment in runtime.segments() {
+                            let _ = segment.project([index, -index]);
+                        }
+                        assert_eq!(runtime.trails[0].samples, retained);
+                    }
+                }
+                if step["input"]["xyz"].is_array() {
+                    xyz = coord(&step["input"]["xyz"]);
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn production_display_submission_cannot_advance_projectile_history() {
+    let render = include_str!("render/mod.rs");
+    assert!(!render.contains("line_trails.composite("));
+    assert!(!render.contains("advance_legacy_composite("));
+    assert!(render.contains("legacy_composite.line_segments()"));
+    let runtime = include_str!("../match_runtime/sim_tick.rs");
+    let admitted = &runtime[runtime.find("if decision.run_sim {").unwrap()..];
+    assert!(
+        admitted
+            .find("advance_projectile_legacy_composite(state)")
+            .unwrap()
+            < admitted.find("advance_one_simulation_frame(state").unwrap()
+    );
 }

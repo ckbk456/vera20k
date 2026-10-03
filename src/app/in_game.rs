@@ -47,6 +47,11 @@ impl App {
         crate::app::match_runtime::sim_tick::flush_replay_log(state);
         Self::capture_returned_skirmish_rng(state);
         state.match_state.startup.clear();
+        state
+            .match_state
+            .match_presentation
+            .legacy_composite
+            .clear();
         state.match_state.scenario_elapsed_clock.reset();
         state.audio.stop_theme();
         // F11: leaving a match silences match audio completely. Previously
@@ -170,8 +175,9 @@ impl App {
     ///
     /// The simulation freezes for every non-zero state: gamemd's modal pump
     /// never reaches its main tick in offline campaign or skirmish, so no
-    /// per-tick update, frame-counter step or tactical recomposition happens
-    /// while a dialog is up. Freezing does not skip ticks — the tick simply
+    /// per-tick update, frame-counter step or further tactical recomposition
+    /// happens after the single entry composite while a dialog is up.
+    /// Freezing does not skip ticks — the tick simply
     /// stops advancing and resumes from the same number, so the tick stream is
     /// unchanged and a replay of the match still reproduces.
     pub(crate) fn enter_in_game_menu_state(
@@ -195,6 +201,10 @@ impl App {
             );
             if will_be_open {
                 state.match_state.scenario_elapsed_clock.pause(now_ms);
+                // OriginalStateMachine pause display suffix683F66 forces one
+                // Tactical composite; offline623120 subsequently only pumps
+                // messages/network. Nested modal transitions do not age it.
+                crate::app::presentation::instances::advance_projectile_legacy_composite(state);
             } else {
                 state.match_state.scenario_elapsed_clock.resume(now_ms);
             }

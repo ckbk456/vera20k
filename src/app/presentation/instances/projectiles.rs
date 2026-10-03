@@ -11,7 +11,7 @@ use crate::map::resolved_terrain::ResolvedTerrainGrid;
 use crate::render::batch::{DepthAxis, SpriteInstance};
 use crate::render::palette_light::PaletteLight;
 use crate::render::sprite_atlas::SpriteAtlas;
-use crate::render::tactical_draw_plan::{RenderZPolicy, SpriteEncoding};
+use crate::render::tactical_draw_plan::{ObjectDraw, RenderZPolicy, SpriteEncoding};
 use crate::render::terrain_draw::TerrainPiece;
 use crate::rules::projectile_type::ProjectileType;
 use crate::sim::projectile::{Projectile, ProjectileCoord, projectile_shp_frame};
@@ -75,19 +75,88 @@ fn ground_probe(terrain: &ResolvedTerrainGrid, coord: ProjectileCoord) -> (i32, 
     (ground, cell.flags & 0x100 != 0)
 }
 
+/// Immutable draw inputs captured at the same pre-Logic Tactical composite as
+/// LineTrail556D40. No simulation, atlas or camera state is duplicated here.
+struct ProjectileDrawRecord {
+    parent: ObjectDraw,
+    type_id: String,
+    frame: u16,
+    geometry: BulletGeometry,
+    depth_row: f32,
+}
+
+#[derive(Default)]
+pub(crate) struct ProjectileDraws {
+    records: Vec<ProjectileDrawRecord>,
+}
+
+impl ProjectileDraws {
+    pub(crate) fn clear(&mut self) {
+        self.records.clear();
+    }
+
+    pub(crate) fn capture(
+        &mut self,
+        sim: &crate::sim::world::Simulation,
+        rules: &crate::rules::ruleset::RuleSet,
+        order: &NativeDisplayOrder,
+    ) {
+        self.records.clear();
+        let Some(terrain) = sim.resolved_terrain.as_ref() else {
+            return;
+        };
+        for (_, projectile) in sim.projectiles.iter() {
+            let Some(type_id) = rules
+                .weapon(sim.interner.resolve(projectile.payload.weapon))
+                .and_then(|weapon| weapon.projectile.as_deref())
+            else {
+                continue;
+            };
+            let Some(kind) = rules.projectile(type_id) else {
+                continue;
+            };
+            if let Some(record) = capture_projectile_draw(projectile, kind, type_id, terrain, order)
+            {
+                self.records.push(record);
+            }
+        }
+    }
+}
+
+/// Main55D8F2 precedes Logic55DC9E. Modal display suffix683F66 also admits one
+/// Tactical visit; offline modal pump623120 admits none. Actual caller controls:
+/// tools/projectile_oracle/line_trail_steam_cadence.json. Publish body and trail
+/// together before Logic can construct, move or physically remove a Bullet.
+pub(crate) fn advance_projectile_legacy_composite(state: &mut AppState) {
+    let Some(runtime) = state.match_state.sim_runtime.as_ref() else {
+        return;
+    };
+    let sim = &runtime.simulation;
+    let presentation = &mut state.match_state.match_presentation;
+    presentation
+        .legacy_composite
+        .advance(sim, &runtime.resources.rules);
+}
+
+pub(crate) fn seed_legacy_composite_for_timeline(state: &mut AppState) {
+    let presentation = &mut state.match_state.match_presentation;
+    if let Some(runtime) = state.match_state.sim_runtime.as_ref() {
+        presentation
+            .legacy_composite
+            .seed(&runtime.simulation, &runtime.resources.rules);
+    } else {
+        presentation.legacy_composite.clear();
+    }
+}
+
 pub(crate) fn build_projectile_visual_instances(
     state: &AppState,
     objects: &mut Vec<PlannedObjectInstance>,
-    order: &NativeDisplayOrder,
 ) {
     let (Some(rt), Some(atlas)) = (
         state.match_state.sim_runtime.as_ref(),
         state.match_state.match_presentation.sprite_atlas.as_ref(),
     ) else {
-        return;
-    };
-    let sim = &rt.simulation;
-    let Some(terrain) = sim.resolved_terrain.as_ref() else {
         return;
     };
     let rules = &rt.resources.rules;
@@ -96,34 +165,32 @@ pub(crate) fn build_projectile_visual_instances(
     let width = width as f32 / input.zoom_level;
     let height = height as f32 / input.zoom_level;
     let axis = super::helpers::depth_axis(state);
-    for (_, projectile) in sim.projectiles.iter() {
-        let Some(type_id) = rules
-            .weapon(sim.interner.resolve(projectile.payload.weapon))
-            .and_then(|weapon| weapon.projectile.as_deref())
-        else {
+    for record in &state
+        .match_state
+        .match_presentation
+        .legacy_composite
+        .projectile_draws()
+        .records
+    {
+        let Some(kind) = rules.projectile(&record.type_id) else {
             continue;
         };
-        let Some(kind) = rules.projectile(type_id) else {
-            continue;
-        };
-        if let Some(object) = projectile_draw_instance(
-            projectile,
+        if let Some(object) = lower_projectile_draw(
+            record,
             kind,
-            type_id,
             atlas,
-            terrain,
             [input.camera_x, input.camera_y],
             [width, height],
             axis,
-            order,
         ) {
             objects.push(object);
         }
     }
 }
 
-/// Shared production adapter used by full SHP/atlas/GPU native comparisons.
+/// Native comparison adapter uses the production capture and lowering owners.
 /// Retained Display membership is admission; storage alone never draws a Bullet.
+#[cfg(test)]
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn projectile_draw_instance(
     projectile: &Projectile,
@@ -136,14 +203,22 @@ pub(crate) fn projectile_draw_instance(
     axis: DepthAxis,
     order: &NativeDisplayOrder,
 ) -> Option<PlannedObjectInstance> {
+    let record = capture_projectile_draw(projectile, kind, type_id, terrain, order)?;
+    lower_projectile_draw(&record, kind, atlas, camera, viewport, axis)
+}
+
+fn capture_projectile_draw(
+    projectile: &Projectile,
+    kind: &ProjectileType,
+    type_id: &str,
+    terrain: &ResolvedTerrainGrid,
+    order: &NativeDisplayOrder,
+) -> Option<ProjectileDrawRecord> {
     let parent = order.object_draw(projectile.id, SpriteEncoding::Plain)?;
     if kind.inviso || kind.voxel {
         return None;
     }
     let frame = u16::from(projectile_shp_frame(projectile, kind));
-    let Some(entry) = atlas.projectile_sprite(type_id, kind, frame, None) else {
-        return None;
-    };
     let (ground_z, structural) = ground_probe(terrain, projectile.position);
     let geometry = geometry(
         projectile.position,
@@ -152,15 +227,31 @@ pub(crate) fn projectile_draw_instance(
         projectile.on_bridge,
         kind.shadow,
     );
+    Some(ProjectileDrawRecord {
+        parent,
+        type_id: type_id.to_owned(),
+        frame,
+        geometry,
+        depth_row: geometry.body.point[1] + adjust_for_z_standard(projectile.position.z) as f32,
+    })
+}
+
+fn lower_projectile_draw(
+    record: &ProjectileDrawRecord,
+    kind: &ProjectileType,
+    atlas: &SpriteAtlas,
+    camera: [f32; 2],
+    viewport: [f32; 2],
+    axis: DepthAxis,
+) -> Option<PlannedObjectInstance> {
+    let entry = atlas.projectile_sprite(&record.type_id, kind, record.frame, None)?;
+    let geometry = record.geometry;
     // Object6D2140's padded projection admission precedes the shape clip.
     if !projection_admitted(geometry.body.point, camera, viewport) {
         return None;
     }
-    let depth = crate::render::native_z::depth_for_row(
-        geometry.body.point[1] + adjust_for_z_standard(projectile.position.z) as f32,
-        axis.origin_y,
-        axis.world_height,
-    );
+    let depth =
+        crate::render::native_z::depth_for_row(record.depth_row, axis.origin_y, axis.world_height);
     let mut pieces = Vec::with_capacity(2);
     for (piece, geometry) in geometry
         .shadow
@@ -189,7 +280,7 @@ pub(crate) fn projectile_draw_instance(
             },
         });
     }
-    Some(PlannedObjectInstance::object(parent, pieces))
+    Some(PlannedObjectInstance::object(record.parent, pieces))
 }
 
 #[cfg(test)]
@@ -199,6 +290,10 @@ mod native_tests;
 #[cfg(test)]
 #[path = "projectile_flight_tests.rs"]
 mod flight_tests;
+
+#[cfg(test)]
+#[path = "projectile_cadence_tests.rs"]
+mod cadence_tests;
 
 #[cfg(test)]
 mod tests {

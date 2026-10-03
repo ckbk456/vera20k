@@ -136,10 +136,6 @@ impl<'a> SimView<'a> {
         self.simulation.logic_order()
     }
 
-    pub(crate) fn display_layers(&self) -> &'a super::world::display_layers::DisplayLayers {
-        self.simulation.display_layers()
-    }
-
     /// Pending radar-terrain batch for the minimap dirty gate. Presentation
     /// acknowledges this exact generation only after a completed update.
     pub(crate) fn radar_terrain_dirty(&self) -> (&'a [(u16, u16)], u64) {

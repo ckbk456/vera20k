@@ -498,6 +498,56 @@ def input_cases() -> list[dict]:
     return cases
 
 
+class ThrottleServices:
+    """Supplied external clocks/services shared by throttle and caller witnesses.
+
+    This does not implement the throttle: original instructions own its reads,
+    waits and UI admission. Millisecond reads also cover a caller's timeGetTime
+    visits; the return address identifies the original shifted-clock leaf.
+    """
+
+    def __init__(self, case):
+        self.clock_reads = []
+        self.clocks = {0x006C8C40: iter(case["frame_clock"]),
+                       0x005D5890: iter(case["millisecond_clock"])}
+        self.observed = {"input_calls": 0, "network_service_calls": 0,
+                         "offline_service_calls": 0, "sleep_calls": [],
+                         "command_calls": 0, "tactical_calls": 0, "render_calls": 0}
+
+    def sink(self, uc, address, _size=0, _data=None):
+        if address == SCRATCH + 0x3020 or address in self.clocks:
+            source = address
+            if address == SCRATCH + 0x3020:
+                source = (0x006C8C40 if u32(uc, uc.reg_read(UC_X86_REG_ESP)) == 0x006C8C46
+                          else 0x005D5890)
+            try:
+                value = next(self.clocks[source])
+            except StopIteration as error:
+                raise RuntimeError(f"Unexpected extra clock read at {source:#x}") from error
+            if address == SCRATCH + 0x3020:
+                self.clock_reads.append({"reader": hex(source), "wall_ms": value})
+            return_from_sink(uc, 0, value)
+        elif address == SCRATCH + 0x3000:
+            self.observed["sleep_calls"].append(u32(uc, uc.reg_read(UC_X86_REG_ESP) + 4))
+            return_from_sink(uc, 4)
+        else:
+            boundaries = {0x004F4320: ("input_calls", 12),
+                          0x0048D080: ("network_service_calls", 0),
+                          0x004A4830: ("offline_service_calls", 0),
+                          0x0055DEE0: ("command_calls", 0),
+                          SCRATCH + 0x3010: ("tactical_calls", 0),
+                          0x004F4480: ("render_calls", 0)}
+            if address in boundaries:
+                key, argument_bytes = boundaries[address]
+                self.observed[key] += 1
+                return_from_sink(uc, argument_bytes)
+
+    def require_consumed(self):
+        for address, values in self.clocks.items():
+            if list(values):
+                raise RuntimeError(f"Supplied clock values unused at {address:#x}")
+
+
 def native_throttle(case: dict, *, profile=None, stop_at=0x0055E33B, timer_setup=False, capture=None) -> dict:
     """Original throttle through 0x55E33B; FPS bookkeeping after it is excluded."""
     machine = Uc(UC_ARCH_X86, UC_MODE_32)
@@ -525,45 +575,9 @@ def native_throttle(case: dict, *, profile=None, stop_at=0x0055E33B, timer_setup
         # The timer helper ignores ECX; native still copies the caller's stack
         # word into the inert timer padding, so make that supplied input explicit.
         put32(machine, SP + 0x14, 0x13579BDF, image=image)
-    clock_reads = []
-    clocks = {0x006C8C40: iter(case["frame_clock"]),
-              0x005D5890: iter(case["millisecond_clock"])}
-    observed = {"input_calls": 0, "network_service_calls": 0,
-                "offline_service_calls": 0, "sleep_calls": [],
-                "command_calls": 0, "tactical_calls": 0, "render_calls": 0}
-
-    def sink(uc: Uc, address: int, _size: int = 0, _data: object = None) -> None:
-        if address == SCRATCH + 0x3020:
-            source = (0x006C8C40 if u32(uc, uc.reg_read(UC_X86_REG_ESP)) == 0x006C8C46
-                      else 0x005D5890)
-            try:
-                value = next(clocks[source])
-            except StopIteration as error:
-                raise RuntimeError(f"Unexpected extra clock read at {source:#x}") from error
-            clock_reads.append({"reader": hex(source), "wall_ms": value})
-            return_from_sink(uc, 0, value)
-        elif address in clocks:
-            try:
-                value = next(clocks[address])
-            except StopIteration as error:
-                raise RuntimeError(f"Unexpected extra clock read at {address:#x}") from error
-            return_from_sink(uc, 0, value)
-        elif address == SCRATCH + 0x3000:
-            observed["sleep_calls"].append(u32(uc, uc.reg_read(UC_X86_REG_ESP) + 4))
-            return_from_sink(uc, 4)
-        else:
-            boundaries = {
-                0x004F4320: ("input_calls", 12),
-                0x0048D080: ("network_service_calls", 0),
-                0x004A4830: ("offline_service_calls", 0),
-                0x0055DEE0: ("command_calls", 0),
-                SCRATCH + 0x3010: ("tactical_calls", 0),
-                0x004F4480: ("render_calls", 0),
-            }
-            if address in boundaries:
-                key, argument_bytes = boundaries[address]
-                observed[key] += 1
-                return_from_sink(uc, argument_bytes)
+    services = ThrottleServices(case)
+    sink = services.sink
+    observed = services.observed
 
     if image is None:
         machine.hook_add(UC_HOOK_CODE, sink)
@@ -578,9 +592,7 @@ def native_throttle(case: dict, *, profile=None, stop_at=0x0055E33B, timer_setup
     run_checked(machine, 0x0055E160, stop_at, count=2000,
                 required_addresses=[] if stop_at == 0x0055E197 else [0x0055E197],
                 image=image, sinks=callbacks, context=context)
-    for address, values in clocks.items():
-        if list(values):
-            raise RuntimeError(f"Supplied clock values unused at {address:#x}")
+    services.require_consumed()
     observed["accumulated_wait"] = i32(machine, 0x00A8E314)
     if capture is not None:
         capture.update(timer_start_bucket=u32(machine, 0x00887348),
@@ -588,7 +600,7 @@ def native_throttle(case: dict, *, profile=None, stop_at=0x0055E33B, timer_setup
                        timer_duration=u32(machine, 0x00887350),
                        stored_speed=u32(machine, 0x00A8EB60),
                        remaining_wait=machine.reg_read(UC_X86_REG_ESI) & 0xFFFFFFFF,
-                       clock_reads=clock_reads)
+                       clock_reads=services.clock_reads)
     return observed
 
 
