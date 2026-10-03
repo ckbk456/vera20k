@@ -27,7 +27,8 @@ this table records completed scope and remaining package acceptance.
 | --- | --- | --- |
 | Delivery bootstrap | Done | [PR #1](https://github.com/ckbk456/vera20k/pull/1) merged at `0b099399`; primary main fast-forwarded. Exact-head Python/Clippy (three platforms each) and field-ratchet workflows passed. `delivery` targets the user-owned fork, `origin` preserves upstream. |
 | B01: official installation intake | Done for intake | Steam app 2229850/build 15918130/English; 436 files and 1,961,731,509 bytes match Windows-source SHA-256. Genuine movie archives acquired; receipts remain local/ignored. |
-| B01: candidate identity tooling | Implemented for bounded scope | `native_inspect identity` reports actual binary/section hashes and reuses two existing fixture owners. [Steam receipt](../../tools/native_inspect.steam-15918130.identity.json): 11/11 stored regions match; execution remains unsupported. 22 focused tests pass; full local suite has one unrelated macOS fixture failure tracked in [issue #2](https://github.com/ckbk456/vera20k/issues/2). |
+| B01: candidate identity tooling | Done for bounded tooling scope | [PR #3](https://github.com/ckbk456/vera20k/pull/3) merged at `f554f845`; seven exact-head CI checks passed and primary main fast-forwarded. `native_inspect identity` reuses the PE/two fixture owners. [Steam receipt](../../tools/native_inspect.steam-15918130.identity.json): 11/11 bounded regions match; execution remains unsupported. |
+| Tooling: local macOS process fixture | Implemented and locally validated | Disposable copied sleep executable is ad-hoc signed on macOS; startup, real in-use rejection and idle-after-exit assertions remain. Three focused process checks and the full Python suite (555 tests; five optional skips) pass locally. Resolves [issue #2](https://github.com/ckbk456/vera20k/issues/2) when merged. |
 | B01: native variant and retail baseline | Open | Qualify Steam code/address/behavior compatibility and production-selected retail input/layer identities. Acquisition alone does not close B01. |
 | B02: native tooling environment | Partial | Isolated Python 3.14 environment has pinned Unicorn 2.1.4/Capstone 5.0.7. Checked native execution and full-game capture remain unqualified. |
 | B03 and later packages | Not started | Discovery leads exist; no complete capability census or gameplay/presentation mechanism is qualified. |
@@ -35,7 +36,9 @@ this table records completed scope and remaining package acceptance.
 Delivery repository: https://github.com/ckbk456/vera20k. PRs target its `main`;
 branch from fetched `delivery/main`, merge one validated scoped PR at a time,
 then fast-forward the clean primary checkout. Preserve upstream and licensed
-local files. Human playtesting/feel acceptance remains separate from agent checks.
+local files. Main requires seven CI checks (Python/Clippy on three platforms and
+the field ratchet), including for admins; no human approval gate is required.
+Human playtesting/feel acceptance remains separate from agent checks.
 
 ## 1. Baseline and scope
 
