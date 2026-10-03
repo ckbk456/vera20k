@@ -227,7 +227,6 @@ fn global_combat_tail_cannot_fire_a_ready_foot_a_second_time() {
         let result = sim.tick_combat_with_fatal_lifecycle(
             &rules,
             None,
-            100,
             &[first, second],
             &BTreeSet::new(),
             &Default::default(),

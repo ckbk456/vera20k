@@ -366,7 +366,6 @@ fn a_spark_weapon_fires_once_its_pursuit_halts() {
             &rules,
             &mut sim.interner,
             1,
-            67,
             1,
             &mut rng,
         );

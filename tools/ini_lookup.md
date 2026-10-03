@@ -81,7 +81,10 @@ parity_bin=$(python -m tools.cargo_run --resolve parity-digest --profile release
 ```
 
 For the game capture, follow [map observation](map_observation.md) with the
-checked-in example profile. Headless parity-digest has a documented 66 ms cadence;
-the app capture uses 22 ms. Their hashes are not compared against each other.
+checked-in example profile. Headless parity-digest retains a nominal 66 ms elapsed
+label per admitted frame; the app capture retains its sealed 22 ms convention.
+These labels do not choose gameplay cadence. Comparing gameplay hashes requires
+matching initialized state and commands; sparkle presentation still reads the
+different nominal labels and has a separate clock residual.
 No new simulation math, RNG draws, timer writes or detach calls are introduced.
 The existing source-policy and reader residuals above remain explicit.

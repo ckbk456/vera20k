@@ -104,7 +104,6 @@ fn sonic_active_wave_gate_precedes_target_resolution_and_all_shot_work() {
         None,
         false,
         17,
-        67,
         true,
         &mut rng,
         None,
@@ -1176,7 +1175,6 @@ fn considered_aircraft_infantry_is_air_only_while_high_flying() {
             &rules,
             &mut sim.interner,
             0,
-            100,
             0,
             &mut main_rng,
         );
@@ -1229,7 +1227,6 @@ fn ordinary_infantry_remains_ground_for_projectile_legality() {
         &rules,
         &mut sim.interner,
         0,
-        100,
         0,
         &mut main_rng,
     );
@@ -1301,7 +1298,6 @@ fn test_tick_combat_applies_damage() {
         &rules,
         &mut interner,
         0u64,
-        100,
         0u32,
         &mut main_rng,
     );
@@ -1331,7 +1327,6 @@ fn combat_damage_crosses_live_type_condition_yellow() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut main_rng,
     );
@@ -1365,7 +1360,6 @@ fn combat_damage_above_live_type_condition_yellow() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut main_rng,
     );
@@ -1400,7 +1394,6 @@ fn aoe_damage_crosses_live_type_condition_yellow() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut main_rng,
     );
@@ -1435,7 +1428,6 @@ fn combat_damage_landed_applies_infantry_fear() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut main_rng,
     );
@@ -1470,7 +1462,6 @@ fn ic_target_takes_zero_damage() {
         &rules,
         &mut interner,
         10u64,
-        100,
         0u32,
         &mut main_rng,
     );
@@ -1531,7 +1522,6 @@ fn gsi_04_07_damage_wad_precedes_wall_and_wood_armor_routing() {
             Some(&registry),
             Some(&mut terrain),
             0,
-            100,
             0,
             &[],
             None,
@@ -1640,7 +1630,6 @@ fn gsi_04_07_damage_wall_dies_in_the_tail_after_both_attackers_fire() {
         Some(&registry),
         Some(&mut terrain),
         0,
-        100,
         0,
         &[10, 20],
         None,
@@ -1784,7 +1773,6 @@ fn gsi_04_07_damage_prior_projectile_fatal_death_weapon_is_inline() {
             Some(&registry),
             Some(&mut terrain),
             0,
-            100,
             0,
             &[10, 20, 30],
             &[detonation],
@@ -2025,7 +2013,6 @@ fn retaliates(case: RetaliationCase) -> bool {
         None,
         None,
         0,
-        100,
         0,
         &[2],
         &[detonation],
@@ -2547,7 +2534,6 @@ fn gsi_04_07_damage_retaliation_is_receiver_synchronous_and_uses_mission_overrid
             None,
             None,
             0,
-            100,
             0,
             &[2],
             &[detonation],
@@ -4371,7 +4357,6 @@ fn gsi_08_05_tick_combat_respects_the_jittered_cooldown() {
                 &rules,
                 interner,
                 u64::from(frame),
-                100,
                 frame,
                 rng,
             );
@@ -4919,7 +4904,6 @@ fn fatal_sound_selection_uses_human_voice_then_die_sound_main_draws() {
         None,
         None,
         0,
-        100,
         0,
         &[1, 2],
         &[],
@@ -5015,7 +4999,6 @@ fn test_tick_combat_out_of_range() {
         &rules,
         &mut interner,
         0u64,
-        100,
         0u32,
         &mut main_rng,
     );
@@ -5049,7 +5032,6 @@ fn undeployed_guardian_gi_vs_infantry_uses_m60() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut main_rng,
     );
@@ -5089,7 +5071,6 @@ fn a_shot_debits_its_targets_estimate_unless_inaccurate() {
             &rules,
             &mut interner,
             0,
-            100,
             0,
             &mut SimRng::new(1),
         );
@@ -5131,7 +5112,6 @@ fn a_bright_shot_lights_its_detonation() {
             &rules,
             &mut interner,
             0,
-            100,
             0,
             &mut SimRng::new(1),
         );
@@ -5167,7 +5147,6 @@ fn deployed_guardian_gi_vs_rhino_at_six_cells_uses_missilelauncher() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut main_rng,
     );
@@ -5198,7 +5177,6 @@ fn deployed_guardian_gi_vs_rocketeer_uses_missilelauncher() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut main_rng,
     );
@@ -5229,7 +5207,6 @@ fn test_infantry_vs_heavy_armor() {
         &rules,
         &mut interner,
         0u64,
-        100,
         0u32,
         &mut main_rng,
     );
@@ -5258,7 +5235,6 @@ fn infantry_standing_fire_waits_for_fire_frame() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut main_rng,
     );
@@ -5278,7 +5254,6 @@ fn infantry_standing_fire_waits_for_fire_frame() {
         &rules,
         &mut interner,
         1,
-        100,
         0,
         &mut main_rng,
     );
@@ -5292,7 +5267,6 @@ fn infantry_standing_fire_waits_for_fire_frame() {
         &rules,
         &mut interner,
         2,
-        100,
         0,
         &mut main_rng,
     );
@@ -5338,7 +5312,6 @@ fn prone_infantry_uses_prone_fire_sequence_and_frame() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut main_rng,
     );
@@ -5357,7 +5330,6 @@ fn prone_infantry_uses_prone_fire_sequence_and_frame() {
         &rules,
         &mut interner,
         1,
-        100,
         0,
         &mut main_rng,
     );
@@ -5371,7 +5343,6 @@ fn prone_infantry_uses_prone_fire_sequence_and_frame() {
         &rules,
         &mut interner,
         2,
-        100,
         0,
         &mut main_rng,
     );
@@ -5411,7 +5382,6 @@ fn deployed_gi_uses_deployed_fire_visual_with_deploy_fire_weapon() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut main_rng,
     );
@@ -5431,7 +5401,6 @@ fn deployed_gi_uses_deployed_fire_visual_with_deploy_fire_weapon() {
         &rules,
         &mut interner,
         1,
-        100,
         0,
         &mut main_rng,
     );
@@ -5453,7 +5422,6 @@ fn deployed_gi_uses_deployed_fire_visual_with_deploy_fire_weapon() {
         &rules,
         &mut interner,
         1,
-        100,
         0,
         &mut main_rng,
     );
@@ -5521,7 +5489,6 @@ fn garrison_fire_keeps_occupant_anim_and_sound_path() {
         None,
         None,
         0,
-        100,
         0,
         &[],
         None,
@@ -5559,7 +5526,6 @@ fn delayed_infantry_fire_cancels_when_target_dies_before_fire_frame() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut main_rng,
     );
@@ -5581,7 +5547,6 @@ fn delayed_infantry_fire_cancels_when_target_dies_before_fire_frame() {
         &rules,
         &mut interner,
         1,
-        100,
         0,
         &mut main_rng,
     );
@@ -5636,7 +5601,6 @@ fn test_prone_infantry_takes_scaled_direct_damage() {
         &rules,
         &mut interner,
         0u64,
-        100,
         0u32,
         &mut main_rng,
     );
@@ -5682,7 +5646,6 @@ fn test_prone_infantry_takes_scaled_aoe_damage() {
         &rules,
         &mut interner,
         0u64,
-        100,
         0u32,
         &mut main_rng,
     );
@@ -5731,7 +5694,6 @@ fn an_unseen_target_is_fired_at() {
         None,
         None,
         0u64,
-        100,
         0u32,
         &[],
         None,
@@ -5886,7 +5848,6 @@ fn test_weapon_fire_destroys_ore_in_spread() {
         Some(&ore_registry),
         None,
         0u64,
-        100,
         0u32,
         &[],
         None,
@@ -5950,7 +5911,6 @@ fn test_direct_hit_weapon_destroys_center_ore() {
         Some(&ore_registry),
         None,
         0u64,
-        100,
         0u32,
         &[],
         None,
@@ -6014,7 +5974,6 @@ fn test_weak_weapon_partial_ore_reduction() {
         Some(&ore_registry),
         None,
         0u64,
-        100,
         0u32,
         &[],
         None,
@@ -6684,7 +6643,6 @@ fn v3_non_killing_aoe_emits_one_detonation_anim() {
         &rules,
         &mut interner,
         0u64,
-        100,
         0u32,
         &mut main_rng,
     );
@@ -6738,7 +6696,6 @@ fn v3_killing_aoe_emits_exactly_one_detonation_anim() {
         &rules,
         &mut interner,
         0u64,
-        100,
         0u32,
         &mut main_rng,
     );
@@ -6792,7 +6749,6 @@ fn gsi_04_11_death_weapon_anim_precedes_outer_detonation_anim() {
         &rules,
         &mut interner,
         0u64,
-        100,
         0u32,
         &mut main_rng,
     );
@@ -6862,7 +6818,6 @@ fn fire_admission_preserves_flat_projectile_layer_through_save_and_retirement() 
             &rules,
             &mut interner,
             0,
-            100,
             0,
             &mut SimRng::new(1),
         );
@@ -6943,7 +6898,6 @@ fn gsi_04_11_persistent_projectile_keeps_exact_lepton_z() {
         None,
         Some(&mut terrain),
         0,
-        100,
         0,
         &[],
         None,
@@ -6976,7 +6930,6 @@ fn persistent_projectile_delays_damage_across_save_load_continuation() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut scenario_rng,
     );
@@ -7051,7 +7004,6 @@ fn persistent_projectile_delays_damage_across_save_load_continuation() {
         None,
         None,
         1,
-        100,
         1,
         &[2],
         &detonations,
@@ -7120,7 +7072,6 @@ fn inviso_scatter_uses_scenario_rng_only_for_effect_and_paired_smudge() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut scenario_rng,
     );
@@ -7167,7 +7118,6 @@ fn inviso_empty_animlist_still_consumes_one_draw() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut scenario_rng,
     );
@@ -7211,7 +7161,6 @@ fn gsi_08_05_non_inviso_projectile_advances_scenario_rng_by_the_reload_jitter() 
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut scenario_rng,
     );
@@ -7274,7 +7223,6 @@ fn two_inviso_attackers_fire_in_live_order_and_the_second_bullet_waits_a_frame()
         None,
         None,
         0,
-        100,
         0,
         &[2, 1],
         None,
@@ -7363,7 +7311,6 @@ fn inviso_special_arms_claim_the_impact_and_keep_the_shared_tail() {
             &rules,
             &mut interner,
             0,
-            100,
             0,
             &mut scenario_rng,
         );
@@ -7420,7 +7367,6 @@ fn inviso_parasite_grapple_claims_the_impact() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut SimRng::new(1),
     );
@@ -7448,7 +7394,6 @@ fn inviso_direct_rocker_at_a_cell_keeps_ordinary_damage() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut SimRng::new(1),
     );
@@ -7537,7 +7482,6 @@ fn combat_resolves_in_live_object_order_not_stable_id() {
             None,
             None,
             0u64,
-            100,
             0u32,
             &[2, 1],
             None,
@@ -7572,7 +7516,6 @@ fn combat_resolves_in_live_object_order_not_stable_id() {
             None,
             None,
             0u64,
-            100,
             0u32,
             &[],
             None,
@@ -7637,7 +7580,6 @@ fn rad_combat_tick(
         None,
         sim.resolved_terrain.as_mut(),
         0,
-        100,
         binary_frame,
         &[],
         Some(&mut radiation),
@@ -8217,7 +8159,6 @@ fn under_attack_events_fire_for_sourced_structures_and_harvester_types() {
             &rules,
             &mut interner,
             0,
-            100,
             0,
             &mut main_rng,
         )
@@ -8330,7 +8271,6 @@ fn unit_lost_events_come_from_damage_kills_of_unspawned_non_buildings() {
             &rules,
             &mut interner,
             0,
-            100,
             0,
             &mut main_rng,
         )
@@ -8406,7 +8346,6 @@ fn harvester_killing_blow_announces_unit_lost_without_the_miner_ping() {
             &rules,
             &mut interner,
             0,
-            100,
             0,
             &mut main_rng,
         )
@@ -8543,7 +8482,6 @@ fn projectile_shrapnel_targets_hostile_head_before_random_cell_child() {
         None,
         None,
         1,
-        100,
         1,
         &[1, 2],
         &[detonation],
@@ -8626,7 +8564,6 @@ fn projectile_shrapnel_count_measures_to_the_targets_get_coords() {
         None,
         None,
         1,
-        100,
         1,
         &[1, 2],
         &[detonation],
@@ -8698,7 +8635,6 @@ fn projectile_shrapnel_aims_at_a_building_foundation_center() {
         None,
         None,
         1,
-        100,
         1,
         &[1, 2],
         &[detonation],
@@ -9087,7 +9023,6 @@ fn gsi_08_12_a_grizzly_promotes_through_the_damage_path() {
             &rules,
             &mut interner,
             0,
-            100,
             0,
             &mut scenario_rng,
         );
@@ -9134,7 +9069,6 @@ fn gsi_08_05_elite_rof_and_firepower_abilities_reach_the_fire_path() {
             &rules,
             &mut interner,
             0,
-            100,
             0,
             &mut SimRng::new(0x475A_5A4C),
         );
@@ -9189,7 +9123,6 @@ fn gsi_08_05_a_heal_skips_the_firepower_rank_stage() {
             &rules,
             &mut interner,
             0,
-            100,
             0,
             &mut SimRng::new(0x475A_5A4C),
         );
@@ -9225,7 +9158,6 @@ fn gsi_08_05_a_sonic_shot_carries_no_damage() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut SimRng::new(0x475A_5A4C),
     );
@@ -9270,7 +9202,6 @@ fn gsi_08_05_a_bunkered_vehicle_takes_the_bunker_damage_multiplier() {
             &rules,
             &mut interner,
             0,
-            100,
             0,
             &mut SimRng::new(0x475A_5A4C),
         );
@@ -9323,7 +9254,6 @@ fn gsi_08_05_a_garrison_shot_takes_the_f32_occupy_multiplier() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut SimRng::new(1),
     );
@@ -9360,7 +9290,6 @@ fn gsi_08_11_unit_death_plays_type_explosion_then_destroy_anim() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut SimRng::new(4),
     );
@@ -9419,7 +9348,6 @@ fn gsi_08_12_a_dont_score_victim_pays_no_experience() {
             &rules,
             &mut interner,
             0,
-            100,
             0,
             &mut scenario_rng,
         );
@@ -9488,7 +9416,6 @@ fn gsi_08_12_a_garrison_kill_pays_the_occupant_next_in_line() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut SimRng::new(1),
     );
@@ -9556,7 +9483,6 @@ fn gsi_08_05_a_mixed_garrison_rearms_with_the_next_occupants_weapon() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut SimRng::new(1),
     );
@@ -9605,7 +9531,6 @@ fn gsi_08_12_a_base_defence_kill_pays_nobody() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut SimRng::new(1),
     );
@@ -9649,7 +9574,6 @@ fn gsi_08_04_projectile_spawns_at_the_muzzle_not_the_hull_centre() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut SimRng::new(3),
     );
@@ -9701,7 +9625,6 @@ fn gsi_08_04_a_dropping_shell_leaves_the_hull_centre() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut SimRng::new(3),
     );
@@ -9753,7 +9676,6 @@ fn gsi_08_06_homing_launch_uses_one_lepton_and_stores_speed_as_the_ceiling() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut SimRng::new(3),
     );
@@ -9823,7 +9745,6 @@ fn gsi_08_06_a_failed_arc_launch_skips_the_rest_of_the_shot() {
             &rules,
             &mut interner,
             0,
-            100,
             0,
             &mut rng,
         );
@@ -9897,7 +9818,6 @@ fn gsi_08_05_a_berserk_firer_rearms_at_half_its_rof() {
             &rules,
             &mut interner,
             0,
-            100,
             0,
             &mut SimRng::new(7),
         );
@@ -9945,7 +9865,6 @@ fn gsi_08_06_point_blank_shot_clamps_the_launch_speed_to_half_the_distance() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut SimRng::new(3),
     );
@@ -10076,7 +9995,6 @@ fn gsi_08_08_kirov_vertical_bomb_falls_and_detonates() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut SimRng::new(7),
     );
@@ -10191,7 +10109,6 @@ fn gsi_05_14_a_dying_vehicle_scatters_metallic_debris() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut SimRng::new(9),
     );
@@ -10250,7 +10167,6 @@ fn gsi_05_14_a_dying_building_uses_its_own_debris_anims() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut SimRng::new(21),
     );
@@ -10361,7 +10277,6 @@ fn gsi_05_14_a_dying_harvester_throws_voxel_tires_and_no_shp_debris() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut SimRng::new(5),
     );
@@ -10418,7 +10333,6 @@ fn gsi_05_14_a_type_without_maxdebris_takes_no_draw() {
         &rules,
         &mut interner,
         0,
-        100,
         0,
         &mut rng,
     );

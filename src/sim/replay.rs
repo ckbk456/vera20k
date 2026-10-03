@@ -764,7 +764,7 @@ impl ReplayRunner {
     pub fn run_runtime(
         runtime: &mut crate::sim::runtime::SimRuntime,
         replay: &ReplayLog,
-        tick_ms: u32,
+        diagnostic_frame_ms: u32,
     ) -> Result<Vec<u64>> {
         anyhow::ensure!(
             runtime.simulation.session.pixel_conversion_bounds
@@ -790,7 +790,7 @@ impl ReplayRunner {
                 .take_due_replay_commands(entry.commands.iter().cloned());
             let output = runtime.advance_frame(
                 &due_commands,
-                tick_ms,
+                diagnostic_frame_ms,
                 crate::sim::world::TickLane::Ordinary,
             )?;
             hashes.push(output.tick.state_hash);
@@ -807,9 +807,16 @@ impl ReplayRunner {
         replay: &ReplayLog,
         rules: Option<&RuleSet>,
         path_grid: Option<&PathGrid>,
-        tick_ms: u32,
+        diagnostic_frame_ms: u32,
     ) -> Vec<u64> {
-        Self::run_fixture_with_overlay_registry(sim, replay, rules, path_grid, None, tick_ms)
+        Self::run_fixture_with_overlay_registry(
+            sim,
+            replay,
+            rules,
+            path_grid,
+            None,
+            diagnostic_frame_ms,
+        )
     }
 
     /// Fixture-only variant with the static overlay type registry used by the
@@ -823,7 +830,7 @@ impl ReplayRunner {
         rules: Option<&RuleSet>,
         path_grid: Option<&PathGrid>,
         overlay_registry: Option<&crate::map::overlay_types::OverlayTypeRegistry>,
-        tick_ms: u32,
+        diagnostic_frame_ms: u32,
     ) -> Vec<u64> {
         Self::run_fixture_master_frame(
             sim,
@@ -831,7 +838,7 @@ impl ReplayRunner {
             rules,
             path_grid,
             overlay_registry,
-            tick_ms,
+            diagnostic_frame_ms,
             None,
         )
     }
@@ -848,7 +855,7 @@ impl ReplayRunner {
         rules: Option<&RuleSet>,
         path_grid: Option<&PathGrid>,
         overlay_registry: Option<&crate::map::overlay_types::OverlayTypeRegistry>,
-        tick_ms: u32,
+        diagnostic_frame_ms: u32,
         trigger_inputs: Option<TriggerInputs<'_>>,
     ) -> Vec<u64> {
         // The diagnostic playback must be constructed from the recorded seed.
@@ -887,7 +894,7 @@ impl ReplayRunner {
                     &due_commands,
                     rules,
                     overlay_registry,
-                    tick_ms,
+                    diagnostic_frame_ms,
                     TickLane::Ordinary,
                     trigger_inputs,
                 )

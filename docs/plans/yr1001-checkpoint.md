@@ -1,102 +1,107 @@
 # Vanilla 1.001 — current agentic checkpoint
 
-Updated 2026-10-04. Replace current state on continuation; reconcile Git, PRs and
-owned processes before acting.
+Updated 2026-10-04. Reconcile Git, PRs and owned commands before continuation.
 
 ## Authority and delivery
 
-Faithful vanilla YR1.001 first. User authorized Stage 2 implementation, scoped PRs,
-merge into `ckbk456/vera20k` through `delivery`, and fast-forward primary main.
-Agents automate/native-compare; humans playtest and assess feel. Preserve original
-assets/config, upstream `origin`, unrelated worktrees and processes.
+User authorized Stage 2 engineering, scoped PRs/merges into ckbk456/vera20k through
+`delivery`, then fast-forward clean primary main. Preserve upstream `origin`,
+original/local assets and unrelated worktrees/processes. Agents automate checks
+and native comparisons; humans playtest and assess feel. No routine approval is
+missing. WholeStage 2/R01–R04 and native compatibility acceptance remain open.
 
-PRs #1/#3/#4/#5 merged. Clean primary main is
-`1642ac9fd70110e365feb84d215cde812a444013`; PR #6 merged with all seven checks
-passing at `5c43ac375fa437e261177c34c54a66921785399e`. PR #5's checks passed
-at `0cdcd590466780874fdb5a2b9782ebef739dd98e`. Its bounded event-loop R01 seam is
-delivered. [Mechanism, receipt and human packet](yr1001-stage2-runtime.md).
-**Whole Stage 2 and R01–R04 remain open.**
+PRs #1/#3/#4/#5/#6/#7 merged. Primary main and delivery/main are
+`7743c549e757a9d93e2458bf14fb2571cdfe7375`, clean. PR #7's seven checks all
+SUCCESS at `42585a36caa15da1321972bac6f73b9ccea5d1c4` (Clippy three platforms,
+Python tools three platforms, field ratchet). Rust retail tests remain local;
+CI lib tests are manual. No main commits were made.
 
 ## Current owned chain
 
-Worktree `ra2-yr-rust-worktrees/yr1001-legacy-composite`, branch
-`feature/yr1001-legacy-composite`, fetched base `1642ac9f`. Implementation and
-validation are frozen; [DRAGON chain and human packet](yr1001-legacy-composite.md),
-[receipt](evidence/yr1001-legacy-composite.validation.json). Bodies and trails retain
-the same pre-Logic phase and one Arc Display ordering for every parent; redraws
-only reproject. Joint cleanup includes score exit; map/restore seed without ring
-aging. One fresh critic found two P2 defects; failed-first tests confirm both fixes.
-Final retail lib9588/0/231, clippy and Python573/five skips pass. Native artifacts
-unchanged. Release label `yr1001-legacy-composite-reviewed` and four sealed captures
-are retained. Compared gameplay transcripts match; only flight/impact Bullet/trail
-pixels differ, initial/drained frames match. [PR #7](https://github.com/ckbk456/vera20k/pull/7)
-is open; implementation commit `c305e84b28f08d377fc8eb730d301ecfb27e3ddc`.
-Required exact-head CI, auto-merge and primary fast-forward remain; no second
-critic is required. Root owns docs and delivery;
-independent F01 research is read-only. No owned active Cargo/app command.
-The completed clock worktree remains clean with ignored captures/logs.
+Worktree `ra2-yr-rust-worktrees/yr1001-frame-duration-authority`, branch
+`feature/yr1001-frame-duration-authority`, fetched base `7743c549`. Official config
+and fresh 27 Steam INIs are bound. Runtime owner completed the source changes;
+root owns evidence, progress and publication. No owned active test/build/app or
+CI command remains. Legacy worktree is clean with retained local evidence.
 
-[Clock chain](yr1001-clock-qualification.md) and
-[sanitized validation receipt](evidence/yr1001-clock-qualification.validation.json)
-record source hashes, executable bounds, native payloads and literal checks:
+F01 prerequisite is implemented and validated; one fresh read-only critic found no actionable defects:
+[admitted-frame rationale](yr1001-frame-duration.md) and
+[receipt](evidence/yr1001-frame-duration.validation.json). Old duration zero
+consumed and discarded pending missile impacts. The real V3 pool-child test first
+failed on target death, then passed through the bound Ordinary runtime for
+0/1/22/66/1000/MAX labels with complete outputs, all RNG states, lifecycle and hash.
+Unused duration forwarding was removed from combat; remaining nominal elapsed
+accumulation is explicitly diagnostic. Final retail lib: 9,589 passed, zero
+failed, 231 ignored. Clippy exits zero, 729 tree warnings. Field ratchet: 2,513
+unchanged. Raw logs and literal sessions live in ignored
+`.local/frame-duration-validation/`; local results SHA-256 is
+`b5aa984c08310af533f34def92f6766962695060b29ddca73454c307ab1f3bb5`.
 
-- 168 histories execute original timer setup and throttle together; 112 setup,
-  37 historical throttle and three explicitly supplied stopped-timer controls.
-- Native signed elapsed comparison rejects speed-0 admission at clock rollover.
-  Focused regression failed before correction, then all 16 pacer tests passed.
-- Required final retail lib suite: **9582 passed, 0 failed, 231 ignored**. Initial
-  full run:9581 passed/1 failed because the existing math-table fixture lacked
-  `RA2_DIR`; explicit official input corrected it without code changes.
-- Clippy passes (730 existing warnings); Python suite:573 tests/five optional skips;
-  optimized scope/lifecycle checks:20 passed. Native reproduction passes.
-- Field ratchet:2513 unchanged. Release label `yr1001-clock-qualified` builds;
-  sealed 30-step Fight.MAP exact capture VALID and MATCHES PR #5's reviewed capture.
-  This is Rust regression, not native pixels or ordinary rollover execution.
-- Default historical executable gate remains fail-closed. Steam qualification is
-  explicit and scoped; unrelated generators and historical payloads are unchanged.
-- One fresh read-only critic independently checked image/regions/source provenance,
-  native arithmetic and guards. No confirmed defects; no second critic is needed.
+Native zero-clock Main controls are unchanged and reused for caller admission/
+frame commit only; Logic remains a declared sink. Native-inline/Rust-queued
+Rocket impact ordering, sparkle labels, full F01/F02 and Stage 2 stay open.
+Publish one PR, enable exact-head auto-merge, confirm delivery merge, and fast-forward
+clean primary main. No dependent implementation stack or direct main commits.
 
-## Local assets and retained candidates
+## Delivered Stage 2 prerequisites and evidence
 
-Official source: primary ignored `.local/steam-baseline-2026-10-03/game/`, Steam
-app2229850/build15918130/English,436 files/1,961,731,509 bytes source-SHA matched.
-Owned `ini/` selects all27 fresh official extractions; YR files match prior values.
-Primary original INIs/config and old assets remain untouched.
+- [Runtime seam](yr1001-stage2-runtime.md), PR #5 merge627f982b: ordinary redraw
+  does not admit simulation/audio/terminal exits. Event-loop runtime services keep
+  existing focus/pause/startup gates; immutable full views/worker remain open.
+- [Clock qualification](yr1001-clock-qualification.md), PR#6 merge1642ac9f:
+  168 joined native timer histories/112 setup/37 throttle/three stopped controls;
+  native signed rollover fixed speed0 admission. Final retail 9,582/0/231, clippy,
+  Python 573/five skips; one critic no confirmed defects. Release clock-qualified
+  capture matches reviewed PR #5 capture; bounded regression, not native pixels.
+- [Legacy composite](yr1001-legacy-composite.md), PR #7 merge7743c549:
+  eight guarded Steam native caller/ring controls; private LegacyComposite retains
+  Bullet bodies/trails and one Arc Display ordering for all parent families.
+  Modern redraw only reprojects, load/restore seeds without trail aging, joint
+  clear includes score exit. Critic's mixed-rank/score-cleanup P2 findings failed
+  first, then fixed. Final retail9588/0/231, focused 185/0/16, Clippy 729 warnings,
+  Python 573/five skips, ratchet 2,513 unchanged. Four reviewed release captures preserve
+  compared gameplay transcripts; initial/drained frames MATCH, flight/impact only
+  Bullet/trail pixel differences. Raw final Cargo/release/Python logs retained.
+  [Receipt](evidence/yr1001-legacy-composite.validation.json) records exact hashes
+  and limits. No second critic was run.
 
-PR #5 reviewed capture and clock-qualified label are retained for comparison/human
-acceptance. Earlier retirement dry-run of only `yr1001-runtime-seam` was blocked by
-PID732 (`tccd`, unrelated system service); no files deleted or processes killed.
-Ordinary app focus/modal/minimize acceptance is pending; prior unfocused UI attempts
-were noncertifying and their exact owned app processes ended.
+## Assets, candidates and retention
 
-## Next safe actions and residuals
+Official installation: primary ignored `.local/steam-baseline-2026-10-03/game/`,
+Steamapp2229850/build15918130/English,436files/1,961,731,509bytes SHA-matched to
+MAICHI_DESKTOP source. Whole gamemd SHA3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600.
+Default historical gate remains fail-closed for Steam; explicit scopes only.
+Original INIs/config/old assets remain untouched. Fresh YRmd INIs match prior values;
+RA2 base INIs differ but are not read by YR's selected runtime.
 
-Publish the validated legacy-composite chain, preserving launch and physical detach
-owners. Then exact-head auto-merge and primary fast-forward.
-Update task progress at delivery.
-No routine human permission is missing.
+Retain `yr1001-clock-qualified`, `yr1001-runtime-seam-reviewed` and
+`yr1001-legacy-composite-reviewed` labels plus required historical controls/evidence.
+The reviewed composite binary SHA is
+cb4dbd7c347a83ddd5a9f0447c5fe30b1430563619e4d63328398bb9e99daa0d.
+PR #7 postmerge dry-run targets only its superseded pre-review label; no deletion
+applied while its saved pre-review evidence remains referenced. Earlier PR #5
+retirement preview was blocked by unrelated PID732(tccd); preserve service/labels.
+No owned game/test/build process remains. Ordinary focus/modal/minimize/score,
+platform/device and native-versus-Rust feel acceptance remain pending.
 
-Continue prerequisites before R02–R04: F01 app22ms vs headless66ms, native frame and
-command order, F02/F03 joined initial state/gameplay histories. W02's vehicle numeric
-future-state domain is not qualified. R01 still needs owned immutable readers and
-lossless output transport; the borrowed SimView and synchronous GPU can block.
-R04 requires native command attribution, timeline-aware acks and actual worker
-load/exit/focus lifecycle, not a shared mutable simulation shortcut.
+## Remaining dependencies
 
-R03 native caller execution now establishes pre-Logic sampling, Scenario-depth pause
-without Logic, single offline modal entry and no modal-pump resampling. The selected
-runtime implements normal/offline modal admissions. Scenario-depth producers, render
-gate producers, timed resume, network/focus/minimize and full-scene views remain open;
-do not infer a generic pause predicate or fixed15Hz clock from these controls.
-Next F01 chain: remove host-duration combat admission; existing zero-duration branch
-takes then discards pending missile impacts. Use the existing real V3 impact fixture
-through SimRuntime with durations0/1/22/66/1000/MAX, checking death, full outputs/RNG
-and gameplay hash. Keep diagnostic elapsed accumulation separate and preserve the
-documented native-inline/Rust-queued Rocket impact residual. No F01 implementation
-branch exists until the current chain merges. Read-only W02 discovery also confirms
-FV Accelerates=false is a retail-reader lead, not an excuse to drop exact Stop
-fractions: original Stop writes Drive+50 only, next Process copies it to Foot+578.
-Both Rust owners quantize it; native rest-tail4B0828 remains unmigrated. Selected
-clear-flat Move→Stop→resume qualification is needed before whole R02 acceptance.
-All human HP0/HP1/platform/feel acceptance remains pending.
+R01/R04 need a full immutable owned read boundary, timeline-stamped ingress/acks,
+lossless ordered outputs and actual sole-writer worker lifecycle. No shared mutable
+runtime or fake Simulation snapshot. R03 Scenario-depth/render-gate producers,
+network/timed-resume/focus/minimize remain unqualified; other families share ranks
+but still read current geometry. Synchronous GPU still blocks this event-loop thread.
+
+W02/R02 read-only discovery: retail FV Accelerates=false bypasses braking/isqrt,
+conditional on native/production-layer read qualification. It does not bypass Stop:
+original4AFEA4 writes Drive+50 only to promoted-f32 .30000001192092896; next Process
+copies target to Foot+578 and moves. Both Rust owners quantize; getter75-case test
+accepts three .2 discrepancies and prefix/paid tests normalize expected fractions.
+Existing native Foot4D3710 clamp/current_type_speed/native_x87 owners must be extended,
+not duplicated. Native rest-tail4B0828 remains unmigrated; eager navcom Foot zero is
+wrong timing. Existing outer oracle stops4B078C, and paid corpus has no resume
+controls. Qualified clear-flat rookie full-health FV Move→turn→Stop/arrival→same/
+different-goal resume is a required later chain. Preserve raw fractions, head/selector,
+NavCom/queue, timers/facing/position/occupation and future RNG. No W02 implementation
+branch exists. Broader accelerating-vehicle math and F02/F03 initialization/history
+qualification stay open. All HP0/HP1/platform/feel acceptance remains pending.

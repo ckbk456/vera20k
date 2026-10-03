@@ -45,24 +45,23 @@ pub const SIM_1_5: SimFixed = SimFixed::lit("1.5");
 /// Smallest representable positive value (1/65536 ≈ 0.000015).
 pub const SIM_EPSILON: SimFixed = SimFixed::DELTA;
 
-/// Duration of one native movement frame, in seconds.
+/// Mechanics fraction used by Rocket movement's per-frame conversions.
 ///
-/// Retail locomotors integrate their per-second values once for each 15 Hz
-/// game frame. Keeping this fraction here gives every locomotor the same
-/// deterministic fixed-point rounding.
+/// Keeping this fraction here preserves the established fixed-point rounding.
+/// It is independent of wall-clock pacing and is not evidence of universal 15 Hz
+/// frame admission or of every locomotor using this conversion.
 #[inline]
 pub fn native_movement_frame_fraction() -> SimFixed {
     SIM_ONE / SimFixed::from_num(RA2_LOGIC_FRAMES_PER_SECOND as u8)
 }
 
-/// RA2's native game-logic frame rate at normal speed: 15 logic frames per
-/// second. The single authority for every INI minutes/seconds->frames
-/// conversion (ROF, ReloadRate, C4Delay, ore growth, trigger time, ...).
+/// Native INI seconds/minutes-to-frame conversion convention. This 15-frame
+/// conversion factor does not choose the wall duration of an admitted frame.
 pub const RA2_LOGIC_FRAMES_PER_SECOND: u32 = 15;
 
-/// VERA's fixed simulation step rate in Hz (22 ms per tick on the client;
-/// see `app::types::SIM_TICK_MS`). NOT the native logic-frame rate — INI
-/// timing conversions use `RA2_LOGIC_FRAMES_PER_SECOND` above.
+/// Historical app diagnostic/capture frequency convention (22 ms label/frame).
+/// It does not schedule gameplay; native INI timing conversions use the
+/// separate `RA2_LOGIC_FRAMES_PER_SECOND` convention above.
 pub const SIM_TICK_HZ: u32 = 45;
 
 // ---------------------------------------------------------------------------

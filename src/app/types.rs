@@ -22,9 +22,10 @@ pub(crate) const CLEAR_COLOR: wgpu::Color = wgpu::Color {
     a: 1.0,
 };
 
-/// Fixed deterministic simulation rate — re-exported from util::fixed_math.
+/// Historical app diagnostic/capture frequency convention.
 pub(crate) const SIM_TICK_HZ: u32 = crate::util::fixed_math::SIM_TICK_HZ;
-/// Integer tick duration used by deterministic step execution.
+/// Nominal elapsed-time label per admitted frame; does not schedule gameplay.
+/// The sealed exact capture's 22 ms presentation convention uses this value.
 pub(crate) const SIM_TICK_MS: u32 = 1000 / SIM_TICK_HZ;
 /// Verified retail/YR skirmish fallback from rulesmd.ini
 /// `[MultiplayerDialogSettings] GameSpeed=1`.

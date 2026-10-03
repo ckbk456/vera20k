@@ -4485,12 +4485,18 @@ pub(crate) fn visit_fire(
     }
 }
 
+/// Visit the remaining combat work of an already-admitted gameplay frame.
+/// Original Main55DC9E calls Logic55AFB0 without an elapsed-time argument;
+/// clock0 still reaches Logic, commands, frame commit55DE81 and pending drain.
+/// Steam SHA3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600:
+/// tools/projectile_oracle/line_trail_steam_cadence.{json,meta.json},
+/// normal_pre_logic/uncapped_each_main (Logic is a declared observation sink).
+/// A host diagnostic duration must not suppress this frame or discard impacts.
 pub(crate) fn tick_combat(
     world: &mut Simulation,
     run: &mut ReceiverRun,
     rules: &RuleSet,
     overlay_registry: Option<&OverlayTypeRegistry>,
-    tick_ms: u32,
     live_order: &[u64],
     fire_suppressed: &BTreeSet<u64>,
     fire_requests: &super::FireRequests,
@@ -4513,21 +4519,6 @@ pub(crate) fn tick_combat(
     });
     let active_wave_owners: BTreeSet<_> = world.active_wave_links.keys().copied().collect();
     let missile_detonations = std::mem::take(&mut world.pending_missile_detonations);
-
-    if tick_ms == 0 {
-        return CombatTickResult {
-            #[cfg(test)]
-            fixture_anims: Vec::new(),
-            projectile_spawns: Vec::new(),
-            unit_facing: Vec::new(),
-            consequences: crate::sim::world::damage_consequences::DamageConsequences::ordinary(
-                DeathEffects::default(),
-                Vec::new(),
-                Vec::new(),
-                Vec::new(),
-            ),
-        };
-    }
 
     // Completed prior-frame bullets physically advanced before this frame's
     // object AI/fire walk. Each detonation commits ReceiveDamage and any

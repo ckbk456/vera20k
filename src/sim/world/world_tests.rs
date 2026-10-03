@@ -1844,7 +1844,6 @@ fn gsi_04_07_damage_fatal_transport_lifecycle_brackets_nested_death_weapon() {
         let result = sim.tick_combat_with_fatal_lifecycle(
             &rules,
             Some(&registry),
-            100,
             &[10, 20],
             &BTreeSet::new(),
             &Default::default(),
@@ -2032,7 +2031,6 @@ fn gsi_04_11_bullet_ore_reduction_precedes_outer_crater_anim_start() {
     let result = sim.tick_combat_with_fatal_lifecycle(
         &rules,
         Some(&registry),
-        100,
         &[],
         &BTreeSet::new(),
         &Default::default(),
@@ -2125,7 +2123,6 @@ fn gsi_04_11_missile_outer_anim_precedes_per_cell_ore_reduction() {
     let result = sim.tick_combat_with_fatal_lifecycle(
         &rules,
         Some(&registry),
-        100,
         &[],
         &BTreeSet::new(),
         &Default::default(),

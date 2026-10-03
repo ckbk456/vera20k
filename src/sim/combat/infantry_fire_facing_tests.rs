@@ -20,7 +20,6 @@ fn visit(store: &mut EntityStore, rules: &RuleSet, frame: u32) -> CombatTickResu
         rules,
         &mut test_interner(),
         u64::from(frame),
-        67,
         frame,
         &mut SimRng::new(1),
     )
