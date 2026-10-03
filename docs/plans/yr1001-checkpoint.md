@@ -8,14 +8,11 @@ Updated 2026-10-03. Replace this current state on continuation; do not append a 
   smooth rendering and modern optimization preserve gameplay. Upstream 20k/30-player
   targets are superseded for this program. Ares/Phobos are later baselines.
 - User confirmed: **agents automate checks/native comparisons; humans playtest**.
-- Current authorized task: discovery with subagents and draft master plan/agent
-  contract alignment, plus acquisition/verification of the user's official Steam
-  installation from MAICHI_DESKTOP. Entire implementation program has not been
-  launched by this checkpoint. No external publication, upstream PR, merge or deployment
-  was authorized or performed.
-- One configured remote: `origin=https://github.com/YuriPlanet/vera20k.git`.
-  A future user-owned delivery remote/publication policy is a one-time setup
-  decision; do not publish the changed vision to upstream without authority.
+- User launched implementation and authorized scoped PR publication, merges and
+  fast-forward updates of primary main. Update masterplan task progress on completion.
+- `delivery=https://github.com/ckbk456/vera20k.git` is the user-owned fork/PR target.
+  `origin=https://github.com/YuriPlanet/vera20k.git` is preserved as source only.
+  Do not publish this changed vision upstream.
 
 ## Worktree and source
 
@@ -57,7 +54,8 @@ Updated 2026-10-03. Replace this current state on continuation; do not append a 
 
 ## Ready queue and dependencies
 
-1. On an explicit execution launch, B01 authenticates native binary and retail input
+1. Merge the accepted plan into delivery main, then begin the B01 candidate-identity
+   tooling chain from fetched delivery/main. B01 authenticates native binary and retail input
    baseline from the acquired Steam source, hash `3e81a617...2d308600`. Neither it
    nor the old runtime copy `d4ad8c6f...5628c0c` is accepted by the existing native
    oracle's `1cdd1180...84298c` gate; this alone does not prove wrong version.
@@ -80,9 +78,10 @@ and continue independent work when a particular capture capability is unavailabl
 ## Human acceptance and active reservations
 
 - Human packets: HP0–HP6 planned; none ready, tested or accepted.
-- Implementation reservations: none. No engine mechanism underway.
+- Implementation reservations: coordinator owns delivery bootstrap and the next
+  native-inspection identity chain; two read-only baseline discovery workers completed.
+  No engine gameplay mechanism underway.
 - Draft is retained as a local commit on the owned feature branch; resolve its
   current HEAD with Git rather than embedding a self-referential commit hash here.
-- Next safe action: review the draft, or on an explicit execution launch begin B01
-  and reconcile native/retail/machine state. No further critic or implementation
-  is needed merely to tidy this checkpoint.
+- Next safe action: publish/merge the accepted plan on the user-owned fork, confirm
+  exact-head checks and fast-forward primary main; then implement B01 identity tooling.

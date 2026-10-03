@@ -1,7 +1,8 @@
 # Yuri's Revenge 1.001 — agentic compatibility master plan
 
-Draft v1, 2026-10-03. Product direction accepted by the user; implementation
-sequence remains evidence-driven. Source inspected at
+Execution v1, 2026-10-03. Planning is accepted; implementation, scoped PRs, merges
+and fast-forward updates of local main are authorized. The implementation
+sequence remains evidence-driven. Initial source inspected at
 `7e932b968e9b901142d80944095af68fe178ebdc`.
 
 **Build the most faithful practical Rust implementation of vanilla Yuri's Revenge
@@ -15,6 +16,26 @@ Start with the [discovery findings](yr1001-discovery.md), select work from the
 [checkpoint](yr1001-checkpoint.md). The [execution brief](yr1001-execution-brief.md)
 is the launch/continuation entry point. This plan replaces upstream delivery
 priorities for this compatibility program; older plans remain evidence leads.
+
+## Implementation progress
+
+Update this table when a task changes state. A delivered prerequisite does not
+close its parent package. The checkpoint records active work and exact validation;
+this table records completed scope and remaining package acceptance.
+
+| Task | State | Completed scope / remaining acceptance |
+| --- | --- | --- |
+| Delivery bootstrap | Ready for PR | User-owned fork `ckbk456/vera20k`; `delivery` remote targets its main, `origin` preserves upstream. Publish the accepted plan and merge before dependent implementation. |
+| B01: official installation intake | Done for intake | Steam app 2229850/build 15918130/English; 436 files and 1,961,731,509 bytes match Windows-source SHA-256. Genuine movie archives acquired; receipts remain local/ignored. |
+| B01: candidate identity tooling | Next | Reproducible actual binary/section identities and bounded reference fingerprints; native execution must still reject unqualified binaries. |
+| B01: native variant and retail baseline | Open | Qualify Steam code/address/behavior compatibility and production-selected retail input/layer identities. Acquisition alone does not close B01. |
+| B02: native tooling environment | Partial | Isolated Python 3.14 environment has pinned Unicorn 2.1.4/Capstone 5.0.7. Checked native execution and full-game capture remain unqualified. |
+| B03 and later packages | Not started | Discovery leads exist; no complete capability census or gameplay/presentation mechanism is qualified. |
+
+Delivery repository: https://github.com/ckbk456/vera20k. PRs target its `main`;
+branch from fetched `delivery/main`, merge one validated scoped PR at a time,
+then fast-forward the clean primary checkout. Preserve upstream and licensed
+local files. Human playtesting/feel acceptance remains separate from agent checks.
 
 ## 1. Baseline and scope
 
@@ -309,13 +330,12 @@ switch to the user-owned repository's ordinary fetched-main/PR flow deliberately
    prepare a human packet when warranted; take the next ready chain. A blocker in
    one area does not stop independent work or become a new routine approval request.
 
-Autonomy is bounded by actual authority. This turn authorizes discovery and drafting
-the plan/contracts, not executing every implementation package or publishing to
-`YuriPlanet/vera20k`. The only configured remote is upstream. Future execution needs
-an explicit launch; user-owned repository/publication policy is a one-time bootstrap
-decision if remote delivery is desired. Agents must never quietly publish this
-different vision to upstream. Routine design choices and fixes need no human approval
-once the execution scope is launched. No agent may claim access to an unavailable
+Autonomy is bounded by actual authority. The user launched implementation and
+authorized scoped PRs, merges and fast-forward updates of main. Delivery is to
+`ckbk456/vera20k` through the `delivery` remote; `origin` preserves
+`YuriPlanet/vera20k` as source only. Do not publish this different vision upstream.
+Routine design choices and fixes need no human approval within this launched scope.
+No agent may claim access to an unavailable
 native host, licensed media, CI account or device; report the dependency and keep
 independent work moving. Do not send messages to people or unrelated chats.
 

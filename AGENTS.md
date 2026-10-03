@@ -239,6 +239,12 @@ This local workflow grants no upstream publication authority. Once a user-owned
 delivery repository is configured, use its fetched main and normal sequential PR
 workflow; do not silently change the existing upstream remote.
 
+Execution is authorized for the vanilla program. The user-owned PR/merge target is
+`ckbk456/vera20k` (`delivery` remote); preserve `origin` as upstream source only.
+For this program, branch from fetched `delivery/main` instead of `origin/main`,
+merge validated scoped PRs there and fast-forward primary local main afterward.
+Update masterplan task progress and the checkpoint as tasks complete.
+
 Choose validation appropriate to the change, considering native fidelity, connected
 production behavior and protection against regressions.
 

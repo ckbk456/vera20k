@@ -1,8 +1,9 @@
 # Agentic execution brief
 
-Use this when explicitly launching implementation. It does not launch or schedule
-work merely by existing. Publication follows the configured user-owned repository
-policy; the current upstream remote is not an authorized destination.
+Implementation is launched. Publish scoped PRs to `ckbk456/vera20k` main through
+the `delivery` remote, merge after validation/review and fast-forward the primary
+checkout. Preserve `origin` as the upstream source-only remote. Update masterplan
+progress and the current checkpoint as tasks complete.
 
 ```text
 Make this Rust engine reproduce vanilla Yuri's Revenge 1.001 as faithfully as
