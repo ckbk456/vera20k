@@ -1,4 +1,6 @@
 """Static inspection contracts using synthetic x86; no private executable needed."""
+import hashlib
+import json
 import os
 from pathlib import Path
 import subprocess
@@ -22,6 +24,54 @@ def command(data, *args):
 
 
 class NativeInspectTests(unittest.TestCase):
+    def test_candidate_identity_never_enrolls_an_unsupported_executable(self):
+        data = code_image(b'abc')
+        result = command(data, 'identity')
+        self.assertEqual(result['sha256'], hashlib.sha256(data).hexdigest())
+        self.assertFalse(result['native_execution_supported'])
+        self.assertEqual(result['execution_sha256'], native.NATIVE_SHA256)
+        section, = result['sections']
+        self.assertEqual(section['sha256'],
+                         'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad')
+        self.assertEqual((section['file_bytes'], section['virtual_bytes']), (3, 19))
+
+    def test_identity_cli_reports_fresh_bytes_without_private_paths(self):
+        with tempfile.TemporaryDirectory() as root:
+            image = Path(root) / 'gamemd.exe'
+            env = {**os.environ, 'VERA20K_GAMEMD_EXE': str(image)}
+            packets = []
+            for payload in (b'abc', b'abd'):
+                image.write_bytes(code_image(payload))
+                result = subprocess.run([sys.executable, '-m', 'tools.native_inspect', 'identity'],
+                                        env=env, capture_output=True, text=True)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertNotIn(root, result.stdout)
+                packets.append(json.loads(result.stdout))
+                self.assertEqual(packets[-1]['native_sha256'],
+                                 hashlib.sha256(image.read_bytes()).hexdigest())
+                self.assertFalse(packets[-1]['result']['native_execution_supported'])
+            self.assertNotEqual(packets[0]['native_sha256'], packets[1]['native_sha256'])
+            image.write_bytes(b'not a PE executable')
+            result = subprocess.run([sys.executable, '-m', 'tools.native_inspect', 'identity'],
+                                    env=env, capture_output=True, text=True)
+            self.assertEqual((result.returncode, result.stdout), (2, ''))
+
+    def test_reference_matches_do_not_qualify_the_image(self):
+        expected = {'native_sha256': native.NATIVE_SHA256, 'region_sha256': {
+            'sample': 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad'}}
+        regions = {'sample': (BASE, BASE + 3)}
+        for payload, matches in [(b'abc', True), (b'abd', False)]:
+            rows = scan.fingerprint_rows(code_image(payload), regions, expected)
+            self.assertEqual(rows[0]['matches'], matches)
+            self.assertFalse(command(code_image(payload), 'identity')['native_execution_supported'])
+        for bad in [{'native_sha256': '0' * 64, 'region_sha256': expected['region_sha256']},
+                    {'native_sha256': native.NATIVE_SHA256, 'region_sha256': {}},
+                    {'native_sha256': native.NATIVE_SHA256, 'region_sha256': {'sample': 'invalid'}}]:
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                scan.fingerprint_rows(code_image(b'abc'), regions, bad)
+        with self.assertRaises(native.OracleError):
+            scan.fingerprint_rows(code_image(b'abc'), {'sample': (BASE, BASE + 4)}, expected)
+
     def test_reads_map_rva_to_file_offset_and_never_synthesize_bss(self):
         data = code_image(b'\x32\xc0\xc2\x04\x00')
         result = command(data, 'read', hex(BASE), '--bytes', '5')

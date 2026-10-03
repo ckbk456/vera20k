@@ -25,9 +25,9 @@ this table records completed scope and remaining package acceptance.
 
 | Task | State | Completed scope / remaining acceptance |
 | --- | --- | --- |
-| Delivery bootstrap | Ready for PR | User-owned fork `ckbk456/vera20k`; `delivery` remote targets its main, `origin` preserves upstream. Publish the accepted plan and merge before dependent implementation. |
+| Delivery bootstrap | Done | [PR #1](https://github.com/ckbk456/vera20k/pull/1) merged at `0b099399`; primary main fast-forwarded. Exact-head Python/Clippy (three platforms each) and field-ratchet workflows passed. `delivery` targets the user-owned fork, `origin` preserves upstream. |
 | B01: official installation intake | Done for intake | Steam app 2229850/build 15918130/English; 436 files and 1,961,731,509 bytes match Windows-source SHA-256. Genuine movie archives acquired; receipts remain local/ignored. |
-| B01: candidate identity tooling | Next | Reproducible actual binary/section identities and bounded reference fingerprints; native execution must still reject unqualified binaries. |
+| B01: candidate identity tooling | Implemented for bounded scope | `native_inspect identity` reports actual binary/section hashes and reuses two existing fixture owners. [Steam receipt](../../tools/native_inspect.steam-15918130.identity.json): 11/11 stored regions match; execution remains unsupported. 22 focused tests pass; full local suite has one unrelated macOS fixture failure tracked in [issue #2](https://github.com/ckbk456/vera20k/issues/2). |
 | B01: native variant and retail baseline | Open | Qualify Steam code/address/behavior compatibility and production-selected retail input/layer identities. Acquisition alone does not close B01. |
 | B02: native tooling environment | Partial | Isolated Python 3.14 environment has pinned Unicorn 2.1.4/Capstone 5.0.7. Checked native execution and full-game capture remain unqualified. |
 | B03 and later packages | Not started | Discovery leads exist; no complete capability census or gameplay/presentation mechanism is qualified. |
