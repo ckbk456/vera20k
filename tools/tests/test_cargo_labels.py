@@ -211,8 +211,14 @@ class ProcessInspectionTests(unittest.TestCase):
             binary = Path(temporary).resolve() / 'sleep-copy'
             shutil.copyfile('/bin/sleep', binary)
             binary.chmod(0o755)
+            if sys.platform == 'darwin':
+                # Some macOS hosts kill a relocated system-signed copy before
+                # lsof can observe it. Sign only this disposable test executable.
+                subprocess.run(['/usr/bin/codesign', '--force', '--sign', '-', str(binary)],
+                               check=True, capture_output=True, text=True)
             child = subprocess.Popen([str(binary), '30'])
             try:
+                self.assertIsNone(child.poll(), 'Process fixture exited before inspection')
                 with self.assertRaisesRegex(ValueError, 'in use'):
                     labels._idle([binary])
             finally:
