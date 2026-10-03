@@ -14,7 +14,10 @@ Delivery target is `ckbk456/vera20k` through `delivery`, no upstream publication
 PRs #1/#3/#4 merged; primary input main `726f330b60cf06bba82b3fb7e146f1d0b0a46988`.
 Issue #2 is closed. Current owned branch `feature/yr1001-presentation-runtime` at
 `ra2-yr-rust-worktrees/yr1001-presentation-runtime`; inspect actual HEAD/status.
-Current code is the first bounded R01 event-loop seam. **S2 and whole R01 remain
+The bounded R01 seam is published as [PR #5](https://github.com/ckbk456/vera20k/pull/5);
+required exact-head CI and merge are pending at this committed checkpoint.
+Validated Rust implementation commit: `3adac26e` (subsequent progress-only metadata
+commit does not change its source hashes). Current code is the first bounded R01 seam. **S2 and whole R01 remain
 open**; interpolation, legacy composite qualification and worker handoff are not
 implemented or certified. [Mechanism and human packet](yr1001-stage2-runtime.md).
 
@@ -62,7 +65,7 @@ implemented or certified. [Mechanism and human packet](yr1001-stage2-runtime.md)
 
 ## Next safe actions and unresolved scope
 
-Publish and link one R01 scoped PR, enable authorized auto-merge, confirm seven exact-head
+PR #5 is linked to this task. Enable authorized auto-merge, confirm seven exact-head
 checks and merge, fast-forward clean primary main, then dry-run owned label retirement.
 Do not report Stage2 complete when this seam merges.
 
