@@ -4,7 +4,7 @@
 //! whether one outer event-loop iteration may admit a gameplay frame, while the
 //! scenario elapsed clock supplies the score screen's match duration.
 
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 const FRAME_BUCKET_SHIFT: u32 = 4;
 #[cfg(test)]
@@ -155,6 +155,18 @@ impl LocalFramePacer {
         elapsed >= required_buckets as i32
     }
 
+    /// Wake at the next clock bucket while waiting, without changing admission.
+    /// This is an app event-loop latency bound, not a native service cadence.
+    /// A negative signed distance after uptime rollover still rejects frames;
+    /// periodic wakes keep audio and teardown services reachable in that case.
+    pub(crate) fn poll_delay(&self, now_ms: u64, game_speed: u8) -> Duration {
+        if self.should_admit(now_ms, game_speed, false) {
+            Duration::ZERO
+        } else {
+            Duration::from_millis(16 - (now_ms as u32 & 15) as u64)
+        }
+    }
+
     pub(crate) fn record_admitted_frame(&mut self, frame_start_ms: u64) {
         self.last_frame_start_bucket = Some(frame_bucket(frame_start_ms));
     }
@@ -262,6 +274,33 @@ mod tests {
         pacer.record_admitted_frame(u64::from(u32::MAX - 7));
 
         assert!(!pacer.should_admit(u64::from(u32::MAX) + 1, 1, false));
+    }
+
+    #[test]
+    fn service_wakes_reach_every_timed_admission_without_busy_waiting() {
+        for speed in MIN_TIMED_GAME_SPEED..=MAX_TIMED_GAME_SPEED {
+            let mut pacer = LocalFramePacer::new();
+            pacer.record_admitted_frame(7);
+            let mut now = 7;
+            while !pacer.should_admit(now, speed, false) {
+                let delay = pacer.poll_delay(now, speed);
+                assert!(!delay.is_zero() && delay <= Duration::from_millis(16));
+                now += delay.as_millis() as u64;
+            }
+            assert_eq!(now, u64::from(speed) * 16);
+            assert_eq!(pacer.poll_delay(now, speed), Duration::ZERO);
+        }
+    }
+
+    #[test]
+    fn service_wake_keeps_native_rollover_rejection_and_uncapped_admission() {
+        let mut pacer = LocalFramePacer::new();
+        pacer.record_admitted_frame(u64::from(u32::MAX - 7));
+        let wrapped = u64::from(u32::MAX) + 1;
+        assert_eq!(pacer.poll_delay(wrapped, 1), Duration::from_millis(16));
+        assert!(!pacer.should_admit(wrapped, 1, false));
+        assert_eq!(pacer.poll_delay(wrapped, 0), Duration::ZERO);
+        assert_eq!(LocalFramePacer::new().poll_delay(7, 6), Duration::ZERO);
     }
 
     #[test]

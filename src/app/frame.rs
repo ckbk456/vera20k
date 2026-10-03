@@ -1,12 +1,13 @@
 //! Top-level frame orchestration, screen dispatch, presentation, and readback.
 //!
-//! Simulation admission, draw composition, submit/present, transition commits,
-//! captures, and loading-after-present remain in their original source order.
+//! Ordinary gameplay/services belong to the event-loop pump. Diagnostic
+//! preludes, draw composition, transitions and loading-after-present retain
+//! their explicit presentation ordering.
 
 use super::loading::transitions;
 use super::{
-    ActiveEventLoop, App, AppState, GameScreen, Instant, Result, render, sim_tick,
-    frontend::startup_splash, main_menu,
+    ActiveEventLoop, App, AppState, GameScreen, Instant, Result, frontend::startup_splash,
+    main_menu, render, sim_tick,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -51,20 +52,27 @@ impl App {
         // expire against wall time while the world is stopped. Park the clock
         // and skip the expiry pass; `messages::update` closes the span and
         // resumes ownership on the first foreground frame.
-        let message_ms = if state.frontend.screen == GameScreen::InGame && !state.platform.window_active {
-            let wall = crate::app::input::tooltips::now_ms(state);
-            state.match_state.match_presentation.message_clock.set_paused(true, wall);
-            None
-        } else {
-            crate::app::input::messages::update(state)
-        };
+        let message_ms =
+            if state.frontend.screen == GameScreen::InGame && !state.platform.window_active {
+                let wall = crate::app::input::tooltips::now_ms(state);
+                state
+                    .match_state
+                    .match_presentation
+                    .message_clock
+                    .set_paused(true, wall);
+                None
+            } else {
+                crate::app::input::messages::update(state)
+            };
         if state
-            .frontend.startup_splash
+            .frontend
+            .startup_splash
             .as_ref()
             .is_some_and(|splash| splash.is_active(Instant::now()))
         {
             let splash = state
-                .frontend.startup_splash
+                .frontend
+                .startup_splash
                 .as_ref()
                 .expect("active startup splash exists");
             startup_splash::render_and_present(
@@ -75,7 +83,8 @@ impl App {
                 splash,
             )?;
             state
-                .frontend.startup_splash
+                .frontend
+                .startup_splash
                 .as_mut()
                 .expect("active startup splash exists")
                 .mark_presented(Instant::now());
@@ -83,76 +92,30 @@ impl App {
         }
         state.frontend.startup_splash = None;
 
-        // HouseClass keeps simulating for SavourDelay, then blocks on the
-        // current outcome Vox before it raises the victory/defeat exit global.
-        // Drive that gate before deciding whether another sim frame is legal.
-        let scenario_now_ms = crate::app::match_runtime::sim_tick::monotonic_frame_pacer_ms(state, Instant::now());
-        Self::consume_executed_abort_exit(state, scenario_now_ms);
-        crate::app::match_runtime::sim_tick::drive_local_player_outcome_voice_wait(state, scenario_now_ms);
-
-        // The native victory/defeat handlers synchronously finish their audio
-        // teardown before entering the score dialog. Drive the equivalent
-        // sequence before either another sim frame or the destination screen.
-        Self::drive_scenario_exit(state, scenario_now_ms);
-
-        // Drive the graceful quit cascade (started on Exit-confirm OK). Compute the
-        // voice poll before borrowing the cascade mutably to avoid aliasing.
-        if state.frontend.quit_cascade.is_some() {
-            let now = Instant::now();
-            let voices_active = state
-                .audio.sfx_player
-                .as_ref()
-                .is_some_and(|sfx| sfx.voices_active());
-            let tick = state
-                .frontend.quit_cascade
-                .as_mut()
-                .expect("cascade present")
-                .tick(now, voices_active);
-            if let (Some(vol), Some(player)) = (tick.music_volume, state.audio.music_player.as_mut()) {
-                player.set_volume(vol);
-            }
-            if tick.stop_music {
-                state.audio.stop_theme();
-            }
-            if tick.finished {
-                state.frontend.quit_cascade = None;
-                event_loop.exit();
-                return Ok(());
-            }
+        // Ordinary gameplay/services run from about_to_wait. Diagnostics retain
+        // this explicit pre-render prelude so their supplied exact-step and
+        // first-present contracts are unchanged.
+        if (shell_capture.is_some() || tactical_capture.is_some())
+            && !Self::pump_runtime_services(
+                state,
+                event_loop,
+                if tactical_capture.is_some() {
+                    super::runtime_services::RuntimeServicePass::ExactCapture
+                } else {
+                    super::runtime_services::RuntimeServicePass::Ordinary
+                },
+            )
+        {
+            return Ok(());
         }
-
-        // The audio service pass. gamemd drives `AudioSystem::Pump @
-        // 0x00406F70` from `Network_ServiceLoop @ 0x0048D080`, which the main
-        // tick, the frame throttler, the modal dialog pump, the shell dialog
-        // loop and the loading screens all reach — so the sound arbiter, the
-        // EVA queue and `ThemeClass::AI` keep being serviced on the main menu,
-        // behind a pause or an open menu, and while the window is not the
-        // foreground. It therefore sits here, outside every screen and
-        // simulation gate, and carries its own `> 33 ms` rate limit.
-        crate::app::match_runtime::sim_tick::pump_audio_service(state, scenario_now_ms);
-
-        // Deactivated windows do not simulate. gamemd parks its main tick in a
-        // sleep-and-network-only loop while the app is not the foreground, so
-        // the world is exactly where the player left it on Alt+Tab return. The
-        // gate sits at the call site, not inside the runtime, so a focus edge
-        // never re-anchors the frame pacer on its own.
         if tactical_capture.is_none()
-            && matches!(state.frontend.screen, GameScreen::InGame)
+            && state.frontend.screen == GameScreen::InGame
             && state.platform.window_active
+            && state.match_state.startup.admits_ordinary_tick()
             && state.match_state.scenario_exit.is_none()
             && state.match_state.scenario_outcome.is_none()
         {
-            let now = Instant::now();
-            let now_ms = sim_tick::monotonic_frame_pacer_ms(state, now);
-            sim_tick::advance_in_game_runtime(state, now_ms);
-            // EventClass EXIT is dispatched at the simulation tail. Consume
-            // its terminal edge before any outcome route can claim teardown.
-            Self::consume_executed_abort_exit(state, now_ms);
-            // The SavourDelay expiry is decided in the late house rung of this
-            // exact frame. Anchor its 0x78-bucket wall wait to the same observed
-            // wall time instead of delaying it to the next render pass.
-            crate::app::match_runtime::sim_tick::drive_local_player_outcome_voice_wait(state, now_ms);
-            Self::drive_scenario_exit(state, now_ms);
+            sim_tick::update_in_game_presentation(state);
         }
 
         // Native queues/maintains [INTRO] before arming the 0xE2 first-paint
@@ -188,14 +151,16 @@ impl App {
         }
 
         let output: wgpu::SurfaceTexture = state
-            .renderer.gpu
+            .renderer
+            .gpu
             .surface
             .get_current_texture()
             .map_err(|e| anyhow::anyhow!("Surface texture: {}", e))?;
         let view: wgpu::TextureView = output.texture.create_view(&Default::default());
         let mut encoder: wgpu::CommandEncoder =
             state
-                .renderer.gpu
+                .renderer
+                .gpu
                 .device
                 .create_command_encoder(&wgpu::CommandEncoderDescriptor {
                     label: Some("Frame"),
@@ -211,7 +176,8 @@ impl App {
             Some(session) => session.should_capture_current_frame(state)?,
             None => false,
         };
-        let mut game_render_output: Option<crate::app::presentation::render::GameRenderOutput> = None;
+        let mut game_render_output: Option<crate::app::presentation::render::GameRenderOutput> =
+            None;
 
         if state.match_state.match_presentation.in_game_menu.is_open() {
             Self::ensure_skirmish_shell_chrome(state);
@@ -609,7 +575,8 @@ impl App {
         let retail_screenshot_current_frame =
             std::mem::take(&mut state.match_state.input.retail_screenshot_requested);
         let pending_retail_screenshot = state
-            .renderer.retail_screenshot_frame_cache
+            .renderer
+            .retail_screenshot_frame_cache
             .capture_previous_if_requested(
                 retail_screenshot_current_frame,
                 &state.renderer.gpu.device,
@@ -634,9 +601,16 @@ impl App {
         } else {
             None
         };
-        let submission = state.renderer.gpu.queue.submit(std::iter::once(encoder.finish()));
+        let submission = state
+            .renderer
+            .gpu
+            .queue
+            .submit(std::iter::once(encoder.finish()));
         output.present();
-        state.renderer.retail_screenshot_frame_cache.commit_presented();
+        state
+            .renderer
+            .retail_screenshot_frame_cache
+            .commit_presented();
         // A family renderer that drew a timer-driven 0x71C frame this pass
         // advances it now that the frame reached the screen.
         state.frontend.shell_monitor.commit_presented();
@@ -666,7 +640,8 @@ impl App {
         if let Some(receipt) = pending_main_menu_title_receipt.take() {
             anyhow::ensure!(
                 state
-                    .frontend.main_menu_shell_state
+                    .frontend
+                    .main_menu_shell_state
                     .title_reveal
                     .record_presented(receipt),
                 "main-menu title receipt was stale at present commit"
@@ -674,7 +649,10 @@ impl App {
         }
         if let Some(dialog) = state.frontend.keyboard_dialog.as_mut() {
             if let Some(receipt) = dialog.title_receipt.take() {
-                anyhow::ensure!(dialog.title.record_presented(receipt), "keyboard title receipt was stale at present commit");
+                anyhow::ensure!(
+                    dialog.title.record_presented(receipt),
+                    "keyboard title receipt was stale at present commit"
+                );
             }
         }
         if let Some(session) = shell_capture.as_deref_mut() {
