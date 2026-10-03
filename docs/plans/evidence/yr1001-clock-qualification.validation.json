@@ -1,0 +1,393 @@
+{
+  "schema": "yr1001-clock-qualification-validation-v1",
+  "recorded_at_utc": "2026-10-03T16:21:32.217483+00:00",
+  "base_commit": "627f982be03c401aa83836b130bcbbb0764116d5",
+  "source_leaf_sha256": {
+    "src/app/match_runtime/frame_pacer.rs": "88410d8d8730a6d4b5c5e6e417a0b83cc45740c8ac910131ede9e82cd511a008",
+    "tools/native_oracle.py": "cc1360a4a3a20de6657a37873f81dc1e3712856b72c621abba57f92e5f72e1b5",
+    "tools/input_oracle/fast_scroll.py": "2f79be45310677771479ae054376b2e37e733f52548651605dc2b6d68e29b96a",
+    "tools/tests/test_native_scope.py": "f5bc7f50444b595a94023f70febb7d2318f198ebe4aa16e70624c5bfa16806b5",
+    "tools/tests/test_oracle_lifecycle.py": "6024f6fa2db13fc04baf30ffe139ef17c85e62216d46c86c4703bcde0aff25f9"
+  },
+  "historical_artifacts_unchanged_sha256": {
+    "tools/input_oracle/fast_scroll.json": "836d4ad1682e55f5602afafbacb0514e9157a315d99495f7d512d23bc3138e35",
+    "tools/input_oracle/fast_scroll.meta.json": "a324e0f0c4561dd193884e3b0524aaf66994b69a1b9832a5094a5f193116369d"
+  },
+  "native": {
+    "command": "VERA20K_GAMEMD_EXE=<owned-Steam-gamemd> python -m tools.input_oracle.fast_scroll --steam-clock --check",
+    "result": "PASS",
+    "native_sha256": "3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600",
+    "binding": "2.1.4",
+    "core": [
+      2,
+      1,
+      33621247
+    ],
+    "payload_sha256": "a2afe453663c3684de7573e5fad4fbd0f07e6f4e2cee61ef3afa2e79c5eed7cc",
+    "sidecar_sha256": "eb760444f4a1d65dc8635ee287a330875c86b6ce07086dfbd05702be47e22420",
+    "profile": {
+      "name": "steam-15918130-offline-clock-throttle-v1",
+      "native_sha256": "3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600",
+      "regions": [
+        {
+          "start": 7113792,
+          "end": 7113802,
+          "sha256": "f8a2617ea9394730b6c02512237bac06e406279f56fae63b097a022daf8f913f"
+        },
+        {
+          "start": 6117520,
+          "end": 6117526,
+          "sha256": "213dc513f7bdb5401120321c31284e5db19ebb4866e9d0c425e408f94405decc"
+        },
+        {
+          "start": 5624896,
+          "end": 5624918,
+          "sha256": "2869a984e312c287697aa31e201791797922fcebb25a50adf3d743efb7b61401"
+        },
+        {
+          "start": 5625703,
+          "end": 5625794,
+          "sha256": "25d25205fdf422b2c2ecc534b9f9f40d36a54440867f80c9bca3c2583fd74e88"
+        },
+        {
+          "start": 5628256,
+          "end": 5628731,
+          "sha256": "085ed64d67ca8a311acb562d107275c3981260d89b39aff0fc8549f80bfc6d64"
+        }
+      ],
+      "entries": [
+        {
+          "start": 5624896,
+          "ends": [
+            5625794
+          ]
+        },
+        {
+          "start": 5628256,
+          "ends": [
+            5628311,
+            5628731
+          ]
+        }
+      ],
+      "reads": [
+        [
+          8262128,
+          4
+        ],
+        [
+          8262960,
+          4
+        ],
+        [
+          8942372,
+          4
+        ],
+        [
+          8942376,
+          4
+        ],
+        [
+          8942384,
+          4
+        ],
+        [
+          8942408,
+          4
+        ],
+        [
+          8942416,
+          4
+        ],
+        [
+          11055672,
+          4
+        ],
+        [
+          11070304,
+          4
+        ],
+        [
+          11068180,
+          4
+        ],
+        [
+          11070880,
+          4
+        ],
+        [
+          11070848,
+          1
+        ],
+        [
+          11070940,
+          1
+        ],
+        [
+          268435456,
+          1048576
+        ],
+        [
+          536870912,
+          4
+        ],
+        [
+          536875100,
+          4
+        ]
+      ],
+      "writes": [
+        [
+          8942408,
+          12
+        ],
+        [
+          11070304,
+          4
+        ],
+        [
+          11068180,
+          4
+        ],
+        [
+          268435456,
+          1048576
+        ]
+      ],
+      "fixture_writes": [
+        [
+          8262128,
+          4
+        ],
+        [
+          8262960,
+          4
+        ],
+        [
+          8942372,
+          4
+        ],
+        [
+          8942376,
+          4
+        ],
+        [
+          8942384,
+          4
+        ],
+        [
+          8942408,
+          4
+        ],
+        [
+          8942416,
+          4
+        ],
+        [
+          11055672,
+          4
+        ],
+        [
+          11070304,
+          4
+        ],
+        [
+          11068180,
+          4
+        ],
+        [
+          11070880,
+          4
+        ],
+        [
+          11070848,
+          1
+        ],
+        [
+          11070940,
+          1
+        ],
+        [
+          8942408,
+          12
+        ],
+        [
+          11070304,
+          4
+        ],
+        [
+          11068180,
+          4
+        ],
+        [
+          268435456,
+          1048576
+        ],
+        [
+          536870912,
+          4
+        ],
+        [
+          536875100,
+          4
+        ]
+      ],
+      "sinks": [
+        [
+          5194528,
+          12
+        ],
+        [
+          4771968,
+          0
+        ],
+        [
+          4868144,
+          0
+        ],
+        [
+          5627616,
+          0
+        ],
+        [
+          5194880,
+          0
+        ],
+        [
+          536883200,
+          4
+        ],
+        [
+          536883216,
+          0
+        ],
+        [
+          536883232,
+          0
+        ]
+      ]
+    },
+    "counts": {
+      "historical_throttle_cases": 37,
+      "setup_cases": 112,
+      "timer_cases": 171
+    },
+    "physical_timer_histories": 168,
+    "stopped_sentinel_controls": 3,
+    "joined_history": "Actual native offline timer setup and throttle in the same mapped machine; supplied OS timeline [start_ms, now_ms].",
+    "default_gate": "Historical default image pin unchanged; only explicit clock/throttle profile qualifies the Steam candidate."
+  },
+  "checks": [
+    {
+      "command": "python -m tools.run_tests",
+      "result": "PASS",
+      "tests": 573,
+      "skipped": 5,
+      "log_sha256": "37433524d425759532de0a3439a78f7f92187882d1c9a8509e84672fc6eb817e"
+    },
+    {
+      "command": "python -O -m unittest tools.tests.test_native_scope tools.tests.test_oracle_lifecycle",
+      "result": "PASS",
+      "tests": 20,
+      "log_sha256": "7c08ad14e596c228daec994e2173ac8cf7272e9809079250a808afbf20a35dfe"
+    },
+    {
+      "command": "VERA20K_REQUIRE_RETAIL_INI=1 python3 -m tools.cargo_run -- test -p vera20k --lib app::match_runtime::frame_pacer::tests::frame_admission_matches_authenticated_native_timer_prefixes",
+      "phase": "before production correction",
+      "passed": 0,
+      "failed": 1,
+      "expected_failure": true,
+      "log_sha256": "d523003c2988bc40eb8aa5477c69e28117934e01f2b73a460cdef4d90ba43cf1"
+    },
+    {
+      "command": "VERA20K_REQUIRE_RETAIL_INI=1 python3 -m tools.cargo_run -- test -p vera20k --lib app::match_runtime::frame_pacer::",
+      "phase": "final production source",
+      "passed": 16,
+      "failed": 0,
+      "log_sha256": "6513f0e4d66429e2761d2f644e40ec17332cf44d13378bda19057e16bb870e3d"
+    },
+    {
+      "command": "VERA20K_REQUIRE_RETAIL_INI=1 python3 -m tools.cargo_run -- test -p vera20k --lib",
+      "phase": "initial full run missing RA2_DIR prerequisite",
+      "passed": 9581,
+      "failed": 1,
+      "ignored": 231,
+      "failure": "app::presentation::instances::projectiles::flight_tests::original_cannon_launch_motion_and_live_bridge_draw_form_one_production_chain",
+      "cause": "That existing fixture requires RA2_DIR for native executable math tables; config.toml does not supply its owner. Environment corrected without changing that code.",
+      "log_sha256": "5b5fb44c60e4caccae785cf63d47472b1d9af04f7f2c1679c5da5ac428740598"
+    },
+    {
+      "command": "RA2_DIR=<owned-Steam-install> VERA20K_REQUIRE_RETAIL_INI=1 python3 -m tools.cargo_run -- test -p vera20k --lib",
+      "phase": "final source and required retail inputs",
+      "passed": 9582,
+      "failed": 0,
+      "ignored": 231,
+      "log_sha256": "1ab396c12012750461a14480b5d7a380802824ab6ff6d8b5ae9e3f6ba23754b8"
+    },
+    {
+      "command": "RA2_DIR=<owned-Steam-install> VERA20K_REQUIRE_RETAIL_INI=1 python3 -m tools.cargo_run -- clippy -p vera20k --lib",
+      "result": "PASS",
+      "existing_reported_warnings": 730,
+      "log_sha256": "276fefb3cb794333f9afb3831893d8b80025048ff54f99c4bfe4a582e5fc265f"
+    },
+    {
+      "command": "python3 tools/sim_field_ratchet.py --base delivery/main",
+      "fields_before": 2513,
+      "fields_after": 2513,
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS"
+    }
+  ],
+  "release": {
+    "command": "python3 -m tools.cargo_run --label yr1001-clock-qualified -- build -p vera20k --release --bin vera20k",
+    "result": "PASS",
+    "label": "yr1001-clock-qualified",
+    "binary_sha256": "5500466ce43c64119bb6bb0a482d391658c4237634bcba7987a3ebc009e9404c",
+    "build_source_sha256": "d057f5d24d861a47ef6e5b6a9c1a4cbc60b970865fba9a9eba1414bfb3cdf646",
+    "toolchain": "rustc/cargo 1.99.0; aarch64-apple-darwin",
+    "log_sha256": "0275cc3a0081b881712af9cd7e862f352d6360a5b8de90f91df4903dcfe98141"
+  },
+  "capture": {
+    "command": "python3 -m tools.map_observation --build-label yr1001-clock-qualified --profile tools/map_observation.example.json --contract src/app/diagnostics/tactical_capture/contract.v2.json --cwd <owned-checkout> --output <absolute-new-directory>",
+    "result": "VALID",
+    "child_exit_status": 0,
+    "exact_steps": 30,
+    "map": "Fight.MAP",
+    "gpu": "Apple M5 Pro / Metal",
+    "surface": "800x600; hidden and unfocused",
+    "final": {
+      "binary_frame": 30,
+      "deterministic_state_hash": 14901026186947208805,
+      "simulation_tick": 30,
+      "total_simulation_ms": 660
+    },
+    "frame_sha256": "a3a1c989ccc273b9c7a3ac8e21a79cadeb6d1eebaef22688c3ae36753acfa9bd",
+    "manifest_sha256": "3ec7290a6c6c69047779581060bc83919a33262e70a9ebc8615fa46bbc70be0a",
+    "comparison_with_merged_runtime_seam": "MATCH",
+    "differences": [],
+    "limit": "Diagnostic exact path only; does not execute ordinary uptime rollover admission."
+  },
+  "review": {
+    "status": "COMPLETE_NO_CONFIRMED_DEFECTS",
+    "engineering_correction": "An accidental legacy constructor reg_write argument change was caught before review. A real-Unicorn constructor API test first failed, then passed after restoring the original two-argument call; original native startup is mocked and not certified by that test.",
+    "passes": 1,
+    "reviewer": "/root/clock_runtime_critic",
+    "summary": "One fresh read-only critic independently inspected authenticated image/region/source hashes, native signed comparison, execution guards, ownership and saved validation. No confirmed implementation defects or required refactors; no tests or mutations during review."
+  },
+  "coverage_limits": [
+    "Supplied Windows uptime and declared service sinks; no real OS wait or whole-game cadence.",
+    "Remaining-wait cases stop before service loops; positive stopped sentinels and rollover do not claim completed waiting.",
+    "No gameplay RNG, simulation step, x87 computation, rendering, whole F01/F02 or campaign launch parity.",
+    "Rust pacer parity comparison is bounded by these captured inputs; first-frame None, real focus/pause lifecycle and full native Main_Tick are not certified.",
+    "All human playtesting/platform/feel acceptance pending. F01/F02 and R01-R04 remain open beyond delivered scope."
+  ],
+  "local_artifacts": {
+    "worktree": "yr1001-clock-qualification",
+    "logs": ".local/clock-validation/",
+    "capture": ".local/clock-map-capture",
+    "comparison": ".local/clock-map-comparison.json"
+  }
+}

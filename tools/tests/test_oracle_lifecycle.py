@@ -14,7 +14,7 @@ PRODUCERS = tuple('tools.projectile_oracle.' + name for name in (
 )) + ('tools.anim_oracle.boundary', 'tools.palette_oracle.oracle',
      'tools.ramp_height_oracle', 'tools.render_depth_oracle',
      'tools.ai_base_building_oracle', 'tools.ai_base_defense_oracle',
-     'tools.ai_strategy_oracle', 'tools.ai_team_oracle')
+     'tools.ai_strategy_oracle', 'tools.ai_team_oracle', 'tools.input_oracle.fast_scroll')
 HELPERS = ('tools.native_slope', 'tools.projectile_oracle.collision_fixture',
            'tools.palette_oracle.check')
 
@@ -70,6 +70,17 @@ class OracleLifecycleTests(unittest.TestCase):
         if operation == 'help':
             for option in ('--check', '--write', '--output'):
                 self.assertIn(option, result.stdout)
+
+    def test_scoped_clock_help_is_inert_in_normal_and_optimized_python(self):
+        for optimized in (False, True):
+            command = [sys.executable] + (['-O'] if optimized else [])
+            guard = GUARDED_LIFECYCLE.replace("sys.argv = [module, '--help']",
+                                            "sys.argv = [module, '--steam-clock', '--help']")
+            result = subprocess.run(command + ['-c', guard, 'help', 'tools.input_oracle.fast_scroll'],
+                                    cwd=ROOT, env=absent_retail_environment(),
+                                    capture_output=True, text=True, timeout=30)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn('--steam-clock', result.stdout)
 
     def test_imports_are_inert_without_retail_in_normal_and_optimized_python(self):
         for optimized in (False, True):

@@ -7,12 +7,14 @@ Explicitly regenerate reviewed evidence with --write. See README.md for bounds.
 from __future__ import annotations
 
 from pathlib import Path
+import json
+import sys
 import struct
 
 from unicorn import Uc, UC_ARCH_X86, UC_HOOK_CODE, UC_MODE_32
 from unicorn.x86_const import (
     UC_X86_REG_EAX, UC_X86_REG_ECX, UC_X86_REG_EIP, UC_X86_REG_ESP,
-    UC_X86_REG_FPCW,
+    UC_X86_REG_FPCW, UC_X86_REG_ESI,
 )
 
 from tools import native_oracle
@@ -35,6 +37,39 @@ CANCEL_BAND = SCRATCH + 0x2040
 SP = STACK_BASE + STACK_SIZE - 0x1000
 
 
+# Explicitly qualified Steam 15918130 integer-only clock/throttle closure.
+# Default loaders and every other producer retain the historical whole-image pin.
+CLOCK_REGIONS = (
+    (0x006C8C40, 0x006C8C4A, "f8a2617ea9394730b6c02512237bac06e406279f56fae63b097a022daf8f913f"),
+    (0x005D5890, 0x005D5896, "213dc513f7bdb5401120321c31284e5db19ebb4866e9d0c425e408f94405decc"),
+    (0x0055D440, 0x0055D456, "2869a984e312c287697aa31e201791797922fcebb25a50adf3d743efb7b61401"),
+    (0x0055D767, 0x0055D7C2, "25d25205fdf422b2c2ecc534b9f9f40d36a54440867f80c9bca3c2583fd74e88"),
+    (0x0055E160, 0x0055E33B, "085ed64d67ca8a311acb562d107275c3981260d89b39aff0fc8549f80bfc6d64"),
+)
+CLOCK_GLOBAL_READS = (
+    (0x007E11F0, 4), (0x007E1530, 4), (0x00887324, 4),
+    (0x00887328, 4), (0x00887330, 4), (0x00887348, 4), (0x00887350, 4),
+    (0x00A8B238, 4), (0x00A8EB60, 4), (0x00A8E314, 4),
+    (0x00A8EDA0, 4), (0x00A8ED80, 1), (0x00A8EDDC, 1),
+)
+CLOCK_GLOBAL_WRITES = ((0x00887348, 12), (0x00A8EB60, 4), (0x00A8E314, 4))
+CLOCK_SINKS = ((0x004F4320, 12), (0x0048D080, 0), (0x004A4830, 0),
+               (0x0055DEE0, 0), (0x004F4480, 0),
+               (SCRATCH + 0x3000, 4), (SCRATCH + 0x3010, 0), (SCRATCH + 0x3020, 0))
+STEAM_CLOCK_PROFILE = native_oracle.ExecutionProfile(
+    name="steam-15918130-offline-clock-throttle-v1",
+    native_sha256="3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600",
+    regions=CLOCK_REGIONS,
+    entries=((0x0055D440, (0x0055D7C2,)),
+             (0x0055E160, (0x0055E197, 0x0055E33B))),
+    reads=CLOCK_GLOBAL_READS + ((STACK_BASE, STACK_SIZE), (SCRATCH, 4), (VTABLE + 0x5C, 4)),
+    writes=CLOCK_GLOBAL_WRITES + ((STACK_BASE, STACK_SIZE),),
+    fixture_writes=CLOCK_GLOBAL_READS + CLOCK_GLOBAL_WRITES
+                   + ((STACK_BASE, STACK_SIZE), (SCRATCH, 4), (VTABLE + 0x5C, 4)),
+    sinks=CLOCK_SINKS,
+)
+
+
 def i32(machine: Uc, address: int) -> int:
     return struct.unpack("<i", machine.mem_read(address, 4))[0]
 
@@ -43,12 +78,20 @@ def u32(machine: Uc, address: int) -> int:
     return struct.unpack("<I", machine.mem_read(address, 4))[0]
 
 
-def put32(machine: Uc, address: int, value: int) -> None:
-    machine.mem_write(address, struct.pack("<I", value & 0xFFFFFFFF))
+def put32(machine: Uc, address: int, value: int, *, image=None) -> None:
+    blob = struct.pack("<I", value & 0xFFFFFFFF)
+    if image is None:
+        machine.mem_write(address, blob)
+    else:
+        image.write(address, blob)
 
 
-def put8(machine: Uc, address: int, value: bool | int) -> None:
-    machine.mem_write(address, bytes([int(value)]))
+def put8(machine: Uc, address: int, value: bool | int, *, image=None) -> None:
+    blob = bytes([int(value)])
+    if image is None:
+        machine.mem_write(address, blob)
+    else:
+        image.write(address, blob)
 
 
 def byte(machine: Uc, address: int) -> bool:
@@ -455,33 +498,51 @@ def input_cases() -> list[dict]:
     return cases
 
 
-def native_throttle(case: dict) -> dict:
+def native_throttle(case: dict, *, profile=None, stop_at=0x0055E33B, timer_setup=False, capture=None) -> dict:
     """Original throttle through 0x55E33B; FPS bookkeeping after it is excluded."""
     machine = Uc(UC_ARCH_X86, UC_MODE_32)
-    load_image(machine)
+    image = load_image(machine, profile=profile)
     machine.mem_map(STACK_BASE, STACK_SIZE)
     machine.mem_map(SCRATCH, SCRATCH_SIZE)
     machine.reg_write(UC_X86_REG_ESP, SP)
-    put32(machine, 0x00A8B238, case["session_mode"])
-    put32(machine, 0x00887348, 0)
-    put32(machine, 0x00887350, case["duration"])
-    put32(machine, 0x00887328, 0)
-    put32(machine, 0x00887330, case["duration"])
-    put32(machine, 0x00A8E314, 0)
-    put32(machine, 0x00A8EDA0, case["game_state"])
-    put8(machine, 0x00A8ED80, case["app_active"])
-    put32(machine, 0x007E11F0, SCRATCH + 0x3000)
-    put32(machine, 0x00887324, SCRATCH)
-    put32(machine, SCRATCH, VTABLE)
-    put32(machine, VTABLE + 0x5C, SCRATCH + 0x3010)
+    put32(machine, 0x00A8B238, case["session_mode"], image=image)
+    put32(machine, 0x00887348, case.get("start_bucket", 0), image=image)
+    put32(machine, 0x00887350, case["duration"], image=image)
+    put32(machine, 0x00887328, 0, image=image)
+    put32(machine, 0x00887330, case["duration"], image=image)
+    put32(machine, 0x00A8E314, 0, image=image)
+    put32(machine, 0x00A8EDA0, case["game_state"], image=image)
+    put8(machine, 0x00A8ED80, case["app_active"], image=image)
+    put32(machine, 0x007E11F0, SCRATCH + 0x3000, image=image)
+    put32(machine, 0x00887324, SCRATCH, image=image)
+    put32(machine, SCRATCH, VTABLE, image=image)
+    put32(machine, VTABLE + 0x5C, SCRATCH + 0x3010, image=image)
+    if image is not None:
+        put32(machine, 0x007E1530, SCRATCH + 0x3020, image=image)
+    if timer_setup:
+        put32(machine, 0x00A8EB60, case["stored_speed"], image=image)
+        put8(machine, 0x00A8EDDC, case["campaign_override_disabled"], image=image)
+        # The timer helper ignores ECX; native still copies the caller's stack
+        # word into the inert timer padding, so make that supplied input explicit.
+        put32(machine, SP + 0x14, 0x13579BDF, image=image)
+    clock_reads = []
     clocks = {0x006C8C40: iter(case["frame_clock"]),
               0x005D5890: iter(case["millisecond_clock"])}
     observed = {"input_calls": 0, "network_service_calls": 0,
                 "offline_service_calls": 0, "sleep_calls": [],
                 "command_calls": 0, "tactical_calls": 0, "render_calls": 0}
 
-    def sink(uc: Uc, address: int, _size: int, _data: object) -> None:
-        if address in clocks:
+    def sink(uc: Uc, address: int, _size: int = 0, _data: object = None) -> None:
+        if address == SCRATCH + 0x3020:
+            source = (0x006C8C40 if u32(uc, uc.reg_read(UC_X86_REG_ESP)) == 0x006C8C46
+                      else 0x005D5890)
+            try:
+                value = next(clocks[source])
+            except StopIteration as error:
+                raise RuntimeError(f"Unexpected extra clock read at {source:#x}") from error
+            clock_reads.append({"reader": hex(source), "wall_ms": value})
+            return_from_sink(uc, 0, value)
+        elif address in clocks:
             try:
                 value = next(clocks[address])
             except StopIteration as error:
@@ -504,13 +565,30 @@ def native_throttle(case: dict) -> dict:
                 observed[key] += 1
                 return_from_sink(uc, argument_bytes)
 
-    machine.hook_add(UC_HOOK_CODE, sink)
-    run_checked(machine, 0x0055E160, 0x0055E33B, count=2000,
-                required_addresses=[0x0055E197])
+    if image is None:
+        machine.hook_add(UC_HOOK_CODE, sink)
+        callbacks = None
+    else:
+        callbacks = {address: (lambda uc, target=address: sink(uc, target))
+                     for address, _arguments in image.profile.sinks}
+    context = {"case": case.get("name"), "inputs": case}
+    if timer_setup:
+        run_checked(machine, 0x0055D440, 0x0055D7C2, count=2000,
+                    image=image, sinks=callbacks, context=context)
+    run_checked(machine, 0x0055E160, stop_at, count=2000,
+                required_addresses=[] if stop_at == 0x0055E197 else [0x0055E197],
+                image=image, sinks=callbacks, context=context)
     for address, values in clocks.items():
         if list(values):
             raise RuntimeError(f"Supplied clock values unused at {address:#x}")
     observed["accumulated_wait"] = i32(machine, 0x00A8E314)
+    if capture is not None:
+        capture.update(timer_start_bucket=u32(machine, 0x00887348),
+                       timer_padding=u32(machine, 0x0088734C),
+                       timer_duration=u32(machine, 0x00887350),
+                       stored_speed=u32(machine, 0x00A8EB60),
+                       remaining_wait=machine.reg_read(UC_X86_REG_ESI) & 0xFFFFFFFF,
+                       clock_reads=clock_reads)
     return observed
 
 
@@ -692,9 +770,102 @@ def generate() -> dict:
                                for case in throttle_inputs()]}
 
 
+STEAM_CLOCK_PATH = Path(__file__).with_name("fast_scroll.steam-clock.json")
+
+
+def clock_case(name, *, mode=5, duration=1, start=0, clock=(), ms=(), **extra):
+    return dict(name=name, session_mode=mode, duration=duration, start_bucket=start,
+                game_state=0, app_active=True, frame_clock=list(clock),
+                millisecond_clock=list(ms), **extra)
+
+
+def generate_steam_clock() -> dict:
+    """One bounded clock/throttle owner; no full drag/camera corpus enrollment."""
+    historical = json.loads(Path(__file__).with_suffix(".json").read_text())["throttle_cases"]
+    replay = []
+    for row in historical:
+        case = {key: value for key, value in row.items() if key != "expected"}
+        # Historical inputs were explicit bucket words. The scoped replay now
+        # supplies equivalent raw Windows uptime; the original SHR4 executes.
+        raw = dict(case, frame_clock=[value << 4 for value in case["frame_clock"]])
+        details = {}
+        observed = native_throttle(raw, profile=STEAM_CLOCK_PROFILE, capture=details)
+        if difference := native_oracle.first_difference(row["expected"], observed):
+            raise native_oracle.OracleError(f"Historical throttle replay changed: {difference}")
+        replay.append(dict(input=raw, observed=observed, native=details))
+    timers = []
+    for speed in range(7):
+        for start_ms in (0, 7, 15, 16, 31, 0xFFFFFFF8):
+            for now_ms in sorted(set((start_ms, (start_ms + max(1, speed) * 16 - 1) & 0xFFFFFFFF,
+                                      (start_ms + max(1, speed) * 16) & 0xFFFFFFFF,
+                                      (start_ms + 10000) & 0xFFFFFFFF))):
+                # One mapped machine: original Main_Tick writes the start from
+                # its first clock read, then original throttle reads current time.
+                # No Python-derived bucket is supplied as the admitted history.
+                case = clock_case(f"speed{speed}_start{start_ms}_now{now_ms}", duration=0,
+                                  clock=[start_ms, now_ms], stored_speed=speed,
+                                  campaign_override_disabled=True,
+                                  start_wall_ms=start_ms, now_wall_ms=now_ms, game_speed=speed)
+                details = {}
+                observed = native_throttle(case, profile=STEAM_CLOCK_PROFILE,
+                                           stop_at=0x0055E197, timer_setup=True, capture=details)
+                timers.append(dict(input=case, observed=observed, native=details))
+    for duration in (0, 1, 6):
+        case = clock_case(f"stopped_sentinel_duration{duration}", duration=duration, start=0xFFFFFFFF)
+        details = {}
+        observed = native_throttle(case, profile=STEAM_CLOCK_PROFILE,
+                                   stop_at=0x0055E197, capture=details)
+        timers.append(dict(input=case, observed=observed, native=details))
+    setups = []
+    for mode in (0, 5):
+        for disabled in (False, True):
+            for speed in range(7):
+                for wall in (0, 15, 16, 0xFFFFFFFF):
+                    case = clock_case(f"setup_mode{mode}_disabled{disabled}_speed{speed}_wall{wall}",
+                                      mode=mode, duration=0, clock=[wall, wall],
+                                      stored_speed=speed, campaign_override_disabled=disabled)
+                    details = {}
+                    observed = native_throttle(case, profile=STEAM_CLOCK_PROFILE,
+                                               stop_at=0x0055E197, timer_setup=True, capture=details)
+                    setups.append(dict(input=case, observed=observed, native=details))
+    return dict(schema="vera20k.steam-clock-throttle.v1", timer_cases=timers,
+                setup_cases=setups, historical_throttle_cases=replay,
+                limits=["Supplied Windows uptime and declared service sinks; no real OS wait or whole-game cadence.",
+                        "Remaining-wait cases stop before service loops; positive stopped sentinels and rollover do not claim completed waiting.",
+                        "No gameplay RNG, simulation step, x87 computation, rendering, whole F01/F02 or campaign launch parity."])
+
+
+def steam_clock_provenance() -> dict:
+    image = load_image(Uc(UC_ARCH_X86, UC_MODE_32), profile=STEAM_CLOCK_PROFILE)
+    return provenance(image=image,
+        scope="Authenticated Steam15918130 integer clock, offline timer setup and bounded throttle arithmetic/service branches.",
+        assumptions=["Fresh mapped PE and supplied explicit fixture globals/stack; no Windows loader initialization.",
+                     "Timer setup modes0/5 only; campaign override flag supplied, including force2 and rawspeed arms.",
+                     "Native ranges execute unchanged; sinks redirect through runner-checked original return address and ABI."],
+        substitutions=["Imported timeGetTime returns explicit u32 Windows uptime inputs; native SHR4 and raw-millisecond thunk execute.",
+                       "Sleep, network/offline service, Input, commands, tactical callback and render are observed sinks.",
+                       "Prefix endpoint55E197 observes remaining wait without entering a potentially unbounded sentinel/rollover loop."],
+        entry_points={"offline_mode_setup":0x55D440,"timer_setup_end":0x55D7C2,
+                      "bucket_clock":0x6C8C40,"raw_ms_clock":0x5D5890,
+                      "throttle":0x55E160,"remaining_wait_end":0x55E197,"throttle_end":0x55E33B})
+
+
 if __name__ == "__main__":
+    # The shared CLI continues to own --check/--write/--output parsing. This
+    # explicit mechanism selector never changes global executable acceptance.
+    argv = sys.argv[1:]
+    if "--steam-clock" in argv:
+        argv.remove("--steam-clock")
+        finish_vectors(generate_steam_clock, STEAM_CLOCK_PATH,
+                       provenance=steam_clock_provenance, argv=argv,
+                       description=__doc__ + "\n--steam-clock: bounded Steam clock/throttle qualification only.",
+                       source_paths={"producer":Path(__file__),"shared_runner":Path(native_oracle.__file__)})
+        raise SystemExit(0)
+
+
     finish_vectors(
         generate, Path(__file__).with_suffix(".json"),
+        argv=argv, description=__doc__ + "\n--steam-clock: bounded Steam clock/throttle qualification only.",
         provenance=lambda: provenance(
             scope="Full original Tactical_RightDrag_Pan: supplied cursor/viewport/OS metrics and scroll settings; original gate, threshold, edge boost, arithmetic, call order and cursor table",
             assumptions=[

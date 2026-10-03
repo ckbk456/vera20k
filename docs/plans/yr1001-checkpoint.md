@@ -1,90 +1,83 @@
 # Vanilla 1.001 — current agentic checkpoint
 
-Updated 2026-10-03. Replace this current state on continuation; reconcile actual
-Git/PR/process state before acting.
+Updated 2026-10-03. Replace current state on continuation; reconcile Git, PRs and
+owned processes before acting.
 
-## Scope and delivery
+## Authority and delivery
 
-Faithful vanilla YR1.001 first, smooth independent rendering and deterministic
-optimization. User explicitly authorized Stage2 implementation, scoped PRs, merge
-and fast-forward primary main. Agents own automated checks/native comparisons;
-humans playtest/assess feel. Preserve original assets/config and upstream `origin`.
-Delivery target is `ckbk456/vera20k` through `delivery`, no upstream publication.
+Faithful vanilla YR1.001 first. User authorized Stage 2 implementation, scoped PRs,
+merge into `ckbk456/vera20k` through `delivery`, and fast-forward primary main.
+Agents automate/native-compare; humans playtest and assess feel. Preserve original
+assets/config, upstream `origin`, unrelated worktrees and processes.
 
-PRs #1/#3/#4 merged; primary input main `726f330b60cf06bba82b3fb7e146f1d0b0a46988`.
-Issue #2 is closed. Current owned branch `feature/yr1001-presentation-runtime` at
-`ra2-yr-rust-worktrees/yr1001-presentation-runtime`; inspect actual HEAD/status.
-The bounded R01 seam is published as [PR #5](https://github.com/ckbk456/vera20k/pull/5);
-required exact-head CI and merge are pending at this committed checkpoint.
-Validated Rust implementation commit: `3adac26e` (subsequent progress-only metadata
-commit does not change its source hashes). Current code is the first bounded R01 seam. **S2 and whole R01 remain
-open**; interpolation, legacy composite qualification and worker handoff are not
-implemented or certified. [Mechanism and human packet](yr1001-stage2-runtime.md).
+PRs #1/#3/#4/#5 merged. Clean primary main is
+`627f982be03c401aa83836b130bcbbb0764116d5`; PR #5's seven required checks passed
+at `0cdcd590466780874fdb5a2b9782ebef739dd98e`. Its bounded event-loop R01 seam is
+delivered. [Mechanism, receipt and human packet](yr1001-stage2-runtime.md).
+**Whole Stage 2 and R01–R04 remain open.**
 
-## Completed implementation and checks
+## Current owned chain
 
-- Ordinary redraws no longer advance gameplay or service audio/exit. The existing
-  pacer/admission/runtime/output consumers operate from `about_to_wait`.
-- Hidden/poisoned windows retain service wakes; focus/pause/startup/terminal gates,
-  no catch-up and native-width pacer rollover remain. The 16ms service latency bound
-  is app scheduling, not native legacy composite or gameplay cadence.
-- Exact capture has its explicit one-step owner; power bar, gadget idle, radar and
-  trail composites retain existing display ownership. Borrowed SimView is immutable
-  committed state; no owned worker snapshot or shared mutable simulation is added.
-- Steam source remains primary ignored `.local/steam-baseline-2026-10-03/game/`:
-  app2229850/build15918130/English, acquired436files/1,961,731,509bytes. Candidate
-  gamemd SHA3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600
-  is still rejected by the default native execution gate1cdd1180...84298c.
-- Existing `asset extract` recovered all27previously present INIs into the owned
-  worktree `.local/official-extract/extract`. All YR(*md) files match prior extraction;
-  only RA2 `rules.ini`/`sound.ini` differ. Original files preserved. Owned `ini/` symlink
-  selects fresh Steam extractions; config selects official assets. Receipts ignored.
-- Required full `python3 -m tools.cargo_run -- test -p vera20k --lib` with
-  `VERA20K_REQUIRE_RETAIL_INI=1` and official `RA2_DIR`: **9579passed,0failed,231ignored**.
-  Initial full run also passed; repeat was justified by switching to fresh official
-  INIs. Full lib coverage does not mean all ignored native/GPU/retail routes ran.
-- Required clippy lib passes (730reported existing warnings), including the official
-  input selection. Field ratchet:2513fields, unchanged against delivery main.
-- First runtime-focused checks:6passed. One fresh read-only critic found1P2:
-  exact-step sidebar reconciliation could enqueue EVA after the sound drain.
-  New source-order regression first failed; producer-before-drain restored while
-  camera/zoom stays after drain. Post-fix app check: **984passed,0failed,31ignored**.
-  This covers all changed modules. Final-source clippy also passes after the fix.
-- Initial release label `yr1001-runtime-seam` built app+asset. 30-step Fight.MAP
-  explicit Battle production capture:VALID, hidden/unfocused,800x600,Metal AppleM5Pro,
-  child exit0, no input/focus violations. It exercises diagnostic exact stepping,
-  loading and GPU readback; no native pixel/parity, ordinary OS timing or feel claim.
-  Post-critic release label `yr1001-runtime-seam-reviewed` passes; its new sealed
-  capture is VALID and matches all compared state/render fields from the prior run.
-  [Sanitized receipt](evidence/yr1001-runtime-seam.validation.json) records source,
-  binary, retail input and frame hashes, review disposition and coverage limits.
-- Ordinary quickplay runtime attempts were noncertifying and unfocused, with no
-  committed trace. Raw app UI identity was unavailable; owned bundle CUA controls
-  timed out twice. Exact owned app PIDs were terminated and their sessions completed.
-  No successful ordinary OS focus/modal/minimize/restore/exit acceptance is claimed.
+Worktree `ra2-yr-rust-worktrees/yr1001-clock-qualification`, branch
+`feature/yr1001-clock-qualification`, base `627f982b`. Complete bounded native
+clock/offline timer/throttle qualifier plus production pacer correction is validated
+at implementation commit `509d7accc4d3904696615285541c36d8aa07ad10`.
+[PR #6](https://github.com/ckbk456/vera20k/pull/6) is open, ready and linked; all
+seven exact-head CI checks/merge are pending. Root owns docs/publication. No active owned build/test
+or app process; one independent critic completed with no confirmed defects.
 
-## Next safe actions and unresolved scope
+[Clock chain](yr1001-clock-qualification.md) and
+[sanitized validation receipt](evidence/yr1001-clock-qualification.validation.json)
+record source hashes, executable bounds, native payloads and literal checks:
 
-PR #5 is linked to this task. Enable authorized auto-merge, confirm seven exact-head
-checks and merge, fast-forward clean primary main, then dry-run owned label retirement.
-Do not report Stage2 complete when this seam merges.
+- 168 histories execute original timer setup and throttle together; 112 setup,
+  37 historical throttle and three explicitly supplied stopped-timer controls.
+- Native signed elapsed comparison rejects speed-0 admission at clock rollover.
+  Focused regression failed before correction, then all 16 pacer tests passed.
+- Required final retail lib suite: **9582 passed, 0 failed, 231 ignored**. Initial
+  full run:9581 passed/1 failed because the existing math-table fixture lacked
+  `RA2_DIR`; explicit official input corrected it without code changes.
+- Clippy passes (730 existing warnings); Python suite:573 tests/five optional skips;
+  optimized scope/lifecycle checks:20 passed. Native reproduction passes.
+- Field ratchet:2513 unchanged. Release label `yr1001-clock-qualified` builds;
+  sealed 30-step Fight.MAP exact capture VALID and MATCHES PR #5's reviewed capture.
+  This is Rust regression, not native pixels or ordinary rollover execution.
+- Default historical executable gate remains fail-closed. Steam qualification is
+  explicit and scoped; unrelated generators and historical payloads are unchanged.
+- One fresh read-only critic independently checked image/regions/source provenance,
+  native arithmetic and guards. No confirmed defects; no second critic is needed.
 
-Continue the prerequisite native profile/frame/command/comparison chain before
-R02/R03. F01 still has app22ms vs headless66ms inputs; F02/F03 joined native production
-histories are open. R02's selected W02 numeric/future-state domain is unqualified;
-R03's trail callback is composite-owned, with no universal fixed-Hz proof. R04 needs
-actual owned immutable reader/command/ack transport; synchronous GPU stalls still
-block this event-loop thread.
+## Local assets and retained candidates
 
-Research lead (static only, not enrollment): candidate entire .text401000..7E1000
-SHA4cd5557a7490debc493ff965afc4483d8d2f1065f434f6b665cbb8fc4835b0cc matches
-historical cmin_dock guards.11line-trail and4drive-fresh-turn ranges plus selected
-vtable guards match. A bounded profile in existing native_oracle can join offline
-Main_Tick timer setup55D440..55D7C2, clock6C8C40/timeGetTime and throttle55E160,
-with controlled OS/gameplay sinks; default unknown-candidate execution stays closed.
-FV paid-movement corpus is the strongest existing W02 lead, but native f64→SimFixed
-and Stop precision residuals require resolution. These are engineering prerequisites,
-not a demonstrated need for a different download or new human permission.
+Official source: primary ignored `.local/steam-baseline-2026-10-03/game/`, Steam
+app2229850/build15918130/English,436 files/1,961,731,509 bytes source-SHA matched.
+Owned `ini/` selects all27 fresh official extractions; YR files match prior values.
+Primary original INIs/config and old assets remain untouched.
 
-Human seam packet is drafted; all hands-on/platform/feel acceptance remains pending.
-HP1 smooth-motion packet is not ready. Resolve current command/PR state on resumption.
+PR #5 reviewed capture and clock-qualified label are retained for comparison/human
+acceptance. Earlier retirement dry-run of only `yr1001-runtime-seam` was blocked by
+PID732 (`tccd`, unrelated system service); no files deleted or processes killed.
+Ordinary app focus/modal/minimize acceptance is pending; prior unfocused UI attempts
+were noncertifying and their exact owned app processes ended.
+
+## Next safe actions and residuals
+
+Enable exact-head auto-merge for PR #6 after this progress commit, wait for all seven
+required checks, confirm merge, then fast-forward clean primary main. Update task
+progress at delivery.
+No routine human permission is missing.
+
+Continue prerequisites before R02–R04: F01 app22ms vs headless66ms, native frame and
+command order, F02/F03 joined initial state/gameplay histories. W02's vehicle numeric
+future-state domain is not qualified. R01 still needs owned immutable readers and
+lossless output transport; the borrowed SimView and synchronous GPU can block.
+R04 requires native command attribution, timeline-aware acks and actual worker
+load/exit/focus lifecycle, not a shared mutable simulation shortcut.
+
+R03 research (static only): normal Main_Tick renders before Logic; Scenario pause
+can render without a commit; offline modal entry renders once and modal pumping
+uses a distinct route. Existing LineTrail callbacks mutate on actual composites.
+Do not gate today's post-step trail sample by committed frames or assume fixed15Hz.
+Research the joined caller/callback controls in existing native owners, then implement
+one DRAGON attach/composite/impact/deferred detach/retire chain with executed proof.
+All human HP0/HP1/platform/feel acceptance remains pending.
