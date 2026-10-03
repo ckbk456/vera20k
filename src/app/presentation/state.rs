@@ -8,6 +8,7 @@
 //! Process-lifetime GPU objects live in `app::renderer_state::RendererState`.
 
 use std::collections::{BTreeMap, HashMap};
+use std::sync::Arc;
 use std::time::Instant;
 
 use crate::map::cell_tags::CellTagMap;
@@ -79,7 +80,7 @@ pub(crate) struct MatchPresentationState {
     /// (`0x00688094`). `None` for launches without a skirmish session.
     pub(crate) local_player_handle: Option<String>,
     pub(crate) lighting: super::lighting::MatchLighting,
-    pub(crate) line_trails: super::line_trails::LineTrails,
+    pub(crate) legacy_composite: LegacyComposite,
     pub(crate) combat_lights: crate::app::presentation::combat_lights::CombatLightRuntime,
     pub(crate) minimap: Option<MinimapRenderer>,
     /// Animated radar chrome — plays 33-frame open/close animation when radar gained/lost.
@@ -180,4 +181,88 @@ pub(crate) struct MatchPresentationState {
     pub(crate) show_hotkey_help: bool,
     /// Save/load panel visible. Toggle with F5.
     pub(crate) show_save_load_panel: bool,
+}
+
+/// One admitted presentation generation: every parent family reads the same
+/// immutable Display ranks, while Bullet body/trail history also retains its
+/// pre-Logic inputs. Other families' geometry remains a separate R01 migration.
+/// Existing LineTrails/ProjectileDraws own their private native ports and data.
+#[derive(Default)]
+pub(crate) struct LegacyComposite {
+    display_order: Arc<super::render::draw_plan_lowering::NativeDisplayOrder>,
+    line_trails: super::line_trails::LineTrails,
+    projectile_draws: super::instances::ProjectileDraws,
+}
+
+impl LegacyComposite {
+    pub(crate) fn clear(&mut self) {
+        self.line_trails.clear_on_load();
+        self.projectile_draws.clear();
+        self.display_order = Default::default();
+    }
+
+    /// First map/restore display has valid body/order inputs even without a
+    /// tick. Loading drops trail history and never invents a composite visit.
+    pub(crate) fn seed(
+        &mut self,
+        sim: &crate::sim::world::Simulation,
+        rules: &crate::rules::ruleset::RuleSet,
+    ) {
+        self.clear();
+        self.capture_inputs(sim, rules);
+    }
+
+    pub(crate) fn advance(
+        &mut self,
+        sim: &crate::sim::world::Simulation,
+        rules: &crate::rules::ruleset::RuleSet,
+    ) {
+        self.capture_inputs(sim, rules);
+        self.line_trails
+            .advance_legacy_composite(|id| sim.projectiles.get(id).map(|bullet| bullet.position));
+    }
+
+    fn capture_inputs(
+        &mut self,
+        sim: &crate::sim::world::Simulation,
+        rules: &crate::rules::ruleset::RuleSet,
+    ) {
+        self.display_order = Arc::new(
+            super::render::draw_plan_lowering::NativeDisplayOrder::from_display(
+                sim.display_layers(),
+            ),
+        );
+        self.projectile_draws
+            .capture(sim, rules, &self.display_order);
+    }
+
+    pub(crate) fn display_order(
+        &self,
+    ) -> Arc<super::render::draw_plan_lowering::NativeDisplayOrder> {
+        Arc::clone(&self.display_order)
+    }
+
+    pub(crate) fn projectile_draws(&self) -> &super::instances::ProjectileDraws {
+        &self.projectile_draws
+    }
+
+    pub(crate) fn line_segments(&self) -> &[crate::render::line_trail::LineTrailSegment] {
+        self.line_trails.segments()
+    }
+
+    /// Ordered lifecycle delivery still calls the existing native attach port;
+    /// this owner only coordinates its retention with the other draw inputs.
+    pub(crate) fn attach_line_trail(
+        &mut self,
+        owner: u64,
+        color: [u8; 3],
+        decrement: i32,
+        detail: i32,
+    ) {
+        self.line_trails.attach(owner, color, decrement, detail);
+    }
+
+    pub(crate) fn detach_line_trail(&mut self, owner: u64) {
+        self.line_trails.detach(owner);
+    }
 }

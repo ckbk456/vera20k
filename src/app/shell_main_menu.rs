@@ -338,6 +338,11 @@ impl App {
         crate::app::match_runtime::sim_tick::flush_replay_log(state);
         Self::capture_returned_skirmish_rng(state);
         state.match_state.startup.clear();
+        state
+            .match_state
+            .match_presentation
+            .legacy_composite
+            .clear();
         state.match_state.scenario_elapsed_clock.reset();
         state.frontend.score_page = None;
         // 0x0072D780 releases the score art.

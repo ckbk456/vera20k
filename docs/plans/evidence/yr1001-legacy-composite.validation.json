@@ -1,0 +1,492 @@
+{
+  "schema": "yr1001-legacy-composite-validation-v1",
+  "recorded_at_utc": "2026-10-03T18:26:24.701602+00:00",
+  "base_commit": "1642ac9fd70110e365feb84d215cde812a444013",
+  "source_leaf_sha256": {
+    "src/app/in_game.rs": "01b881db644765d20f468135e332e98e7c22e6d0d74b61701ff2a22a7b637a8c",
+    "src/app/initialize.rs": "146399479da51882fce09f2ebfc9616d64a4c449115844b791dccff7a14b82de",
+    "src/app/loading/transitions.rs": "107034e27b2a8d4a1ca46c8a93abcfd8b1e42aa77e92c79b847d82e4d3f780bc",
+    "src/app/match_runtime/restore.rs": "bc2710a5ed6451da6cda04e644d9a8060209a58871160c7e57c4a0741f02cf52",
+    "src/app/match_runtime/sim_tick.rs": "5f7f269fb5957ea8007174541163378f2561128fc9fc08ff3d1414bbf53b6114",
+    "src/app/presentation/instances/projectile_cadence_tests.rs": "de34bc3fd788bcbbe8eb95eb3157b2556f3d66aa8e71c33e7b78b206e465582d",
+    "src/app/presentation/instances/projectiles.rs": "072625042284eddb6b1aaed96f51633e6bb4a7baa40581c7406d2cf2aceeea63",
+    "src/app/presentation/line_trail_tests.rs": "cb5355c119c82ecac537f9472ae6ffb4ebcb8a6c003b01fcbdf49ecef68ebbc4",
+    "src/app/presentation/line_trails.rs": "87e8f034fe4eb3b3aaf4965cb6d9dc1b083fd240100addc85807648b1cfc9652",
+    "src/app/presentation/render/build_instances.rs": "9ef91862c866ec5abe8baf9f6579ffb52ffae72c753d03a5828ed0f6c78dbcc7",
+    "src/app/presentation/render/draw_plan_lowering.rs": "853e2f8e94581b3b4abe554b37679453b03cd811320d4fe4d2e7da4dc9ca0e8c",
+    "src/app/presentation/render/mod.rs": "ab32f12e9ae60124d5878d9a9c622ce9467304b70ae70da5561121f70401c3d7",
+    "src/app/presentation/state.rs": "693992481cac309a3d439845a128bf0bf3606909f92d90a2cbb2c4fd521b5c1c",
+    "src/app/shell_main_menu.rs": "c533943d6be79eff18e0f4de3f4a2464ee456caa210b546927d92cbb313cfa43",
+    "src/sim/runtime.rs": "e6364115b5c293ab02df32c2512bba7de8caea4852e55c62dfe1c3bcd6d11436",
+    "tools/input_oracle/fast_scroll.py": "3d3751b6b122b1f30100d23f5d2f205f2f775ee5379716d796d86945afa2bc1a",
+    "tools/input_oracle/fast_scroll.steam-clock.meta.json": "addfd22a4e6b39e1068b3f8aaf317ac2a5b4ca70265cdefe3999ad4dd64becc0",
+    "tools/projectile_oracle/line_trail.md": "3fc7d0639ec6c1c215dc936a3af508987a3b49120a120888c62d5d4c6898a448",
+    "tools/projectile_oracle/line_trail.py": "b3d32ee555fd29601373547944b5f9f6ebf43a367fec0ff857a209e090e27f3d",
+    "tools/projectile_oracle/line_trail_steam_cadence.json": "e19befc9531bb620003d5d5c34c92b14cdae1c43c949cccd7b65f310ec128163",
+    "tools/projectile_oracle/line_trail_steam_cadence.meta.json": "6060860c5c0c2e1b23f4bab80bc4ed819331f145fbfba001461571a7a6870bdb"
+  },
+  "native": {
+    "native_sha256": "3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600",
+    "cadence_file_sha256": "e19befc9531bb620003d5d5c34c92b14cdae1c43c949cccd7b65f310ec128163",
+    "sidecar_sha256": "6060860c5c0c2e1b23f4bab80bc4ed819331f145fbfba001461571a7a6870bdb",
+    "canonical_payload_sha256": "56d6f4fb0fed025561867f763f9ec1d891c3a7a794b8d1ac693984cb6a8aa334",
+    "cases": 8,
+    "coverage_and_boundaries": "tools/projectile_oracle/line_trail.md#authenticated-steam-caller-admission-extension",
+    "clock_payload_unchanged_sha256": "a2afe453663c3684de7573e5fad4fbd0f07e6f4e2cee61ef3afa2e79c5eed7cc",
+    "clock_metadata_rebound_sha256": "addfd22a4e6b39e1068b3f8aaf317ac2a5b4ca70265cdefe3999ad4dd64becc0",
+    "historical_default_gate": "UNCHANGED_FAIL_CLOSED_FOR_STEAM"
+  },
+  "checks": [
+    {
+      "command": "python3 -m tools.cargo_run -- test -p vera20k --lib app::presentation::",
+      "session_id": 52932,
+      "exit_code": 0,
+      "passed": 182,
+      "failed": 0,
+      "ignored": 16,
+      "test_seconds": 1.67,
+      "raw_log_preserved": false
+    },
+    {
+      "command": "python3 -m tools.cargo_run -- test -p vera20k --lib",
+      "session_id": 81998,
+      "exit_code": 0,
+      "passed": 9585,
+      "failed": 0,
+      "ignored": 231,
+      "test_seconds": 38.24,
+      "raw_log_preserved": false,
+      "warnings": "Untouched map/resolved_terrain.rs Atomic.fetch_update deprecations were reported.",
+      "retirement": "Stopped safely at final retirement because cache-roots.json changed during inspection; no deletion attempted by that retirement."
+    },
+    {
+      "command": "python3 -m tools.cargo_run -- clippy -p vera20k --lib",
+      "session_id": 15125,
+      "exit_code": 0,
+      "seconds": 24.29,
+      "warnings": 729,
+      "raw_log_preserved": false,
+      "diagnostic_file": "local compiler fingerprint JSON; not committed",
+      "diagnostic_note": "Compiler JSON diagnostics survived; no diagnostic spans in modified projectiles.rs or line_trails.rs. This is not a raw command transcript."
+    },
+    {
+      "command": "<native-tools-python> -m tools.run_tests",
+      "session_id": 38341,
+      "exit_code": 0,
+      "tests": 573,
+      "skipped": 5,
+      "seconds": 32.03,
+      "raw_log": ".local/legacy-validation/python-tools.log",
+      "raw_log_sha256": "ecce181212925c762300e6e423b1cee369696be905fde51675a207621d444568"
+    },
+    {
+      "command": "<native-tools-python> -m unittest tools.tests.test_native_scope tools.tests.test_oracle_lifecycle",
+      "session_id": 40351,
+      "exit_code": 0,
+      "tests": 20,
+      "seconds": 19.032,
+      "raw_log_preserved": false
+    },
+    {
+      "command": "<native-tools-python> -m tools.projectile_oracle.line_trail --steam-cadence --check",
+      "session_id": 40351,
+      "exit_code": 0,
+      "note": "Executed with VERA20K_GAMEMD_EXE pointing to the authenticated Steam binary. Native outputs and provenance matched."
+    },
+    {
+      "command": "<native-tools-python> -m tools.input_oracle.fast_scroll --steam-clock --check",
+      "session_id": 40351,
+      "exit_code": 0,
+      "note": "Initial check rejected only the changed producer source hash; metadata then rebound after byte-exact payload assertion. Final check passed."
+    },
+    {
+      "command": "python3 tools/sim_field_ratchet.py --base delivery/main",
+      "exit_code": 0,
+      "fields": 2513,
+      "base_fields": 2513
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "review": {
+    "status": "SINGLE_PASS_COMPLETED_TWO_CONFIRMED_P2_FIXED_AND_REVALIDATED",
+    "passes": 1,
+    "critic": "/root/legacy_composite_critic",
+    "findings": [
+      "mixed preLogic Bullet/postLogic peer ranks reversed ReadOnly occlusion after removal",
+      "natural score exit omitted retained-state cleanup"
+    ],
+    "fixes": [
+      "single private LegacyComposite owns immutable Arc Display order for all parent families; initial/restore seed without ring aging",
+      "joint clear covers load/restore/abort/score exit; unused SimView display accessor removed"
+    ],
+    "failed_first_regressions": {
+      "session_id": 91265,
+      "exit_code": 101,
+      "failed": 2,
+      "observed_planner_order": [
+        30,
+        20
+      ],
+      "expected_retained_order": [
+        20,
+        30
+      ],
+      "raw_log_sha256": "ea2d9632b8d81b508fa5655c304ea47ed7211607eb97baa828b7989fc5eaa260"
+    },
+    "validation": "focused185/0/16; finalfull9588/0/231; clippypass; finalrelease+fourvalidcaptures; no second critic",
+    "source_guard_limit": "score direct-caller regression is structural; functional joint clear/seed/planner owners exercised; no live App menu/score acceptance"
+  },
+  "human_acceptance": "PENDING",
+  "limits": [
+    "Functional owner and actual tactical planner regression tested; direct score caller source guard is structural because AppState construction requires GPU/window.",
+    "Other parent families share retained membership/ranks but still read current simulation geometry; full R01/R03/R04 remain open.",
+    "No native/Python replay repeated: native tool sources and corpus artifacts unchanged by review fixes.",
+    "Fresh post-fix release build/captures belong to root; pre-fix legacy-composite label does not qualify fixes.",
+    "Steam prepared caller/ring profile excludes actual world/Logic/Windows and native scene/GPU parity.",
+    "Fourexactstep captures are Rust regression; allhumanordinary/platform/feelacceptance remains pending."
+  ],
+  "pre_review_release": {
+    "command": "python3 -m tools.cargo_run --label yr1001-legacy-composite -- build -p vera20k --release --bin vera20k",
+    "session_id": 52125,
+    "exit_code": 0,
+    "seconds": 52.82,
+    "label": "yr1001-legacy-composite",
+    "binary_sha256": "ac9f5827e0f89158387506a2e10f85ff25784ef8790b8b3d3873a307e2b657e7",
+    "build_source_sha256": "6379ddfcd697622ac1290e7a3f96c2e08490324332e9e15d14d6261b4d513d41",
+    "log_sha256": "a99d56ca4267e7f79b11cfcdeaf2cfd21332567a3860713f56cd42d28a904949",
+    "platform": "aarch64 macOS; Apple M5 Pro Metal",
+    "cargo_retention": "under_budget; removed0 allocated bytes"
+  },
+  "pre_review_captures": [
+    {
+      "phase": "flight25",
+      "status": "VALID",
+      "child_exit": 0,
+      "profile_sha256": "4800cd9ce3e4ffaa8600cf37c220224434b6d0f1039e5b25bfe519dd99244ae7",
+      "map_sha256": "1c52b7c47c7417cca8c88e217dc8e2a91e74a423185db418876d687828edb00a",
+      "final": {
+        "binary_frame": 25,
+        "deterministic_state_hash": 12580183102402671801,
+        "simulation_tick": 25,
+        "total_simulation_ms": 550
+      },
+      "control_frame_sha256": "251ed4c2d1220792a15d36f8180a41a68c21e0bd270abd6d099ed1939ac89370",
+      "candidate_frame_sha256": "3c43a5dc5c4a596aebd9f7aef775506723724e7ef97c8b4341f1db9d398d86c8",
+      "candidate_manifest_sha256": "6e23cf935884dcde822df38dab6b9c7d9914bf525e4f894814fba0ac15e0127a",
+      "comparison_status": "MISMATCH",
+      "comparison_sha256": "57baa1feb47c8b7148cf79238e8bd576b807617ed812f01061efc963554e8580",
+      "differences": [
+        {
+          "after": "3c43a5dc5c4a596aebd9f7aef775506723724e7ef97c8b4341f1db9d398d86c8",
+          "before": "251ed4c2d1220792a15d36f8180a41a68c21e0bd270abd6d099ed1939ac89370",
+          "field": "frame.bytes"
+        }
+      ],
+      "errors": [],
+      "changed_pixels": 89,
+      "changed_bounds": [
+        258,
+        213,
+        302,
+        231
+      ],
+      "readback_inspection": "flight25: visible missile/body and trail; flight45: impact and retained trail; drain: complete pixel equality",
+      "native_comparator": "NONE",
+      "parity_certification": "NONE"
+    },
+    {
+      "phase": "flight",
+      "status": "VALID",
+      "child_exit": 0,
+      "profile_sha256": "df3adfba2c60c68c8612bb61904a9b937f64a08d5aedd0328d0f6e0d9261d124",
+      "map_sha256": "1c52b7c47c7417cca8c88e217dc8e2a91e74a423185db418876d687828edb00a",
+      "final": {
+        "binary_frame": 45,
+        "deterministic_state_hash": 6504161701885373551,
+        "simulation_tick": 45,
+        "total_simulation_ms": 990
+      },
+      "control_frame_sha256": "7ffe590d687abd3fa87431dcc0519f24bd8c6d3bd51518d85f240c9da9e54ec7",
+      "candidate_frame_sha256": "e4cf45526d7083118f5eae502d862b34e4a353ec58a782ed31df486bb0638581",
+      "candidate_manifest_sha256": "c58bcce6c0b12b98c1e2f15601e054e0c7765a798f6cd1b5cb5980cfc749b048",
+      "comparison_status": "MISMATCH",
+      "comparison_sha256": "a5abaa3d2585a519e540cdd279431bcdab0abce5775f206af0fc80d641f7fa83",
+      "differences": [
+        {
+          "after": "e4cf45526d7083118f5eae502d862b34e4a353ec58a782ed31df486bb0638581",
+          "before": "7ffe590d687abd3fa87431dcc0519f24bd8c6d3bd51518d85f240c9da9e54ec7",
+          "field": "frame.bytes"
+        }
+      ],
+      "errors": [],
+      "changed_pixels": 131,
+      "changed_bounds": [
+        293,
+        238,
+        368,
+        305
+      ],
+      "readback_inspection": "flight25: visible missile/body and trail; flight45: impact and retained trail; drain: complete pixel equality",
+      "native_comparator": "NONE",
+      "parity_certification": "NONE"
+    },
+    {
+      "phase": "drain",
+      "status": "VALID",
+      "child_exit": 0,
+      "profile_sha256": "dd6ca81833df6cc15b0def6c8a7f73998dfe60bb950655d37136c1639f261787",
+      "map_sha256": "1c52b7c47c7417cca8c88e217dc8e2a91e74a423185db418876d687828edb00a",
+      "final": {
+        "binary_frame": 80,
+        "deterministic_state_hash": 8269410083823854351,
+        "simulation_tick": 80,
+        "total_simulation_ms": 1760
+      },
+      "control_frame_sha256": "c194c19b7020860407515b077bc617315e4ff89d1a9da7823b3c7a1375c0b58e",
+      "candidate_frame_sha256": "c194c19b7020860407515b077bc617315e4ff89d1a9da7823b3c7a1375c0b58e",
+      "candidate_manifest_sha256": "bee7e354c3cad58755826812a9869ef8663bd521d9da516ea0b7a1a6b1519893",
+      "comparison_status": "MATCH",
+      "comparison_sha256": "bba54d2248d906ddc2e3f41f1b0d32907955410a22853677095570b9eed2db11",
+      "differences": [],
+      "errors": [],
+      "changed_pixels": 0,
+      "changed_bounds": null,
+      "readback_inspection": "flight25: visible missile/body and trail; flight45: impact and retained trail; drain: complete pixel equality",
+      "native_comparator": "NONE",
+      "parity_certification": "NONE"
+    }
+  ],
+  "post_review_validation": {
+    "status": "confirmed P2 defects fixed; no second critic requested or run",
+    "changes": [
+      "One immutable Arc<NativeDisplayOrder> in existing LegacyComposite presentation owner supplies every world parent family and retained Bullet records.",
+      "Joint clear transaction owns retained order/body/trails across map, restore, menu exit and natural victory/defeat score exit; map/restore seed body/order without trail aging.",
+      "Removed superseded unused SimView::display_layers accessor; simulation Display owner and field visibility unchanged."
+    ],
+    "checks": [
+      {
+        "command": "python3 -m tools.cargo_run -- test -p vera20k --lib review_regression_",
+        "session_id": 91265,
+        "exit_code": 101,
+        "passed": 0,
+        "failed": 2,
+        "ignored": 0,
+        "test_seconds": 0.01,
+        "expected_failure": true,
+        "raw_log": ".local/legacy-validation/review-fix-before.log",
+        "retirement": "Stopped safely because cache-roots.json changed during inspection."
+      },
+      {
+        "command": "python3 -m tools.cargo_run -- test -p vera20k --lib app::presentation::",
+        "session_id": 23978,
+        "exit_code": 0,
+        "passed": 185,
+        "failed": 0,
+        "ignored": 16,
+        "test_seconds": 1.67,
+        "raw_log": ".local/legacy-validation/review-fix-focused.log",
+        "retirement": "Trimmed safely."
+      },
+      {
+        "command": "python3 -m tools.cargo_run -- test -p vera20k --lib",
+        "session_id": 16242,
+        "exit_code": 0,
+        "passed": 9588,
+        "failed": 0,
+        "ignored": 231,
+        "test_seconds": 37.86,
+        "compile_seconds": 18.57,
+        "warnings": 9,
+        "raw_log": ".local/legacy-validation/review-fix-retail-lib.log",
+        "retirement": "Trimmed safely."
+      },
+      {
+        "command": "python3 -m tools.cargo_run -- clippy -p vera20k --lib",
+        "session_id": 23443,
+        "exit_code": 0,
+        "compile_seconds": 6.62,
+        "warnings": 729,
+        "raw_log": ".local/legacy-validation/review-fix-clippy.log",
+        "retirement": "Under budget; removed 0 bytes."
+      },
+      {
+        "command": "python3 tools/sim_field_ratchet.py --base delivery/main",
+        "exit_code": 0,
+        "fields": 2513,
+        "base_fields": 2513
+      },
+      {
+        "command": "git diff --check",
+        "exit_code": 0
+      }
+    ],
+    "limits": [
+      "Functional owner and actual tactical planner regression tested; direct score caller source guard is structural because AppState construction requires GPU/window.",
+      "Other parent families share retained membership/ranks but still read current simulation geometry; full R01/R03/R04 remain open.",
+      "No native/Python replay repeated: native tool sources and corpus artifacts unchanged by review fixes.",
+      "Fresh post-fix release build/captures belong to root; pre-fix legacy-composite label does not qualify fixes."
+    ],
+    "raw_log_sha256": {
+      ".local/legacy-validation/review-fix-focused.log": "a9aef2ea378820368b3353d74f45d3f9ad898c12c5eac1a5599e96f0ad51a3c4",
+      ".local/legacy-validation/review-fix-before.log": "ea2d9632b8d81b508fa5655c304ea47ed7211607eb97baa828b7989fc5eaa260",
+      ".local/legacy-validation/review-fix-retail-lib.log": "f8b3db0db35d8a0d2e3c7f3cccd5fbd9bc2877e39400ff309f678e15c81badc4",
+      ".local/legacy-validation/review-fix-clippy.log": "684996ec4e871d6b8a6cf257534854944ff8cda34d7b7ebc35498d5d94b96b9d"
+    },
+    "source_file_sha256": {
+      "src/app/in_game.rs": "01b881db644765d20f468135e332e98e7c22e6d0d74b61701ff2a22a7b637a8c",
+      "src/app/initialize.rs": "146399479da51882fce09f2ebfc9616d64a4c449115844b791dccff7a14b82de",
+      "src/app/loading/transitions.rs": "107034e27b2a8d4a1ca46c8a93abcfd8b1e42aa77e92c79b847d82e4d3f780bc",
+      "src/app/match_runtime/restore.rs": "bc2710a5ed6451da6cda04e644d9a8060209a58871160c7e57c4a0741f02cf52",
+      "src/app/match_runtime/sim_tick.rs": "5f7f269fb5957ea8007174541163378f2561128fc9fc08ff3d1414bbf53b6114",
+      "src/app/presentation/instances/projectiles.rs": "072625042284eddb6b1aaed96f51633e6bb4a7baa40581c7406d2cf2aceeea63",
+      "src/app/presentation/instances/projectile_cadence_tests.rs": "de34bc3fd788bcbbe8eb95eb3157b2556f3d66aa8e71c33e7b78b206e465582d",
+      "src/app/presentation/line_trail_tests.rs": "cb5355c119c82ecac537f9472ae6ffb4ebcb8a6c003b01fcbdf49ecef68ebbc4",
+      "src/app/presentation/line_trails.rs": "87e8f034fe4eb3b3aaf4965cb6d9dc1b083fd240100addc85807648b1cfc9652",
+      "src/app/presentation/render/build_instances.rs": "9ef91862c866ec5abe8baf9f6579ffb52ffae72c753d03a5828ed0f6c78dbcc7",
+      "src/app/presentation/render/draw_plan_lowering.rs": "853e2f8e94581b3b4abe554b37679453b03cd811320d4fe4d2e7da4dc9ca0e8c",
+      "src/app/presentation/render/mod.rs": "ab32f12e9ae60124d5878d9a9c622ce9467304b70ae70da5561121f70401c3d7",
+      "src/app/presentation/state.rs": "693992481cac309a3d439845a128bf0bf3606909f92d90a2cbb2c4fd521b5c1c",
+      "src/app/shell_main_menu.rs": "c533943d6be79eff18e0f4de3f4a2464ee456caa210b546927d92cbb313cfa43",
+      "src/sim/runtime.rs": "e6364115b5c293ab02df32c2512bba7de8caea4852e55c62dfe1c3bcd6d11436",
+      "tools/projectile_oracle/line_trail.md": "3fc7d0639ec6c1c215dc936a3af508987a3b49120a120888c62d5d4c6898a448",
+      "tools/projectile_oracle/line_trail.py": "b3d32ee555fd29601373547944b5f9f6ebf43a367fec0ff857a209e090e27f3d",
+      "tools/input_oracle/fast_scroll.py": "3d3751b6b122b1f30100d23f5d2f205f2f775ee5379716d796d86945afa2bc1a"
+    }
+  },
+  "literal_results_sha256": "2c6eff41251bec0fb17bced49fa3a7dd92d51301cdaf22cd0973793a091e0f5d",
+  "release": {
+    "command": "python3 -m tools.cargo_run --label yr1001-legacy-composite-reviewed -- build -p vera20k --release --bin vera20k",
+    "session_id": 61724,
+    "exit_code": 0,
+    "seconds": 35.02,
+    "label": "yr1001-legacy-composite-reviewed",
+    "binary_sha256": "cb4dbd7c347a83ddd5a9f0447c5fe30b1430563619e4d63328398bb9e99daa0d",
+    "build_source_sha256": "b99badfa2b2104b7b3bc762a2070053dc3bd2668d87f892351b627b6002b2f4a",
+    "log_sha256": "a049f7bec785d9c16465c48b3a0a5737479f9eaf920b69508f3f2451f1295537",
+    "platform": "aarch64 macOS; Apple M5 Pro Metal",
+    "cargo_retention": "under_budget; removed0 allocated bytes"
+  },
+  "captures": [
+    {
+      "phase": "initial",
+      "status": "VALID",
+      "child_exit": 0,
+      "profile_sha256": "d67350bd67ec619099b7bb83b3f0f9e048bb7592d09c42412910d864d1fe5a95",
+      "map_sha256": "1c52b7c47c7417cca8c88e217dc8e2a91e74a423185db418876d687828edb00a",
+      "final": {
+        "binary_frame": 0,
+        "deterministic_state_hash": 2284439782620193045,
+        "simulation_tick": 0,
+        "total_simulation_ms": 0
+      },
+      "control_frame_sha256": "a7aff0f8e3f44663c369e1e75a981b90b66949586d71035771921871d67e334e",
+      "candidate_frame_sha256": "a7aff0f8e3f44663c369e1e75a981b90b66949586d71035771921871d67e334e",
+      "candidate_manifest_sha256": "e9f4cf4c78c292d52caa472be2f1203e2cc1efacd07ea3650ad9fa81f11111ac",
+      "comparison_status": "MATCH",
+      "comparison_sha256": "02411ef930fe83a4adb6aef89fd19b388ed5b38d9c06f62365756adf4d0e6451",
+      "differences": [],
+      "errors": [],
+      "changed_pixels": 0,
+      "changed_bounds": null,
+      "native_comparator": "NONE",
+      "parity_certification": "NONE"
+    },
+    {
+      "phase": "flight25",
+      "status": "VALID",
+      "child_exit": 0,
+      "profile_sha256": "4800cd9ce3e4ffaa8600cf37c220224434b6d0f1039e5b25bfe519dd99244ae7",
+      "map_sha256": "1c52b7c47c7417cca8c88e217dc8e2a91e74a423185db418876d687828edb00a",
+      "final": {
+        "binary_frame": 25,
+        "deterministic_state_hash": 12580183102402671801,
+        "simulation_tick": 25,
+        "total_simulation_ms": 550
+      },
+      "control_frame_sha256": "251ed4c2d1220792a15d36f8180a41a68c21e0bd270abd6d099ed1939ac89370",
+      "candidate_frame_sha256": "3c43a5dc5c4a596aebd9f7aef775506723724e7ef97c8b4341f1db9d398d86c8",
+      "candidate_manifest_sha256": "c050569e9aa6fb9f697d57483a1a37077b62deb4c1fe7fbcd91a886a8df096e6",
+      "comparison_status": "MISMATCH",
+      "comparison_sha256": "be7701b11509ca877dd01e8faf592d3e1ae9f1c8d6a4421d22dab4e517e34c48",
+      "differences": [
+        {
+          "after": "3c43a5dc5c4a596aebd9f7aef775506723724e7ef97c8b4341f1db9d398d86c8",
+          "before": "251ed4c2d1220792a15d36f8180a41a68c21e0bd270abd6d099ed1939ac89370",
+          "field": "frame.bytes"
+        }
+      ],
+      "errors": [],
+      "changed_pixels": 89,
+      "changed_bounds": [
+        258,
+        213,
+        302,
+        231
+      ],
+      "native_comparator": "NONE",
+      "parity_certification": "NONE"
+    },
+    {
+      "phase": "flight",
+      "status": "VALID",
+      "child_exit": 0,
+      "profile_sha256": "df3adfba2c60c68c8612bb61904a9b937f64a08d5aedd0328d0f6e0d9261d124",
+      "map_sha256": "1c52b7c47c7417cca8c88e217dc8e2a91e74a423185db418876d687828edb00a",
+      "final": {
+        "binary_frame": 45,
+        "deterministic_state_hash": 6504161701885373551,
+        "simulation_tick": 45,
+        "total_simulation_ms": 990
+      },
+      "control_frame_sha256": "7ffe590d687abd3fa87431dcc0519f24bd8c6d3bd51518d85f240c9da9e54ec7",
+      "candidate_frame_sha256": "e4cf45526d7083118f5eae502d862b34e4a353ec58a782ed31df486bb0638581",
+      "candidate_manifest_sha256": "aa3b5860290e476e9eda3adfbd222e2f80bba5152a7fbb3229c9b27721617e5c",
+      "comparison_status": "MISMATCH",
+      "comparison_sha256": "9d50e4d412e135c9e037f9bb9094b53c1e91ab466166d0026b189ca79e00ef59",
+      "differences": [
+        {
+          "after": "e4cf45526d7083118f5eae502d862b34e4a353ec58a782ed31df486bb0638581",
+          "before": "7ffe590d687abd3fa87431dcc0519f24bd8c6d3bd51518d85f240c9da9e54ec7",
+          "field": "frame.bytes"
+        }
+      ],
+      "errors": [],
+      "changed_pixels": 131,
+      "changed_bounds": [
+        293,
+        238,
+        368,
+        305
+      ],
+      "native_comparator": "NONE",
+      "parity_certification": "NONE"
+    },
+    {
+      "phase": "drain",
+      "status": "VALID",
+      "child_exit": 0,
+      "profile_sha256": "dd6ca81833df6cc15b0def6c8a7f73998dfe60bb950655d37136c1639f261787",
+      "map_sha256": "1c52b7c47c7417cca8c88e217dc8e2a91e74a423185db418876d687828edb00a",
+      "final": {
+        "binary_frame": 80,
+        "deterministic_state_hash": 8269410083823854351,
+        "simulation_tick": 80,
+        "total_simulation_ms": 1760
+      },
+      "control_frame_sha256": "c194c19b7020860407515b077bc617315e4ff89d1a9da7823b3c7a1375c0b58e",
+      "candidate_frame_sha256": "c194c19b7020860407515b077bc617315e4ff89d1a9da7823b3c7a1375c0b58e",
+      "candidate_manifest_sha256": "1e86203e0809a45ea3710af11f04d62ae9f23ac3697f0345db088b0f62a56ac2",
+      "comparison_status": "MATCH",
+      "comparison_sha256": "cb62fd8b98d293714e330c47818e00ba0e0676f8ad54ad8671a23533071da561",
+      "differences": [],
+      "errors": [],
+      "changed_pixels": 0,
+      "changed_bounds": null,
+      "native_comparator": "NONE",
+      "parity_certification": "NONE"
+    }
+  ]
+}

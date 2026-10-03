@@ -177,16 +177,16 @@ pub(super) fn build_world_instances(state: &mut AppState, sw: f32, sh: f32) -> W
     };
 
     // Map overlays and walls remain in the fixed per-cell draw plan. Terrain
-    // objects join live Ground registrations below; low bridges (LOBRDG*) ride
+    // objects join retained Ground registrations below; low bridges (LOBRDG*) ride
     // in `overlay`, while high bridge bodies use instances::bridges.
+    // One immutable generation for every parent family. Rebuilding peer ranks
+    // after Logic while Bullet keeps an earlier slot can tie/reverse ReadOnly
+    // draws after a removal. Arc keeps this lookup cheap across later mutations.
     let display_order = state
         .match_state
-        .sim_runtime
-        .as_ref()
-        .map(|rt| {
-            super::draw_plan_lowering::NativeDisplayOrder::from_display(rt.view().display_layers())
-        })
-        .unwrap_or_default();
+        .match_presentation
+        .legacy_composite
+        .display_order();
     let mut planned_objects = Vec::new();
     let mut overlay: Vec<SpriteInstance> = std::mem::take(
         &mut state
@@ -256,7 +256,7 @@ pub(super) fn build_world_instances(state: &mut AppState, sw: f32, sh: f32) -> W
         &display_order,
     );
     instances::build_anim_class_instances(state, &mut planned_objects, &display_order);
-    instances::build_projectile_visual_instances(state, &mut planned_objects, &display_order);
+    instances::build_projectile_visual_instances(state, &mut planned_objects);
     instances::build_parachute_instances(state, &mut planned_objects, &parachute_body_depths);
 
     // Layer 3 particle systems — separate paged list above all Ground-layer

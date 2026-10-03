@@ -175,11 +175,7 @@ pub(crate) fn apply_map_load_result(state: &mut AppState, result: init::MapLoadR
         .barrel_image_pitches
         .borrow_mut()
         .clear();
-    state
-        .match_state
-        .match_presentation
-        .line_trails
-        .clear_on_load();
+    crate::app::presentation::instances::seed_legacy_composite_for_timeline(state);
     // A new simulation is a new scenario for `SidebarClass::AddCameo`'s
     // init gate: its first projection must seed the strip silently.
     state

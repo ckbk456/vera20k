@@ -751,6 +751,10 @@ fn advance_in_game_runtime_mode(
         .scroll_input
         .then(|| crate::app::input::camera::poll_mouse_scroll(state));
     if decision.run_sim {
+        // Native normal offline Main admits its Tactical composite before
+        // Logic, including a visit whose Logic does not commit a frame. A
+        // redraw, closed pacing window or offline modal pump admits none.
+        crate::app::presentation::instances::advance_projectile_legacy_composite(state);
         let tick_lane = decision.tick_lane;
         let frame_committed = advance_one_simulation_frame(state, tick_lane, mouse_scroll);
         crate::app::presentation::sidebar_render::advance_sidebar_credits_after_frame(
@@ -1037,7 +1041,7 @@ fn advance_one_simulation_frame(
             match output {
                 LifecycleOutput::LineTrailConstructed { stable_id, style } => {
                     let presentation = &mut state.match_state.match_presentation;
-                    presentation.line_trails.attach(
+                    presentation.legacy_composite.attach_line_trail(
                         stable_id,
                         style.color,
                         style.decrement,
@@ -1048,8 +1052,8 @@ fn advance_one_simulation_frame(
                     state
                         .match_state
                         .match_presentation
-                        .line_trails
-                        .detach(stable_id);
+                        .legacy_composite
+                        .detach_line_trail(stable_id);
                 }
                 // Attached anims are simulation objects; the store detaches
                 // them itself.
