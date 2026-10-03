@@ -1,4 +1,4 @@
-# Inspect the pinned native executable
+# Identify candidates and inspect the pinned native executable
 
 Use `python -m tools.native_inspect` before writing a session-local disassembler,
 VA mapper or whole-code scan. It shares executable selection, SHA checking and
@@ -13,7 +13,9 @@ python -m pip install -r tools/requirements-test.txt
 ```
 
 Select `VERA20K_GAMEMD_EXE` or `RA2_DIR` as described in
-[native setup](native_oracle.md). Only the pinned original executable is accepted.
+[native setup](native_oracle.md). Byte/instruction inspection still accepts only
+the pinned original executable. The separate `identity` command identifies an
+unqualified candidate without admitting it to those operations or execution.
 Import and `--help` do not read it. Missing/wrong images and invalid requests fail
 with nonzero status, diagnostics on stderr and no JSON evidence on stdout.
 
@@ -27,8 +29,42 @@ python -m tools.native_inspect field 0x68A --width 1
 python -m tools.native_inspect find-bytes "32 c0 c2 04 00"
 ```
 
+## Candidate identification
+
+```sh
+python -m tools.native_inspect identity
+python -m tools.native_inspect identity --reference ramp-height --reference foot-z
+```
+
+`identity` reads the configured executable once and uses the shared PE owner to
+validate its PE32 x86 layout at `0x00400000`. It reports the actual whole-file
+SHA-256, length and file-backed section hashes, including raw padding but never
+synthesized BSS. It writes no executable bytes, private paths or goldens.
+`native_execution_supported` means only that its whole-file hash equals the
+existing pinned execution identity. It is independent of reference-region matches.
+An unqualified candidate remains rejected by `image_bytes`, all native fixtures
+and every other inspection command.
+
+References reuse `REGIONS` from the existing ramp-height and Foot-Z fixture
+owners and their stored `region_sha256` goldens. Each profile records its owner,
+reference artifact hash, original image hash, addresses, sizes and individual
+matching/nonmatching hashes. A changed/missing region, wrong reference image,
+invalid hash or unbacked range cannot silently become a successful comparison.
+No fixture is instantiated and no native code runs. Matching samples establish
+those original file bytes only; callers, constants/globals, initialization,
+runtime patches, other bodies and gameplay remain outside their coverage.
+
+The [Steam build 15918130 identity receipt](native_inspect.steam-15918130.identity.json)
+was generated on 2026-10-03 with `identity --reference ramp-height --reference foot-z`.
+Its source was the user's verified English Steam app 2229850 installation:
+436 files / 1,961,731,509 bytes matched the Windows source. The receipt records
+candidate hash `3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600`,
+all 11 reference regions matching and `native_execution_supported=false`.
+This is a bounded static comparison, not a YR patch-version or gameplay qualification.
+The existing `sections` command still returned exit 2 and no JSON for this image.
+
 Save stdout to a file when preserving a finding. Each deterministic JSON packet
-records schema version, native SHA-256, Capstone version and the complete parsed
+records schema version, actual image SHA-256, Capstone version and the complete parsed
 request. Addresses and file offsets are JSON integers; command arguments accept
 decimal or `0x` notation. No timestamps or machine-specific paths affect comparison.
 
