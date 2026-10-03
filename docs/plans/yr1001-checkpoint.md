@@ -24,7 +24,10 @@ and fresh 27 Steam INIs are bound. Runtime owner completed the source changes;
 root owns evidence, progress and publication. No owned active test/build/app or
 CI command remains. Legacy worktree is clean with retained local evidence.
 
-F01 prerequisite is implemented and validated; one fresh read-only critic found no actionable defects:
+F01 prerequisite is implemented and validated; one fresh read-only critic found no actionable defects.
+[PR #8](https://github.com/ckbk456/vera20k/pull/8) is open against delivery main;
+validated implementation commit is `e7a452845db3cc8b5dbdd6e3cf868bcf07ba7228`.
+CI/merge remain pending at this checkpoint:
 [admitted-frame rationale](yr1001-frame-duration.md) and
 [receipt](evidence/yr1001-frame-duration.validation.json). Old duration zero
 consumed and discarded pending missile impacts. The real V3 pool-child test first
@@ -40,7 +43,7 @@ unchanged. Raw logs and literal sessions live in ignored
 Native zero-clock Main controls are unchanged and reused for caller admission/
 frame commit only; Logic remains a declared sink. Native-inline/Rust-queued
 Rocket impact ordering, sparkle labels, full F01/F02 and Stage 2 stay open.
-Publish one PR, enable exact-head auto-merge, confirm delivery merge, and fast-forward
+Enable exact-head auto-merge, confirm delivery merge, and fast-forward
 clean primary main. No dependent implementation stack or direct main commits.
 
 ## Delivered Stage 2 prerequisites and evidence
