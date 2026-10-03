@@ -9,8 +9,9 @@ Updated 2026-10-03. Replace this current state on continuation; do not append a 
   targets are superseded for this program. Ares/Phobos are later baselines.
 - User confirmed: **agents automate checks/native comparisons; humans playtest**.
 - Current authorized task: discovery with subagents and draft master plan/agent
-  contract alignment. Entire implementation program has not been launched by
-  this checkpoint. No external publication, upstream PR, merge or deployment
+  contract alignment, plus acquisition/verification of the user's official Steam
+  installation from MAICHI_DESKTOP. Entire implementation program has not been
+  launched by this checkpoint. No external publication, upstream PR, merge or deployment
   was authorized or performed.
 - One configured remote: `origin=https://github.com/YuriPlanet/vera20k.git`.
   A future user-owned delivery remote/publication policy is a one-time setup
@@ -48,12 +49,19 @@ Updated 2026-10-03. Replace this current state on continuation; do not append a 
   validation only; no Cargo/native execution or runtime acceptance was performed.
 - No PR/publication and no gameplay parity/acceptance claims. No owned build/server
   process pending. All discovery agents completed.
+- Official Steam acquisition completed: app 2229850, build 15918130, English;
+  436 files / 1,961,731,509 bytes, all matched to Windows-source size/SHA-256.
+  Main checkout's ignored `.local/steam-baseline-2026-10-03/` retains the game and
+  source/verification/PE/comparison receipts. Source and old copy were preserved;
+  no runtime config, extracted INIs, oracle gate or engine code was changed.
 
 ## Ready queue and dependencies
 
 1. On an explicit execution launch, B01 authenticates native binary and retail input
-   baseline. Current local hash `d4ad8c6f...5628c0c` is not accepted by the existing
-   native oracle's `1cdd1180...84298c` gate; this alone does not prove wrong version.
+   baseline from the acquired Steam source, hash `3e81a617...2d308600`. Neither it
+   nor the old runtime copy `d4ad8c6f...5628c0c` is accepted by the existing native
+   oracle's `1cdd1180...84298c` gate; this alone does not prove wrong version.
+   Qualify actual code/address/behavior compatibility before enrolling a variant.
 2. B02 establishes pinned Python deps, checked native/inspection capability and a
    genuine initialized-game capture host. Current PATH/service access is unproven.
 3. B03 census and early Q02/N02 native-save/protocol discovery can run independently;
@@ -62,10 +70,12 @@ Updated 2026-10-03. Replace this current state on continuation; do not append a 
    Current sim executes during redraw; app/headless tick inputs differ 22/66ms.
 5. Select the next frequent/native-divergent complete match chain from the live census.
 
-Missing movie content blocks movie/campaign-media qualification. Preserve supplied
-bytes and runtime workaround; do not confuse an empty valid archive with retail media.
-Native host/media availability may need user-supplied access, but agents first resolve
-discoverable capabilities and continue independent work.
+The acquired Steam copy supplies all three previously missing movie archives;
+decoding and movie/campaign-media qualification remain untested. Preserve the old
+runtime workaround separately and never substitute it for the genuine media.
+MAICHI_DESKTOP SSH inventory/transfer access is demonstrated; interactive native
+game execution/capture capability remains untested. Resolve discoverable capabilities
+and continue independent work when a particular capture capability is unavailable.
 
 ## Human acceptance and active reservations
 

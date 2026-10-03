@@ -75,11 +75,31 @@ Do not relax the existing oracle hash. B01 must establish provenance, code/addre
 compatibility and behavior or obtain an authenticated supported native executable
 from a legitimate existing installation. Variants need separate enrollment evidence.
 
+The user subsequently authorized acquiring their newly installed **Steam** copy
+from MAICHI_DESKTOP. Its app 2229850 manifest reports build 15918130, English and
+installation complete. All 436 files (1,961,731,509 bytes) were copied into the main
+checkout's ignored `.local/steam-baseline-2026-10-03/game/` and verified against
+Windows-source size/SHA-256, with no missing, extra or mismatched files. Local
+`source-manifest.json`, `verification.json`, `binary-identity.json` and
+`previous-copy-comparison.json` in that parent directory preserve the receipts;
+licensed bytes and these machine-local records remain outside Git.
+
+Steam `gamemd.exe` is 5,286,208 bytes, PE32 x86, image base `0x00400000`, SHA-256
+`3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600`.
+It also differs from the oracle's supported hash. Its `.text`, `.rdata` and `.data`
+section hashes differ from the previous copy, so matching section addresses/entry
+point cannot establish code equivalence. B01 must qualify this source variant;
+neither the oracle gate nor executable bytes were changed. No native execution
+was performed. The acquisition does not establish whether the old copy was pirated.
+
 Machine-local facts observed on 2026-10-03 (not portable requirements):
 
 - Main `config.toml` selects `.local/game`; LOCAL.md records a preserved 500-file
   copy. Three supplied movie MIXes were empty; the runtime copy contains empty
-  valid headers while originals survive. Movie source content remains absent.
+  valid headers while originals survive. The separate Steam copy now supplies
+  nonempty `MOVIES01.MIX`, `MOVIES02.MIX` and `movmd03.mix`, totaling 1,055,768,688
+  bytes. Media availability is established; decoding/lifecycle parity is untested.
+  Runtime config and previously extracted INIs were not switched to the new source.
 - Current shell has no `VERA20K_GAMEMD_EXE` or `RA2_DIR`; Python 3.14 cannot import
   Unicorn/Capstone. Required versions are pinned in
   [requirements-test.txt](../../tools/requirements-test.txt): Python >=3.12,
@@ -88,7 +108,9 @@ Machine-local facts observed on 2026-10-03 (not portable requirements):
   process and no main `.mcp.json`. This does not prove no installation exists.
   Resolve discoverable installations and service capability before declaring a
   host unavailable. Full native game capture may need a genuine Windows host;
-  emulation of selected x86 functions is not a Windows loader.
+  emulation of selected x86 functions is not a Windows loader. MAICHI_DESKTOP SSH
+  access was subsequently demonstrated for read-only inventory and transfer;
+  interactive capture/game execution capability remains untested.
 - Rust is available through the main checkout's `.local/env.sh`. The plan worktree
   has no copied local config/retail inputs/toolchain activation and has not been
   built. Future implementation preflight must resolve assets/config deliberately.
