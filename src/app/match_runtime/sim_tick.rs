@@ -768,15 +768,12 @@ fn advance_in_game_runtime_mode(
         crate::app::input::camera::commit_camera_scroll(state, request);
     }
 
-    // Ordered native source/global operations were applied with the frame
-    // output. Reconcile the detail option and any explicit tool mutations.
-    refresh_cell_lighting(state);
+    if matches!(mode, RuntimeAdvanceMode::ExactOneStep) {
+        // Sidebar reconciliation can produce EVA in this same step. Preserve
+        // its original producer-before-drain order, even on the final capture.
+        update_in_game_presentation_data(state);
+    }
 
-    crate::app::presentation::building_anim::update_radar_state(state);
-    crate::app::presentation::building_anim::update_power_bar_anim(state);
-    crate::app::presentation::sidebar_gadgets::update_sidebar_gadget_state(state);
-    // Per-frame gadget idle tick (G22 rows 2/3 drag-off/drag-back tracking).
-    crate::app::input::gadget_input::idle_tick(state);
     // The audio service is NOT gated on the simulation. gamemd's
     // `AudioSystem::Pump @ 0x00406F70` hangs off `Network_ServiceLoop @
     // 0x0048D080`, whose callers include `Main::ThrottleFrame @ 0x0055E160`,
@@ -796,7 +793,40 @@ fn advance_in_game_runtime_mode(
     if decision.scroll_input {
         crate::app::input::camera::queue_keyboard_scroll(state);
     }
-    if decision.tactical_mutation {
+    if matches!(mode, RuntimeAdvanceMode::ExactOneStep) {
+        update_in_game_tactical_view(state, true);
+    }
+}
+
+/// Existing draw-related services, sampled once by the display owner. Their
+/// native callback cadence is not established as a generic wall-clock timer;
+/// moving them to every runtime wake would age the power bar and gadgets faster.
+pub(crate) fn update_in_game_presentation(state: &mut AppState) {
+    let admission = wall_clock_service_admission(
+        state.match_state.paused(),
+        state.match_state.match_presentation.in_game_menu.is_open(),
+        current_session_mode(state),
+        false,
+        false,
+    );
+    update_in_game_presentation_data(state);
+    update_in_game_tactical_view(state, admission.tactical_mutation);
+}
+
+fn update_in_game_presentation_data(state: &mut AppState) {
+    // Ordered native source/global operations were applied with the frame
+    // output. Reconcile the detail option and any explicit tool mutations.
+    refresh_cell_lighting(state);
+
+    crate::app::presentation::building_anim::update_radar_state(state);
+    crate::app::presentation::building_anim::update_power_bar_anim(state);
+    crate::app::presentation::sidebar_gadgets::update_sidebar_gadget_state(state);
+    // Per-frame gadget idle tick (G22 rows 2/3 drag-off/drag-back tracking).
+    crate::app::input::gadget_input::idle_tick(state);
+}
+
+fn update_in_game_tactical_view(state: &mut AppState, tactical_mutation: bool) {
+    if tactical_mutation {
         crate::app::input::camera::animate_zoom(state);
         update_building_placement_preview(state);
     }

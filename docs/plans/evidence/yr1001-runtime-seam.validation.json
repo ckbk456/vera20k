@@ -1,0 +1,321 @@
+{
+  "schema": "yr1001-runtime-seam-validation-v1",
+  "recorded_at_utc": "2026-10-03T15:31:14.145146+00:00",
+  "base_commit": "726f330b60cf06bba82b3fb7e146f1d0b0a46988",
+  "source_leaf_sha256": {
+    "src/app/frame.rs": "81f10cc147416b26a6b81d19b305c013debda8c7eabf7512d5bd7a39b90fd1b0",
+    "src/app/handler.rs": "375dc20e9080bec78f475d8379ee72133a07496da9ed4b362f3d1655ee98d136",
+    "src/app/match_runtime/frame_pacer.rs": "93bdbd937494b094170465eb0c153bf022fe2d1bc984d9951041e1d75d9796b0",
+    "src/app/match_runtime/sim_tick.rs": "01062c40814e728289941dc4db9800bcb58f86b64697359634872d442c994c65",
+    "src/app/mod.rs": "d19b99d0cb3620e865941f8450561bd21d03f4b17e24103fe0b402b987f2cbda",
+    "src/app/runtime_services.rs": "641d621bdd8d5705989b12327a1272a4a4d2684dd7a6bac0312129aac29ce3c7"
+  },
+  "retail_source": {
+    "steam_app": 2229850,
+    "steam_build": 15918130,
+    "language": "English",
+    "gamemd_sha256": "3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600",
+    "ini_files": [
+      {
+        "name": "ai.ini",
+        "source_archive": "ra2.mix -> local.mix",
+        "official_sha256": "1feac6ddea6886b177ddf7e5f8580b7a99a63f12684f2cbb42831671bb7a8a79",
+        "existing_sha256": "1feac6ddea6886b177ddf7e5f8580b7a99a63f12684f2cbb42831671bb7a8a79",
+        "match": true
+      },
+      {
+        "name": "aimd.ini",
+        "source_archive": "ra2md.mix -> localmd.mix",
+        "official_sha256": "5df41eaec00a78d0760ef5eecdf27d65ae1cd537309c7eac973318266986f89d",
+        "existing_sha256": "5df41eaec00a78d0760ef5eecdf27d65ae1cd537309c7eac973318266986f89d",
+        "match": true
+      },
+      {
+        "name": "art.ini",
+        "source_archive": "ra2.mix -> local.mix",
+        "official_sha256": "b477f861063a9509e87b7836b78190204c73bea5ea5595a842c456f5920ea223",
+        "existing_sha256": "b477f861063a9509e87b7836b78190204c73bea5ea5595a842c456f5920ea223",
+        "match": true
+      },
+      {
+        "name": "artmd.ini",
+        "source_archive": "ra2md.mix -> localmd.mix",
+        "official_sha256": "e1f0378394313c04ebbd5073f47785ee3e46f1b3c62d65724e8f3c310ee7ba31",
+        "existing_sha256": "e1f0378394313c04ebbd5073f47785ee3e46f1b3c62d65724e8f3c310ee7ba31",
+        "match": true
+      },
+      {
+        "name": "battle.ini",
+        "source_archive": "ra2.mix -> local.mix",
+        "official_sha256": "a5752a8d49e1c3823fe01a55e0057f91f2996d8b4a78804f197251a79b552a1d",
+        "existing_sha256": "a5752a8d49e1c3823fe01a55e0057f91f2996d8b4a78804f197251a79b552a1d",
+        "match": true
+      },
+      {
+        "name": "battlemd.ini",
+        "source_archive": "ra2md.mix -> localmd.mix",
+        "official_sha256": "7e40691a3480b1e5ffe6d1cdfccb83f67da4447157607ec3ecb5d2278acf0791",
+        "existing_sha256": "7e40691a3480b1e5ffe6d1cdfccb83f67da4447157607ec3ecb5d2278acf0791",
+        "match": true
+      },
+      {
+        "name": "desertmd.ini",
+        "source_archive": "ra2md.mix -> localmd.mix",
+        "official_sha256": "51011ed5e335fa966f1e8fec236e86cfc850561b2d2d5e9b9579cd9116e4d2b7",
+        "existing_sha256": "51011ed5e335fa966f1e8fec236e86cfc850561b2d2d5e9b9579cd9116e4d2b7",
+        "match": true
+      },
+      {
+        "name": "eva.ini",
+        "source_archive": "ra2.mix -> local.mix",
+        "official_sha256": "b4716e8c76c18f7aa01bbfcbe5e348c107393148e10c67fd9ed696e57fbf144b",
+        "existing_sha256": "b4716e8c76c18f7aa01bbfcbe5e348c107393148e10c67fd9ed696e57fbf144b",
+        "match": true
+      },
+      {
+        "name": "evamd.ini",
+        "source_archive": "ra2md.mix -> localmd.mix",
+        "official_sha256": "e4df441ac619ba3b68e84ceee55e3eaf7c64c0410176cf2ea442085da9feeadc",
+        "existing_sha256": "e4df441ac619ba3b68e84ceee55e3eaf7c64c0410176cf2ea442085da9feeadc",
+        "match": true
+      },
+      {
+        "name": "lunarmd.ini",
+        "source_archive": "ra2md.mix -> localmd.mix",
+        "official_sha256": "fcfe324c6c95258052dd3a77d7f7fc903f325ebda87c039136ec9aa8fdb57fea",
+        "existing_sha256": "fcfe324c6c95258052dd3a77d7f7fc903f325ebda87c039136ec9aa8fdb57fea",
+        "match": true
+      },
+      {
+        "name": "missionmd.ini",
+        "source_archive": "ra2md.mix -> localmd.mix",
+        "official_sha256": "ce170ec97fc28589ee971792a31d135e0f0510f878acde3fd0d79a7b7896a775",
+        "existing_sha256": "ce170ec97fc28589ee971792a31d135e0f0510f878acde3fd0d79a7b7896a775",
+        "match": true
+      },
+      {
+        "name": "mpmodesmd.ini",
+        "source_archive": "ra2md.mix -> localmd.mix",
+        "official_sha256": "62d3b5382891ff78b2104e869be8dd0fd8cd2497292d0979774d2397347327ad",
+        "existing_sha256": "62d3b5382891ff78b2104e869be8dd0fd8cd2497292d0979774d2397347327ad",
+        "match": true
+      },
+      {
+        "name": "rmg.ini",
+        "source_archive": "ra2.mix -> local.mix",
+        "official_sha256": "d287b0543e52b5cae6a5f2bb5bfcc4e950961490e9c28c7a3b67969edd9a181a",
+        "existing_sha256": "d287b0543e52b5cae6a5f2bb5bfcc4e950961490e9c28c7a3b67969edd9a181a",
+        "match": true
+      },
+      {
+        "name": "rmgmd.ini",
+        "source_archive": "ra2md.mix -> localmd.mix",
+        "official_sha256": "d287b0543e52b5cae6a5f2bb5bfcc4e950961490e9c28c7a3b67969edd9a181a",
+        "existing_sha256": "d287b0543e52b5cae6a5f2bb5bfcc4e950961490e9c28c7a3b67969edd9a181a",
+        "match": true
+      },
+      {
+        "name": "rules.ini",
+        "source_archive": "ra2.mix -> local.mix",
+        "official_sha256": "fd1e95cea0306ea78049dc81c8cd816e18c28c496872a1ff02edd50bd082062f",
+        "existing_sha256": "f34900cbe115a593adc22a91a7b86e7d4e1511eff995b5170af7d89c8a254d0a",
+        "match": false
+      },
+      {
+        "name": "rulesmd.ini",
+        "source_archive": "expandmd01.mix",
+        "official_sha256": "3d341ef8a13a4b5ab24af2eef48ac94931ac2bb87d950fe3330a07e2d25672ef",
+        "existing_sha256": "3d341ef8a13a4b5ab24af2eef48ac94931ac2bb87d950fe3330a07e2d25672ef",
+        "match": true
+      },
+      {
+        "name": "snow.ini",
+        "source_archive": "ra2.mix -> local.mix",
+        "official_sha256": "c3b4c061704b61cef8eb07f1822472abde7e1cfdf3f395cba6747d16c6e360bb",
+        "existing_sha256": "c3b4c061704b61cef8eb07f1822472abde7e1cfdf3f395cba6747d16c6e360bb",
+        "match": true
+      },
+      {
+        "name": "snowmd.ini",
+        "source_archive": "ra2md.mix -> localmd.mix",
+        "official_sha256": "8e357795fad0d6e3ad383a1044c09a7da0f710790b5992dd987a0a09cf12980f",
+        "existing_sha256": "8e357795fad0d6e3ad383a1044c09a7da0f710790b5992dd987a0a09cf12980f",
+        "match": true
+      },
+      {
+        "name": "sound.ini",
+        "source_archive": "ra2.mix -> local.mix",
+        "official_sha256": "0bae295685bbe7e83d7fbd765d25825df392695676b9e73fa456a5c4305bf6f5",
+        "existing_sha256": "d87f8da9c25c5259eca81a717e4199007455214d96a70092880becb19c1aa426",
+        "match": false
+      },
+      {
+        "name": "soundmd.ini",
+        "source_archive": "expandmd01.mix",
+        "official_sha256": "0a8e85381aef1a0f97074c953bfe99504da00c6220fae1a023a1afd857023232",
+        "existing_sha256": "0a8e85381aef1a0f97074c953bfe99504da00c6220fae1a023a1afd857023232",
+        "match": true
+      },
+      {
+        "name": "temperat.ini",
+        "source_archive": "ra2.mix -> local.mix",
+        "official_sha256": "bf656852ad19636068f2dde6f9ddd1440ecf0e13e6e4de6cd7fb179a3592549d",
+        "existing_sha256": "bf656852ad19636068f2dde6f9ddd1440ecf0e13e6e4de6cd7fb179a3592549d",
+        "match": true
+      },
+      {
+        "name": "temperatmd.ini",
+        "source_archive": "ra2md.mix -> localmd.mix",
+        "official_sha256": "bf656852ad19636068f2dde6f9ddd1440ecf0e13e6e4de6cd7fb179a3592549d",
+        "existing_sha256": "bf656852ad19636068f2dde6f9ddd1440ecf0e13e6e4de6cd7fb179a3592549d",
+        "match": true
+      },
+      {
+        "name": "theme.ini",
+        "source_archive": "ra2.mix -> local.mix",
+        "official_sha256": "fcb705bb6a01b35e70a619197f51b897210f52f4c9653cdbe26de80bee82bd78",
+        "existing_sha256": "fcb705bb6a01b35e70a619197f51b897210f52f4c9653cdbe26de80bee82bd78",
+        "match": true
+      },
+      {
+        "name": "thememd.ini",
+        "source_archive": "ra2md.mix -> localmd.mix",
+        "official_sha256": "b7cf74e6bbac7a0656e4739e9158bd6e9988e867d19bb20c54706b755be23085",
+        "existing_sha256": "b7cf74e6bbac7a0656e4739e9158bd6e9988e867d19bb20c54706b755be23085",
+        "match": true
+      },
+      {
+        "name": "urban.ini",
+        "source_archive": "ra2.mix -> local.mix",
+        "official_sha256": "6b74ebbbd157773ff54b315d5249e27cbfea2322f571b9e8bec2cb9aa3898ee6",
+        "existing_sha256": "6b74ebbbd157773ff54b315d5249e27cbfea2322f571b9e8bec2cb9aa3898ee6",
+        "match": true
+      },
+      {
+        "name": "urbanmd.ini",
+        "source_archive": "ra2md.mix -> localmd.mix",
+        "official_sha256": "d1ac06c81c58d4694009f036d062b10a238caeb19fa8cfac4d96c54342e6cd75",
+        "existing_sha256": "d1ac06c81c58d4694009f036d062b10a238caeb19fa8cfac4d96c54342e6cd75",
+        "match": true
+      },
+      {
+        "name": "urbannmd.ini",
+        "source_archive": "ra2md.mix -> localmd.mix",
+        "official_sha256": "fe64bd6020a24111ac8e086efe7f193912f0dbff1925dc440118b76b7646f785",
+        "existing_sha256": "fe64bd6020a24111ac8e086efe7f193912f0dbff1925dc440118b76b7646f785",
+        "match": true
+      }
+    ],
+    "native_execution_enrollment": "NOT_ENROLLED"
+  },
+  "checks": [
+    {
+      "command": "VERA20K_REQUIRE_RETAIL_INI=1 python3 -m tools.cargo_run -- test -p vera20k --lib",
+      "phase": "before single critic correction; freshly extracted Steam INIs",
+      "passed": 9579,
+      "failed": 0,
+      "ignored": 231,
+      "log_sha256": "1af64e3537422fed14761efa8dd04cd0ad785d2e6227aca67bf92d4298f3c491"
+    },
+    {
+      "command": "VERA20K_REQUIRE_RETAIL_INI=1 python3 -m tools.cargo_run -- test -p vera20k --lib app::runtime_services::tests::exact_capture_sidebar_reconciliation_precedes_sound_drain",
+      "phase": "before ordering fix",
+      "passed": 0,
+      "failed": 1,
+      "expected_failure": true,
+      "log_sha256": "343b078886ca1a029f747634a5184d06869f3e43111891d54a4ab51dee9ae95f"
+    },
+    {
+      "command": "VERA20K_REQUIRE_RETAIL_INI=1 python3 -m tools.cargo_run -- test -p vera20k --lib app::",
+      "phase": "after ordering fix; all affected modules",
+      "passed": 984,
+      "failed": 0,
+      "ignored": 31,
+      "filtered_out": 8796,
+      "log_sha256": "c06af4941abc877a845f1829d9f8c4aca4d23cf31705a7f6afb5f42f710be089"
+    },
+    {
+      "command": "VERA20K_REQUIRE_RETAIL_INI=1 python3 -m tools.cargo_run -- clippy -p vera20k --lib",
+      "phase": "final Rust source after ordering fix",
+      "exit_status": 0,
+      "reported_warnings": 730,
+      "log_sha256": "8a8c9e6f7243e3df8380e2aab8f0f5ca1b8870ad218073b57d29a1c94259023c"
+    },
+    {
+      "command": "python3 tools/sim_field_ratchet.py --base delivery/main",
+      "fields_before": 2513,
+      "fields_after": 2513,
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS"
+    }
+  ],
+  "release": {
+    "command": "python3 -m tools.cargo_run --label yr1001-runtime-seam-reviewed -- build -p vera20k --release --bin vera20k",
+    "result": "PASS",
+    "label": "yr1001-runtime-seam-reviewed",
+    "binary_sha256": "801795b22b55489e6399dded073b0dc6c09406c1e29c6b95e882d1faf9533b22",
+    "source_manifest_sha256": "9646265f8bc1c1c296c4206ebedb074b344b1d829287e2c0176fec325cc0b0f5",
+    "toolchain": "rustc/cargo 1.99.0; aarch64-apple-darwin"
+  },
+  "capture": {
+    "command": "python3 -m tools.map_observation --build-label yr1001-runtime-seam-reviewed --profile tools/map_observation.example.json --contract src/app/diagnostics/tactical_capture/contract.v2.json --cwd <owned-checkout> --output <absolute-new-directory>",
+    "status": "VALID",
+    "child_exit_status": 0,
+    "profile_sha256": "7e3a61effe5862b0c28f18d939020cd9fae7c0f8906aa3b09b0d6a4128858baa",
+    "contract_sha256": "dd5f6ee15f1a393130f9658862c0680300579da3d4fc9dfd8839435ba01471d0",
+    "map_source": {
+      "entry_id": -1828261808,
+      "kind": "mix",
+      "logical_name": "Fight.MAP",
+      "payload_len": 91254,
+      "source_archive": "multimd.mix",
+      "source_sha256": "d751dce7cd3611077e9228c33235f39c71681fff6ac08ca1f716d963ad6ce070"
+    },
+    "gpu": "Apple M5 Pro / Metal",
+    "surface": "800x600; hidden and unfocused",
+    "exact_step_count": 30,
+    "initial": {
+      "binary_frame": 0,
+      "deterministic_state_hash": 2258632039933052791,
+      "simulation_tick": 0,
+      "total_simulation_ms": 0
+    },
+    "final": {
+      "binary_frame": 30,
+      "deterministic_state_hash": 14901026186947208805,
+      "simulation_tick": 30,
+      "total_simulation_ms": 660
+    },
+    "frame_sha256": "a3a1c989ccc273b9c7a3ac8e21a79cadeb6d1eebaef22688c3ae36753acfa9bd",
+    "frame_bytes": 1920000,
+    "manifest_sha256": "ffa12d7a6831e50d9fc6cd6b53dba290620b0562d194b4f22dc2931b5af3b9df",
+    "comparison_to_precritic_capture": "MATCH",
+    "differences": []
+  },
+  "review": {
+    "passes": 1,
+    "confirmed_findings": 1,
+    "severity": "P2",
+    "finding": "Exact capture sidebar reconciliation could enqueue EVA after the final sound drain.",
+    "disposition": "Focused regression first failed; restored sidebar producer before drain and camera/zoom after drain. Post-fix app tests and release capture pass."
+  },
+  "coverage_limits": [
+    "Rust display-schedule regression covers 13 committed frames, one command and one-shot trigger output; not the new App pump or native gameplay.",
+    "Capture uses exact diagnostic stepping; ordinary OS focus/modal/minimize/restore/exit route unavailable and unqualified.",
+    "No native whole-frame, GPU pixel, legacy feel or cross-platform parity claim.",
+    "Event-loop surface stalls still delay simulation. R01 owned handoff and R02-R04 remain open.",
+    "Humans own hands-on playtesting; packet remains pending."
+  ],
+  "local_artifacts": {
+    "logs": ".local/ in the owned yr1001-presentation-runtime worktree",
+    "sealed_captures": [
+      ".local/map-capture",
+      ".local/map-capture-reviewed"
+    ],
+    "comparison": ".local/map-capture-comparison-valid.json",
+    "original_ordinary_app_attempts": "owned children terminated; unavailable CUA control, no committed trace"
+  }
+}

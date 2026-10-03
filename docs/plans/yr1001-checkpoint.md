@@ -1,82 +1,87 @@
 # Vanilla 1.001 — current agentic checkpoint
 
-Updated 2026-10-03. Replace this current state on continuation; do not append a diary.
+Updated 2026-10-03. Replace this current state on continuation; reconcile actual
+Git/PR/process state before acting.
 
-## Scope and authority
+## Scope and delivery
 
-- Faithful vanilla Yuri's Revenge **1.001** first; independent smooth rendering and
-  behavior-preserving optimization. Ares/Phobos and expanded limits are later baselines.
-- Agents automate engineering/checks/native comparisons; humans playtest/assess feel.
-- Implementation, scoped PRs, merges and fast-forward primary main are authorized.
-  Update [masterplan progress](yr1001-masterplan.md#implementation-progress) per task.
-- Delivery: `ckbk456/vera20k` main through `delivery`; `origin` preserves upstream
-  `YuriPlanet/vera20k` as source only. No upstream publication or deployment.
+Faithful vanilla YR1.001 first, smooth independent rendering and deterministic
+optimization. User explicitly authorized Stage2 implementation, scoped PRs, merge
+and fast-forward primary main. Agents own automated checks/native comparisons;
+humans playtest/assess feel. Preserve original assets/config and upstream `origin`.
+Delivery target is `ckbk456/vera20k` through `delivery`, no upstream publication.
 
-## Git and current ownership
+PRs #1/#3/#4 merged; primary input main `726f330b60cf06bba82b3fb7e146f1d0b0a46988`.
+Issue #2 is closed. Current owned branch `feature/yr1001-presentation-runtime` at
+`ra2-yr-rust-worktrees/yr1001-presentation-runtime`; inspect actual HEAD/status.
+Current code is the first bounded R01 event-loop seam. **S2 and whole R01 remain
+open**; interpolation, legacy composite qualification and worker handoff are not
+implemented or certified. [Mechanism and human packet](yr1001-stage2-runtime.md).
 
-- [PR #1](https://github.com/ckbk456/vera20k/pull/1) merged as
-  `0b0993991ac5e34fa0fa313b4b764e94d49998c2`; primary main fast-forwarded there.
-  Its exact-head Python and Clippy workflows passed on Windows/Linux/macOS, and
-  the field ratchet passed. Workflows were manually dispatched after fork bootstrap.
-- [PR #3](https://github.com/ckbk456/vera20k/pull/3) merged as
-  `f554f845bed756f8c58f6dc9532a8f6b618d9744`; all seven exact-head checks passed
-  and primary main fast-forwarded. Main now enforces those checks, including admins.
-- Current owner/worktree: coordinator, `feature/macos-process-fixture`,
-  `/Users/khangcao/Documents/Software/ra2-yr-rust-worktrees/macos-process-fixture`.
-  Input base is delivery main `f554f845`; resolve actual HEAD/PR state with Git/gh.
-- Delivered chain: candidate identity → existing region/golden comparison → saved
-  receipt, with no execution enrollment. Current small follow-up changes only the
-  disposable macOS process-test fixture; production retirement logic, licensed
-  binaries, asset/INI selection, gameplay and rendering remain unchanged.
-- Original assets/config and extracted INIs remain intact. No local Cargo command,
-  game, persistent server or capture process was started for this chain.
+## Completed implementation and checks
 
-## Inputs and actual validation
+- Ordinary redraws no longer advance gameplay or service audio/exit. The existing
+  pacer/admission/runtime/output consumers operate from `about_to_wait`.
+- Hidden/poisoned windows retain service wakes; focus/pause/startup/terminal gates,
+  no catch-up and native-width pacer rollover remain. The 16ms service latency bound
+  is app scheduling, not native legacy composite or gameplay cadence.
+- Exact capture has its explicit one-step owner; power bar, gadget idle, radar and
+  trail composites retain existing display ownership. Borrowed SimView is immutable
+  committed state; no owned worker snapshot or shared mutable simulation is added.
+- Steam source remains primary ignored `.local/steam-baseline-2026-10-03/game/`:
+  app2229850/build15918130/English, acquired436files/1,961,731,509bytes. Candidate
+  gamemd SHA3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600
+  is still rejected by the default native execution gate1cdd1180...84298c.
+- Existing `asset extract` recovered all27previously present INIs into the owned
+  worktree `.local/official-extract/extract`. All YR(*md) files match prior extraction;
+  only RA2 `rules.ini`/`sound.ini` differ. Original files preserved. Owned `ini/` symlink
+  selects fresh Steam extractions; config selects official assets. Receipts ignored.
+- Required full `python3 -m tools.cargo_run -- test -p vera20k --lib` with
+  `VERA20K_REQUIRE_RETAIL_INI=1` and official `RA2_DIR`: **9579passed,0failed,231ignored**.
+  Initial full run also passed; repeat was justified by switching to fresh official
+  INIs. Full lib coverage does not mean all ignored native/GPU/retail routes ran.
+- Required clippy lib passes (730reported existing warnings), including the official
+  input selection. Field ratchet:2513fields, unchanged against delivery main.
+- First runtime-focused checks:6passed. One fresh read-only critic found1P2:
+  exact-step sidebar reconciliation could enqueue EVA after the sound drain.
+  New source-order regression first failed; producer-before-drain restored while
+  camera/zoom stays after drain. Post-fix app check: **984passed,0failed,31ignored**.
+  This covers all changed modules. Final-source clippy also passes after the fix.
+- Initial release label `yr1001-runtime-seam` built app+asset. 30-step Fight.MAP
+  explicit Battle production capture:VALID, hidden/unfocused,800x600,Metal AppleM5Pro,
+  child exit0, no input/focus violations. It exercises diagnostic exact stepping,
+  loading and GPU readback; no native pixel/parity, ordinary OS timing or feel claim.
+  Post-critic release label `yr1001-runtime-seam-reviewed` passes; its new sealed
+  capture is VALID and matches all compared state/render fields from the prior run.
+  [Sanitized receipt](evidence/yr1001-runtime-seam.validation.json) records source,
+  binary, retail input and frame hashes, review disposition and coverage limits.
+- Ordinary quickplay runtime attempts were noncertifying and unfocused, with no
+  committed trace. Raw app UI identity was unavailable; owned bundle CUA controls
+  timed out twice. Exact owned app PIDs were terminated and their sessions completed.
+  No successful ordinary OS focus/modal/minimize/restore/exit acceptance is claimed.
 
-- Official source: English Steam app 2229850, build 15918130, acquired from
-  MAICHI_DESKTOP. All 436 files / 1,961,731,509 bytes matched Windows-source SHA-256.
-  Main ignored `.local/steam-baseline-2026-10-03/` retains files and full receipts.
-  Three genuine movie archives total 1,055,768,688 bytes; playback remains untested.
-- Candidate gamemd SHA `3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600`
-  remains unsupported by the execution gate `1cdd1180...84298c`. The previous runtime
-  copy is separately preserved and also unsupported; no piracy conclusion established.
-- Isolated interpreter: main `.local/native-tools-venv/bin/python` (Python 3.14),
-  pinned Unicorn 2.1.4/Capstone 5.0.7 installed from requirements-test.txt.
-- Focused identity/PE checks: `python -m unittest tools.tests.test_native_inspect
-  tools.tests.test_native_image -v` — **22 passed**. The new identity regression
-  was first observed failing before implementation (missing command).
-- Initial `python -m tools.run_tests` failed: 555 tests, one macOS copied-sleep
-  failure and five optional skips. The child exited SIGKILL (-9) before lsof; an
-  isolated reproduction confirmed it. Signing only the disposable clone makes it
-  stay alive and lsof correctly identifies the running process.
-- After the fixture fix: `python -m unittest tools.tests.test_cargo_labels.ProcessInspectionTests -v`
-  — **3 passed**, including real in-use rejection and idle-after-exit;
-  `python -m tools.run_tests` — **555 tests, passed with five optional skips**.
-  [Issue #2](https://github.com/ckbk456/vera20k/issues/2) is addressed by this chain;
-  no production process-retirement code or system executable was changed.
-- Live `native_inspect identity --reference ramp-height --reference foot-z` —
-  **11/11 region hashes match** the existing pinned-image reference artifacts.
-  [Saved report](../../tools/native_inspect.steam-15918130.identity.json) contains
-  actual candidate/reference/section hashes and bounds. This is static byte evidence,
-  never native execution or gameplay parity. All other inspection/execution paths
-  still reject this candidate; live `sections` returned exit 2 with empty stdout.
-- One fresh read-only identity critic found no actionable defects and independently
-  checked saved hashes against source bytes; its reviewed scope merged in PR #3.
-  The small macOS test-fixture follow-up has owner review and local validation;
-  delivery status must be read from its actual PR/checks, never inferred from docs.
+## Next safe actions and unresolved scope
 
-## Ready queue and outstanding acceptance
+Publish and link one R01 scoped PR, enable authorized auto-merge, confirm seven exact-head
+checks and merge, fast-forward clean primary main, then dry-run owned label retirement.
+Do not report Stage2 complete when this seam merges.
 
-1. Publish the validated macOS process-fixture follow-up, wait for seven exact-head
-   CI checks, merge and fast-forward primary main. If already merged, continue B01.
-2. B01 remains open: qualify actual Steam function/caller/global/address/behavior
-   compatibility and production-selected retail input/layer identities. Matching
-   11 code regions cannot admit every fixture or establish patch/gameplay identity.
-3. B02: select a bounded execution profile (RNG seed/draw is a discovery lead), prove
-   its reachable bodies/constants/calling convention before any execution enrollment.
-   Windows SSH inventory/transfer works; interactive game/capture remains unqualified.
-4. B03 native capability census can proceed independently; then F01–F03 joined frame
-   authority/comparison before R01 smooth-render handoff or gameplay porting.
+Continue the prerequisite native profile/frame/command/comparison chain before
+R02/R03. F01 still has app22ms vs headless66ms inputs; F02/F03 joined native production
+histories are open. R02's selected W02 numeric/future-state domain is unqualified;
+R03's trail callback is composite-owned, with no universal fixed-Hz proof. R04 needs
+actual owned immutable reader/command/ack transport; synchronous GPU stalls still
+block this event-loop thread.
 
-Human packets HP0–HP6: none ready or accepted. Whole B01/B02 and all later gameplay,
-network/native-save/campaign/platform/media acceptance remain open.
+Research lead (static only, not enrollment): candidate entire .text401000..7E1000
+SHA4cd5557a7490debc493ff965afc4483d8d2f1065f434f6b665cbb8fc4835b0cc matches
+historical cmin_dock guards.11line-trail and4drive-fresh-turn ranges plus selected
+vtable guards match. A bounded profile in existing native_oracle can join offline
+Main_Tick timer setup55D440..55D7C2, clock6C8C40/timeGetTime and throttle55E160,
+with controlled OS/gameplay sinks; default unknown-candidate execution stays closed.
+FV paid-movement corpus is the strongest existing W02 lead, but native f64→SimFixed
+and Stop precision residuals require resolution. These are engineering prerequisites,
+not a demonstrated need for a different download or new human permission.
+
+Human seam packet is drafted; all hands-on/platform/feel acceptance remains pending.
+HP1 smooth-motion packet is not ready. Resolve current command/PR state on resumption.
