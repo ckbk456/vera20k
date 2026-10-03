@@ -29,7 +29,9 @@ aging. One fresh critic found two P2 defects; failed-first tests confirm both fi
 Final retail lib9588/0/231, clippy and Python573/five skips pass. Native artifacts
 unchanged. Release label `yr1001-legacy-composite-reviewed` and four sealed captures
 are retained. Compared gameplay transcripts match; only flight/impact Bullet/trail
-pixels differ, initial/drained frames match. Scoped PR and merge remain; no second
+pixels differ, initial/drained frames match. [PR #7](https://github.com/ckbk456/vera20k/pull/7)
+is open; implementation commit `c305e84b28f08d377fc8eb730d301ecfb27e3ddc`.
+Required exact-head CI, auto-merge and primary fast-forward remain; no second
 critic is required. Root owns docs and delivery;
 independent F01 research is read-only. No owned active Cargo/app command.
 The completed clock worktree remains clean with ignored captures/logs.
