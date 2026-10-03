@@ -179,27 +179,37 @@ impl SimRuntime {
     pub fn advance_frame_for_tooling(
         &mut self,
         commands: &[crate::sim::command::CommandEnvelope],
-        tick_ms: u32,
+        diagnostic_frame_ms: u32,
     ) -> Result<(), crate::sim::world::FrameAdvanceError> {
-        self.advance_frame(commands, tick_ms, crate::sim::world::TickLane::Ordinary)
-            .map(|_| ())
+        self.advance_frame(
+            commands,
+            diagnostic_frame_ms,
+            crate::sim::world::TickLane::Ordinary,
+        )
+        .map(|_| ())
     }
 
     /// The production frame transaction: advance one lane-tagged frame using
     /// the bound immutable resources. Callers cannot substitute rules, maps,
     /// registries, definitions, or navigation (the simulation pins its own
     /// canonical path snapshot internally).
+    /// `diagnostic_frame_ms` only labels nominal elapsed time; admission,
+    /// movement, combat and native timers follow the admitted frame instead.
+    /// Authenticated Steam Main55DC9E/55DE81 runs Logic and commits a frame
+    /// even with zero measured wall delta: tools/projectile_oracle/
+    /// line_trail_steam_cadence.{json,meta.json}, normal_pre_logic and
+    /// uncapped_each_main. Its Logic body is a declared sink, not unit parity.
     pub(crate) fn advance_frame(
         &mut self,
         commands: &[crate::sim::command::CommandEnvelope],
-        tick_ms: u32,
+        diagnostic_frame_ms: u32,
         lane: crate::sim::world::TickLane,
     ) -> Result<crate::sim::world::SimFrameOutput, crate::sim::world::FrameAdvanceError> {
         self.simulation.advance_app_frame(
             commands,
             Some(&self.resources.rules),
             Some(&self.resources.overlay_registry),
-            tick_ms,
+            diagnostic_frame_ms,
             lane,
             Some(crate::sim::world::TriggerInputs {
                 graph: &self.resources.trigger_graph,
@@ -224,6 +234,75 @@ impl SimRuntime {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn zero_diagnostic_duration_advances_frames_like_original_zero_wall_main() {
+        // Reuse the authenticated full Main controls; its Logic callback is
+        // a declared sink. This compares frame admission/commit, not unit AI.
+        let native: serde_json::Value = serde_json::from_str(include_str!(
+            "../../tools/projectile_oracle/line_trail_steam_cadence.json"
+        ))
+        .expect("native Main cadence controls");
+        for name in ["normal_pre_logic", "uncapped_each_main"] {
+            let case = native["cases"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|case| case["input"]["name"] == name)
+                .expect("zero wall-time native control");
+            for clock in ["frame_clock", "millisecond_clock"] {
+                assert!(
+                    case["input"][clock]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .all(|word| word == 0)
+                );
+            }
+            let mut runtime = SimRuntime::from_simulation(Simulation::new());
+            for step in case["steps"].as_array().unwrap() {
+                let output = runtime
+                    .advance_frame(&[], 0, crate::sim::world::TickLane::Ordinary)
+                    .expect("admitted zero-label frame");
+                let expected = &step["output"];
+                assert!(output.tick.frame_committed);
+                assert_eq!(
+                    u64::from(runtime.simulation.session.binary_frame),
+                    expected["binary_frame"].as_u64().unwrap()
+                );
+                assert_eq!(
+                    runtime.simulation.session.tick,
+                    expected["wall_accounting"]["calls"].as_u64().unwrap()
+                );
+                assert_eq!(
+                    runtime.simulation.session.total_sim_ms,
+                    expected["wall_accounting"]["elapsed_sum"].as_u64().unwrap()
+                );
+                let calls: Vec<_> = expected["events"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .filter_map(|event| event["call"].as_str())
+                    .filter(|call| {
+                        matches!(
+                            *call,
+                            "logic" | "commands" | "frame_increment" | "throttle" | "pending_drain"
+                        )
+                    })
+                    .collect();
+                assert_eq!(
+                    calls,
+                    [
+                        "logic",
+                        "commands",
+                        "frame_increment",
+                        "throttle",
+                        "pending_drain"
+                    ]
+                );
+            }
+        }
+    }
 
     #[test]
     fn staged_trigger_state_reaches_bound_frames_and_survives_restore() {

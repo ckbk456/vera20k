@@ -1,0 +1,142 @@
+{
+  "schema": "yr1001-frame-duration-validation-v1",
+  "recorded_utc": "2026-10-03T18:59:32.296521+00:00",
+  "base_sha": "7743c549e757a9d93e2458bf14fb2571cdfe7375",
+  "source_frozen_during_cargo": true,
+  "environment": {
+    "retail_source": "Authenticated Steam app2229850/build15918130/English; official ignored intake, no retail files committed.",
+    "required_retail_ini": true,
+    "toolchain": "rustc/cargo1.99.0 aarch64-apple-darwin",
+    "supported_platform_validation": "Local macOS retail checks; remote platform CI remains pending at publication."
+  },
+  "source_sha256": {
+    "src/app/initialize.rs": "41903075f3543c87113f039d145c7409a86dba90ac0a10cefd4004475de5168d",
+    "src/app/types.rs": "bf2e64cee46f285165857d12accfa9cc9bab2ac9e3022967348698eab9e7d6de",
+    "src/headless_scenario.rs": "fdc5368445bfbcfcc73f27ed2f6198788e6a34f6270b36e2e7850063c77c9b15",
+    "src/sim/combat/aircraft_release_tests.rs": "949af4de751963a27cda6d5739b78008cf2511baefdbaa8d14df36bd1ff99a4a",
+    "src/sim/combat/combat_cloak_fire_tests.rs": "0fa53ddde15b0cc5c91c6a4a9772d81780d84edf54a124ec40a54e7394bf5bbf",
+    "src/sim/combat/combat_pursuit_tests.rs": "be94056db70a56aa992b01074504be0e9684689ee6445ca4ea3d553fb90c6548",
+    "src/sim/combat/combat_tests.rs": "87564f923751ded9553219a13e43ce532e924d85ef2f6a5b144b525d2ef4500b",
+    "src/sim/combat/combat_turret_facing_tests.rs": "b709749980c57cb7b4daa519c0e67e1854aa7bafafbf7a4c4efa6eab2d363eb1",
+    "src/sim/combat/delayed_building_fire_tests.rs": "6557c97cce32aedf2a9e4d0481b09eabd6e528f98b2483849a567792c21b8a0e",
+    "src/sim/combat/fire_error_world_tests.rs": "369a203f87f6bd1b097632ae017f8b3871de8aeee16a970e758355b6c8a22d57",
+    "src/sim/combat/infantry_fire_facing_tests.rs": "869f1a6fda393eda890f6a8c113027dfd5f5d929268a30afa686a4cc6155ffc2",
+    "src/sim/combat/mod.rs": "c3e521374c1bc3f0c44916438135ae7546b836619553930103d812aecee91361",
+    "src/sim/combat/receiver_fixture.rs": "78ca09e2d4902a662c69cfca537f88f6bfa15cc1186ac815cfb067100285e3ea",
+    "src/sim/combat/world_receiver.rs": "6b85d2a431f1834f77e82196716969caca075156773ee5197b84671ce329bcd2",
+    "src/sim/replay.rs": "7cd34262bf19d3be131f2a6b4434face34de5eb29e3f74cf20b50a465d3b78bf",
+    "src/sim/runtime.rs": "5a07e258ec0502e253f1ddcfd7872df51e698637ca350198e2dcb47cd3213192",
+    "src/sim/spawn_manager_tests.rs": "c91ea8cbd04cf43dd20b23d1a7176d1b251d0b2faa12c3edc4326c7082bbd8a1",
+    "src/sim/world/lifecycle_tests.rs": "bd3f0a52a857cf2014b1f96006fa0027eddbbef9ddc97b986eade09ddf7ef476",
+    "src/sim/world/mod.rs": "e1a72fa3c924af75e2fa689012d91bae3528c655a8db84745e20c7eec996b648",
+    "src/sim/world/techno_ai/building_gattling_tests.rs": "158d09feac01a5c26661ae44fba2008ce1862e0431801626d6049a01e9ae720c",
+    "src/sim/world/unit_fire_turn_tests.rs": "0428ff8a5569e9a575d82b80d1dadae04ed551a52cfcbeecbba523439e4b8a49",
+    "src/sim/world/world_hash.rs": "32958a21f08254936f53d91fea54c90bb50cda83b7e1eb1fc282e17c49c4d75d",
+    "src/sim/world/world_tests.rs": "b5c1397be1c535822e2d781860e4099eb46f46ee8a280c58c38d013b5636f36a",
+    "src/util/fixed_math.rs": "2a7561c695095abace15952da82683fb66e35508260346e936986f06133229e9",
+    "tools/ini_lookup.md": "f6c4c5ae4c755774c851839f07c11cca00e0624c2ea3459126738831fc2aaae9"
+  },
+  "native_evidence_sha256": {
+    "tools/projectile_oracle/line_trail_steam_cadence.json": "e19befc9531bb620003d5d5c34c92b14cdae1c43c949cccd7b65f310ec128163",
+    "tools/projectile_oracle/line_trail_steam_cadence.meta.json": "6060860c5c0c2e1b23f4bab80bc4ed819331f145fbfba001461571a7a6870bdb"
+  },
+  "checks": [
+    {
+      "name": "impact-first-fail",
+      "session_id": 10992,
+      "exit_code": 101,
+      "command": "python3 -m tools.cargo_run -- test -p vera20k --lib sim::spawn_manager_tests::missile_impact_kills_through_the_shared_death_pipeline",
+      "log": ".local/frame-duration-validation/impact-before.log",
+      "expected_failure": "queued impact must kill the target even at diagnostic duration 0",
+      "log_sha256": "733eaca894b0ec2246dbab2398353c0907c16eb78d435e8c8a803e6719e6b21c"
+    },
+    {
+      "name": "spawn-manager-focused",
+      "session_id": 86106,
+      "exit_code": 0,
+      "command": "python3 -m tools.cargo_run -- test -p vera20k --lib sim::spawn_manager_tests::",
+      "log": ".local/frame-duration-validation/spawn-focused.log",
+      "passed": 33,
+      "failed": 0,
+      "ignored": 0,
+      "log_sha256": "10d10490468b5e9d3c09db895177941e8d09d12d3aa1943cac669ef45375ea62",
+      "literal_result": "test result: ok. 33 passed; 0 failed; 0 ignored; 0 measured; 9787 filtered out; finished in 0.37s"
+    },
+    {
+      "name": "native-main-golden-focused",
+      "session_id": 86106,
+      "exit_code": 0,
+      "command": "python3 -m tools.cargo_run -- test -p vera20k --lib sim::runtime::tests::zero_diagnostic_duration_advances_frames_like_original_zero_wall_main",
+      "log": ".local/frame-duration-validation/native-main-focused.log",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "log_sha256": "bee6c9889f6fd5dd0a5ec5d2150562a69c3d33b54d1226ec3818ea1cd6da4a4b",
+      "literal_result": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 9819 filtered out; finished in 0.00s"
+    },
+    {
+      "name": "final-retail-lib",
+      "session_id": 84351,
+      "exit_code": 0,
+      "command": "python3 -m tools.cargo_run -- test -p vera20k --lib",
+      "log": ".local/frame-duration-validation/lib-final.log",
+      "passed": 9589,
+      "failed": 0,
+      "ignored": 231,
+      "log_sha256": "90b6616ce71c9a3d3c4a528a985e8aa0268a644363819e0b5fe647a143b95f4d",
+      "literal_result": "test result: ok. 9589 passed; 0 failed; 231 ignored; 0 measured; 0 filtered out; finished in 38.01s"
+    },
+    {
+      "name": "final-clippy",
+      "session_id": 68341,
+      "exit_code": 0,
+      "command": "python3 -m tools.cargo_run -- clippy -p vera20k --lib",
+      "log": ".local/frame-duration-validation/clippy-final.log",
+      "log_sha256": "fc9a74adde653cb732e2bcac8bba2d53001b5742d777cdc728c0f9ada260e356"
+    },
+    {
+      "name": "field-ratchet",
+      "exit_code": 0,
+      "command": "python3 tools/sim_field_ratchet.py --base delivery/main",
+      "log": ".local/frame-duration-validation/field-ratchet.log",
+      "base_fields": 2513,
+      "candidate_fields": 2513,
+      "log_sha256": "d234c289faee57c97c092804e8256b141a74962f638b2c1ce35d33ff4d6e7e77"
+    },
+    {
+      "name": "diff-check",
+      "exit_code": 0,
+      "command": "git diff --check",
+      "log": ".local/frame-duration-validation/diff-check.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "residuals": [
+    "Original Main zero-wall frame controls use a declared Logic sink; no whole missile gameplay parity.",
+    "Native Rocket impact applies inline; Rust impact remains queued to combat tail.",
+    "App22ms/headless66ms remain nominal diagnostic labels; sparkle consumes those labels; sealed capture22ms convention retained."
+  ],
+  "retention_observation": "First-fail retention blocked after cache-roots changed during inspection; files preserved. Later focused retention trimmed; final runs under budget.",
+  "literal_local_results_sha256": "b5aa984c08310af533f34def92f6766962695060b29ddca73454c307ab1f3bb5",
+  "candidate_identity": "Uncommitted source at base_sha; source_sha256 pins every validated changed leaf. Progress/rationale/receipt docs added after Cargo without source changes.",
+  "evidence_levels": {
+    "native_behavior_established": "Original Main55D360 calls Logic55AFB0 at55DC9E without elapsed-time argument and commits Frame at55DE81. Existing authenticated zero-clock executions cover bounded caller admission/order.",
+    "rust_regression_tested": "Real V3 pool-child detonation through bound Ordinary SimRuntime for labels0/1/22/66/1000/u32MAX compares complete frame output, three complete RNG objects, lifecycle trace, health/death and hash.",
+    "parity_demonstrated": "Only bounded Main caller/frame-admission controls compared to committed native goldens; no native combat damage or whole gameplay parity.",
+    "human_accepted": false
+  },
+  "rng_timer_detach": {
+    "native_controls": "Logic/body/scene/service calls are declared ABI sinks where listed in existing corpus; native caller order only.",
+    "rust_impact_path": "Existing detonate_missiles, ReceiveDamage, fatal lifecycle, removal and all RNG owners unchanged; test compares full RNG states, frame output and target UnInit removal trace.",
+    "timers": "Native binary frame increments once per admitted frame; diagnostic nominal elapsed accumulation remains separate and saturating. No timer representation/cadence added.",
+    "detach": "No detach owner or sequence added; ordinary frame remains responsible for pending cleanup."
+  },
+  "critic": {
+    "agent": "frame_duration_critic",
+    "passes": 1,
+    "read_only": true,
+    "actionable_findings": 0,
+    "independent_checks": "All25 changed leaf hashes, both unchanged native artifacts and all validation logs/results; complete production duration and combat callers traced.",
+    "limits": "No tests/builds/native execution rerun; bounded evidence and residuals retained."
+  }
+}

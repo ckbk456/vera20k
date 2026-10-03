@@ -84,7 +84,6 @@ fn coil_shot(tank_at: (u16, u16), setup: impl FnOnce(&mut GameEntity)) -> (i32, 
         &rules,
         &mut interner,
         1,
-        67,
         1,
         &mut rng,
     );
@@ -166,7 +165,6 @@ fn a_warping_in_unit_holds_fire_until_it_lands() {
             &rules,
             &mut interner,
             1,
-            67,
             1,
             &mut rng,
         );
@@ -204,7 +202,6 @@ fn combat_frame(
         None,
         None,
         1,
-        67,
         1,
         &[],
         None,

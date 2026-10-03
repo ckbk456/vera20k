@@ -10,8 +10,8 @@
 //! where armor_index is looked up from the target's Armor string.
 //!
 //! ## Rate of fire
-//! ROF in rules.ini is measured in game frames (at 15 fps in original RA2).
-//! We convert to simulation ticks using integer math.
+//! ROF in rules.ini is measured in gameplay frames. Its countdown follows
+//! the admitted native frame counter, independently of nominal host milliseconds.
 //!
 //! ## Dependency rules
 //! - Part of sim/ — depends on sim/components and rules/ (RuleSet).
@@ -3491,7 +3491,6 @@ mod impact_height_tests {
             None,
             Some(&mut terrain),
             0,
-            100,
             0,
             &[1],
             None,

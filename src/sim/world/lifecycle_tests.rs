@@ -5116,7 +5116,6 @@ fn gsi_05_04_intact_bridge_cell_target_reaches_shrapnel_consumer() {
     let result = sim.tick_combat_with_fatal_lifecycle(
         &rules,
         None,
-        100,
         &[],
         &std::collections::BTreeSet::new(),
         &Default::default(),
@@ -5189,7 +5188,6 @@ fn gsi_05_04_combat_fatal_expiry_keeps_authoritative_cell_target() {
     let _ = sim.tick_combat_with_fatal_lifecycle(
         &rules,
         None,
-        100,
         &logic_order,
         &std::collections::BTreeSet::new(),
         &Default::default(),
@@ -5326,7 +5324,6 @@ fn gsi_05_04_combat_fatal_garrison_recursion_keeps_cell_target() {
     let _ = sim.tick_combat_with_fatal_lifecycle(
         &rules,
         None,
-        100,
         &logic_order,
         &std::collections::BTreeSet::new(),
         &Default::default(),

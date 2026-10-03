@@ -4125,9 +4125,9 @@ mod native_frame_tests {
     #[test]
     fn one_advance_is_one_native_frame_for_any_host_duration() {
         let mut sim = Simulation::new();
-        let host_durations = [0, 1, 22, 67, 1_000, u32::MAX];
-        for (index, tick_ms) in host_durations.into_iter().enumerate() {
-            sim.advance_tick(&[], None, None, None, tick_ms);
+        let diagnostic_durations = [0, 1, 22, 66, 1_000, u32::MAX];
+        for (index, diagnostic_frame_ms) in diagnostic_durations.into_iter().enumerate() {
+            sim.advance_tick(&[], None, None, None, diagnostic_frame_ms);
             assert_eq!(sim.session.binary_frame, index as u32 + 1);
         }
     }

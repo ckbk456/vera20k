@@ -884,8 +884,8 @@ mod tests {
             let mut victory_edges = 0;
             let mut terminal_frame = None;
             for frame in 1..=300 {
-                // Use the app's cadence and bound production transaction, not
-                // the tooling tick helper's different millisecond cadence.
+                // Use the app's diagnostic label and bound production
+                // transaction; the label does not choose frame admission.
                 let output = loaded
                     .runtime
                     .advance_frame(&[], crate::app::types::SIM_TICK_MS, TickLane::Ordinary)

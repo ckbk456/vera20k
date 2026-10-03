@@ -772,81 +772,117 @@ fn a_launcher_asks_its_locomotor_whether_it_is_moving() {
 
 #[test]
 fn missile_impact_kills_through_the_shared_death_pipeline() {
-    // The retail contract is that a missile impact runs the same
-    // damage -> death -> despawn path as any other detonation. Asserting only
-    // "health went down" passes even when nothing handles the kill, so this
-    // takes a target the missile can actually destroy and asserts it is gone.
-    let rules = make_spawner_rules();
-    let mut sim = Simulation::new();
-    let v3 = sim
-        .spawn_object("V3", "Soviet", 10, 10, 0, &rules)
-        .expect("spawn V3");
-    // FRAGILE (Strength=50) sits well under the V3's 200 damage.
-    let target = sim
-        .spawn_object("FRAGILE", "Americans", 20, 20, 0, &rules)
-        .expect("spawn FRAGILE");
-    let child_id = sim
-        .substrate
-        .entities
-        .get(v3)
-        .and_then(|e| e.spawn_manager.as_ref())
-        .and_then(|m| m.slots[0].spawn)
-        .expect("child");
-
-    // Drive the missile straight to detonation without simulating the flight.
-    crate::sim::movement::rocket_movement::attach_rocket_state_with_payload(
-        &mut sim.substrate.entities,
-        child_id,
-        (10, 10),
-        (20, 20),
-        crate::util::fixed_math::SimFixed::from_num(15),
-        Some(crate::sim::movement::rocket_movement::RocketPayload {
-            warhead: sim.interner.intern("V3WH"),
-            damage: 200,
-            firer_id: v3,
-        }),
-        sim.session.binary_frame,
-    );
-    let _ = sim.reveal(child_id);
-
-    crate::sim::spawn_manager::detonate_missiles(&mut sim, &[child_id]);
-    assert_eq!(
-        sim.pending_missile_detonations.len(),
-        1,
-        "the impact is queued for the combat phase, not applied here"
-    );
-    assert!(
-        sim.substrate
+    // Each case uses the real pool, detonation producer, and bound ordinary
+    // frame. Host nominal milliseconds label diagnostics; they do not admit
+    // or suppress a queued gameplay impact. Native Rocket impact timing stays
+    // an explicit separate residual (native inline, Rust queued).
+    let mut reference = None;
+    for diagnostic_frame_ms in [0, 1, 22, 66, 1000, u32::MAX] {
+        // The retail contract is that a missile impact runs the same
+        // damage -> death -> despawn path as any other detonation. Asserting only
+        // "health went down" passes even when nothing handles the kill, so this
+        // takes a target the missile can actually destroy and asserts it is gone.
+        let rules = make_spawner_rules();
+        let mut sim = Simulation::new();
+        let v3 = sim
+            .spawn_object("V3", "Soviet", 10, 10, 0, &rules)
+            .expect("spawn V3");
+        // FRAGILE (Strength=50) sits well under the V3's 200 damage.
+        let target = sim
+            .spawn_object("FRAGILE", "Americans", 20, 20, 0, &rules)
+            .expect("spawn FRAGILE");
+        let child_id = sim
+            .substrate
             .entities
-            .get(child_id)
-            .is_none_or(|c| c.dying || !c.lifecycle.object_alive),
-        "the missile leaves the world at the detonation moment"
-    );
+            .get(v3)
+            .and_then(|e| e.spawn_manager.as_ref())
+            .and_then(|m| m.slots[0].spawn)
+            .expect("child");
 
-    assert!(
-        sim.substrate
-            .entities
-            .get(target)
-            .is_some_and(|t| t.lifecycle.object_alive && t.health.current == 50),
-        "fixture guard: the target is still alive before the combat phase runs"
-    );
+        // Drive the missile straight to detonation without simulating the flight.
+        crate::sim::movement::rocket_movement::attach_rocket_state_with_payload(
+            &mut sim.substrate.entities,
+            child_id,
+            (10, 10),
+            (20, 20),
+            crate::util::fixed_math::SimFixed::from_num(15),
+            Some(crate::sim::movement::rocket_movement::RocketPayload {
+                warhead: sim.interner.intern("V3WH"),
+                damage: 200,
+                firer_id: v3,
+            }),
+            sim.session.binary_frame,
+        );
+        let _ = sim.reveal(child_id);
 
-    // One tick: the queued impact is expanded by combat and resolved by the
-    // shared death handling.
-    sim.advance_tick(&[], Some(&rules), None, None, 67);
-    sim.flush_pending_delete();
+        crate::sim::spawn_manager::detonate_missiles(&mut sim, &[child_id]);
+        assert_eq!(
+            sim.pending_missile_detonations.len(),
+            1,
+            "the impact is queued for the combat phase, not applied here"
+        );
+        assert!(
+            sim.substrate
+                .entities
+                .get(child_id)
+                .is_none_or(|c| c.dying || !c.lifecycle.object_alive),
+            "the missile leaves the world at the detonation moment"
+        );
 
-    assert!(
-        sim.substrate
-            .entities
-            .get(target)
-            .is_none_or(|t| t.dying || !t.lifecycle.object_alive),
-        "a target the missile takes to zero must actually die, not stand at 0 HP"
-    );
-    assert!(
-        sim.pending_missile_detonations.is_empty(),
-        "the queue is drained after combat"
-    );
+        assert!(
+            sim.substrate
+                .entities
+                .get(target)
+                .is_some_and(|t| t.lifecycle.object_alive && t.health.current == 50),
+            "fixture guard: the target is still alive before the combat phase runs"
+        );
+        sim.clear_lifecycle_test_events_for_test();
+        let mut runtime = crate::sim::runtime::SimRuntime::from_simulation(sim);
+        runtime.resources.rules = rules;
+        let output = runtime
+            .advance_frame(
+                &[],
+                diagnostic_frame_ms,
+                crate::sim::world::TickLane::Ordinary,
+            )
+            .expect("ordinary impact frame");
+        let sim = &runtime.simulation;
+        assert!(output.tick.frame_committed);
+        assert_eq!(sim.session.tick, 1);
+        assert_eq!(sim.session.binary_frame, 1);
+        assert_eq!(sim.session.total_sim_ms, u64::from(diagnostic_frame_ms));
+        assert!(
+            sim.entities()
+                .get(target)
+                .is_none_or(|t| t.dying || !t.lifecycle.object_alive),
+            "queued impact must kill the target even at diagnostic duration {diagnostic_frame_ms}"
+        );
+        assert!(sim.pending_missile_detonations.is_empty());
+        assert!(
+            sim.lifecycle_test_events_for_test()
+                .iter()
+                .any(|event| matches!(
+                    event, crate::sim::world::LifecycleTestEvent::UninitRemovalNotifyBoundary {
+                        stable_id, ..
+                    } if *stable_id == target
+                )),
+            "the killing impact must run the target's real lifecycle"
+        );
+        let observation = (
+            format!("{output:?}"),
+            sim.rng_state(),
+            sim.lifecycle_test_events_for_test().to_vec(),
+            sim.state_hash(),
+            sim.entities()
+                .get(target)
+                .map(|target| (target.health.current, target.lifecycle.object_alive)),
+        );
+        if let Some(reference) = &reference {
+            assert_eq!(&observation, reference, "duration {diagnostic_frame_ms}");
+        } else {
+            reference = Some(observation);
+        }
+    }
 }
 #[test]
 fn v3_attack_order_damages_the_target_through_the_spawned_rocket() {

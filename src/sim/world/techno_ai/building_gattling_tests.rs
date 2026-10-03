@@ -375,7 +375,6 @@ fn combat_phase_shot(
     let result = sim.tick_combat_with_fatal_lifecycle(
         rules,
         None,
-        67,
         &[building],
         &Default::default(),
         &requests,

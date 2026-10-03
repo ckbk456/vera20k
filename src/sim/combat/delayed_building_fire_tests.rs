@@ -66,7 +66,6 @@ fn combat_visit(
         rules,
         &mut sim.interner,
         u64::from(frame),
-        100,
         frame,
         main_rng,
     )

@@ -1871,7 +1871,6 @@ impl Simulation {
         &mut self,
         rules: &RuleSet,
         overlay_registry: Option<&crate::map::overlay_types::OverlayTypeRegistry>,
-        tick_ms: u32,
         logic_order: &[u64],
         fire_suppressed: &BTreeSet<u64>,
         fire_requests: &crate::sim::combat::FireRequests,
@@ -1884,7 +1883,6 @@ impl Simulation {
             &mut run,
             rules,
             overlay_registry,
-            tick_ms,
             logic_order,
             fire_suppressed,
             fire_requests,
@@ -5870,7 +5868,7 @@ impl Simulation {
         commands: &[CommandEnvelope],
         rules: Option<&RuleSet>,
         overlay_registry: Option<&crate::map::overlay_types::OverlayTypeRegistry>,
-        tick_ms: u32,
+        diagnostic_frame_ms: u32,
         execute_tick: u64,
         executed_commands: &mut usize,
         spawned_entities: &mut bool,
@@ -5915,7 +5913,10 @@ impl Simulation {
         // frame N. Stored-start timer consumers therefore capture N, and the
         // next admitted advance begins on N+1. Host-provided milliseconds are
         // retained for diagnostics only and never determine the frame.
-        self.session.total_sim_ms = self.session.total_sim_ms.saturating_add(tick_ms as u64);
+        self.session.total_sim_ms = self
+            .session
+            .total_sim_ms
+            .saturating_add(u64::from(diagnostic_frame_ms));
         self.session.binary_frame = self.session.binary_frame.wrapping_add(1);
         #[cfg(test)]
         self.trace_master_frame_rung(MasterFrameTestRung::FrameCommit);
@@ -6086,14 +6087,14 @@ impl Simulation {
         rules: Option<&RuleSet>,
         path_grid: Option<&PathGrid>,
         overlay_registry: Option<&crate::map::overlay_types::OverlayTypeRegistry>,
-        tick_ms: u32,
+        diagnostic_frame_ms: u32,
     ) -> TickResult {
         self.install_fixture_path_grid(path_grid);
         self.advance_master_frame(
             commands,
             rules,
             overlay_registry,
-            tick_ms,
+            diagnostic_frame_ms,
             TickLane::Ordinary,
             None,
         )
@@ -6112,7 +6113,7 @@ impl Simulation {
         commands: &[CommandEnvelope],
         rules: Option<&RuleSet>,
         overlay_registry: Option<&crate::map::overlay_types::OverlayTypeRegistry>,
-        tick_ms: u32,
+        diagnostic_frame_ms: u32,
         lane: TickLane,
         trigger_inputs: Option<TriggerInputs<'_>>,
     ) -> Result<SimFrameOutput, FrameAdvanceError> {
@@ -6120,7 +6121,7 @@ impl Simulation {
             commands,
             rules,
             overlay_registry,
-            tick_ms,
+            diagnostic_frame_ms,
             lane,
             trigger_inputs,
         )?;
@@ -6169,7 +6170,7 @@ impl Simulation {
         commands: &[CommandEnvelope],
         rules: Option<&RuleSet>,
         overlay_registry: Option<&crate::map::overlay_types::OverlayTypeRegistry>,
-        tick_ms: u32,
+        diagnostic_frame_ms: u32,
         lane: TickLane,
         trigger_inputs: Option<TriggerInputs<'_>>,
     ) -> Result<TickResult, FrameAdvanceError> {
@@ -6386,7 +6387,6 @@ impl Simulation {
             let combat_result = self.tick_combat_with_fatal_lifecycle(
                 rules,
                 overlay_registry,
-                tick_ms,
                 &logic_order,
                 &fire_suppressed,
                 &fire_requests,
@@ -6521,7 +6521,7 @@ impl Simulation {
             },
             rules,
             overlay_registry,
-            tick_ms,
+            diagnostic_frame_ms,
             execute_tick,
             &mut executed_commands,
             &mut spawned_entities,
