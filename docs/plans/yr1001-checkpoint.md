@@ -21,7 +21,9 @@ delivered. [Mechanism, receipt and human packet](yr1001-stage2-runtime.md).
 Worktree `ra2-yr-rust-worktrees/yr1001-clock-qualification`, branch
 `feature/yr1001-clock-qualification`, base `627f982b`. Complete bounded native
 clock/offline timer/throttle qualifier plus production pacer correction is validated
-and uncommitted/unpublished. Root owns docs/publication. No active owned build/test
+at implementation commit `509d7accc4d3904696615285541c36d8aa07ad10`.
+[PR #6](https://github.com/ckbk456/vera20k/pull/6) is open, ready and linked; all
+seven exact-head CI checks/merge are pending. Root owns docs/publication. No active owned build/test
 or app process; one independent critic completed with no confirmed defects.
 
 [Clock chain](yr1001-clock-qualification.md) and
@@ -60,9 +62,9 @@ were noncertifying and their exact owned app processes ended.
 
 ## Next safe actions and residuals
 
-Commit this coherent chain, push only its feature branch to delivery, file and link
-one PR, enable exact-head auto-merge, wait for all seven required checks, confirm
-merge, then fast-forward clean primary main. Update task progress at delivery.
+Enable exact-head auto-merge for PR #6 after this progress commit, wait for all seven
+required checks, confirm merge, then fast-forward clean primary main. Update task
+progress at delivery.
 No routine human permission is missing.
 
 Continue prerequisites before R02–R04: F01 app22ms vs headless66ms, native frame and
