@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 from collections import deque
+from dataclasses import dataclass, field
 from functools import lru_cache
 import hashlib
 import json
@@ -18,7 +19,7 @@ import struct
 import uuid
 
 import unicorn
-from unicorn import Uc, UcError, UC_ARCH_X86, UC_MODE_32, UC_HOOK_CODE, UC_QUERY_TIMEOUT
+from unicorn import Uc, UcError, UC_ARCH_X86, UC_MODE_32, UC_HOOK_CODE, UC_HOOK_MEM_READ, UC_HOOK_MEM_WRITE, UC_QUERY_TIMEOUT
 from unicorn.x86_const import (
     UC_X86_REG_EAX, UC_X86_REG_EBX, UC_X86_REG_ECX, UC_X86_REG_EDX,
     UC_X86_REG_ESI, UC_X86_REG_EDI, UC_X86_REG_ESP, UC_X86_REG_EBP,
@@ -179,24 +180,105 @@ def file_span(data: bytes, va: int, size: int) -> tuple[int, bytes]:
         "(not headers, gaps, BSS or a section crossing)")
 
 
-def load_image(uc: Uc) -> None:
+@dataclass(frozen=True)
+class ExecutionProfile:
+    """Trusted mechanism declaration, never a CLI-configurable hash bypass.
+
+    Regions are (start, end-exclusive, sha256). Data ranges are (start, bytes).
+    Sink declarations are (address, argument_bytes); callbacks must return through
+    the original stack address, and no instruction at a sink may execute.
+    """
+    name: str
+    native_sha256: str
+    regions: tuple[tuple[int, int, str], ...]
+    entries: tuple[tuple[int, tuple[int, ...]], ...]
+    reads: tuple[tuple[int, int], ...]
+    writes: tuple[tuple[int, int], ...]
+    fixture_writes: tuple[tuple[int, int], ...]
+    sinks: tuple[tuple[int, int], ...] = ()
+
+
+def _within(address: int, size: int, ranges) -> bool:
+    return size > 0 and any(start <= address and address + size <= start + length
+                           for start, length in ranges)
+
+
+@dataclass(frozen=True)
+class ScopedImage:
+    """Immutable image identity bound to one machine and one explicit profile."""
+    machine: Uc = field(repr=False, compare=False)
+    data: bytes = field(repr=False)
+    profile: ExecutionProfile
+
+    def write(self, address: int, blob: bytes) -> None:
+        self._check_code_write(address, len(blob))
+        if not _within(address, len(blob), self.profile.fixture_writes):
+            raise OracleError(f"Profile {self.profile.name}: undeclared fixture write {address:#x}+{len(blob)}")
+        self.machine.mem_write(address, blob)
+
+    def _check_code_write(self, address: int, size: int) -> None:
+        if any(flags & 0x20000000 and address < IMAGE_BASE + rva + max(raw, virtual)
+               and address + size > IMAGE_BASE + rva
+               for rva, _, raw, virtual, flags in _sections(self.data)):
+            raise OracleError("Scoped fixture writes cannot replace native executable instructions")
+
+    def verify_code(self) -> None:
+        for start, end, digest in self.profile.regions:
+            if hashlib.sha256(bytes(self.machine.mem_read(start, end - start))).hexdigest() != digest:
+                raise OracleError(f"Profile {self.profile.name}: mapped original code changed at {start:#x}")
+
+    def identity(self) -> dict:
+        return {"name": self.profile.name, "native_sha256": self.profile.native_sha256,
+                "regions": [{"start": start, "end": end, "sha256": digest}
+                            for start, end, digest in self.profile.regions],
+                "entries": [{"start": start, "ends": list(ends)} for start, ends in self.profile.entries],
+                "reads": [list(item) for item in self.profile.reads],
+                "writes": [list(item) for item in self.profile.writes],
+                "fixture_writes": [list(item) for item in self.profile.fixture_writes],
+                "sinks": [list(item) for item in self.profile.sinks]}
+
+
+def load_image(uc: Uc, *, profile: ExecutionProfile | None = None) -> ScopedImage | None:
     """Map verified original PE sections, zero-fill gaps/BSS; no OS initialization.
 
     The mapping retains legacy RWX permissions for existing fixture hooks. That
     does not authorize treating patched code or supplied call results as native.
     """
-    data = image_bytes()
+    if profile is None:
+        data = image_bytes()
+    else:
+        data = configured_gamemd().read_bytes()
+        if hashlib.sha256(data).hexdigest() != profile.native_sha256:
+            raise OracleError(f"Profile {profile.name}: unsupported executable identity")
+        for start, end, digest in profile.regions:
+            if hashlib.sha256(file_span(data, start, end - start)[1]).hexdigest() != digest:
+                raise OracleError(f"Profile {profile.name}: original region mismatch at {start:#x}")
     sections = list(_sections(data))
     uc.mem_map(IMAGE_BASE, IMAGE_SIZE)
     uc.mem_write(IMAGE_BASE, data[:0x1000])
     for rva, raw_ptr, raw_size, _, _ in sections:
         if raw_size:
             uc.mem_write(IMAGE_BASE + rva, data[raw_ptr:raw_ptr + raw_size])
+    if profile is None:
+        return None
+    image = ScopedImage(uc, data, profile)
+    uc._vera20k_scoped_image = image
+    uc._vera20k_scoped_run_active = False
+
+    def require_guarded_run(machine, _address, _size, _data):
+        if not machine._vera20k_scoped_run_active:
+            machine.emu_stop()
+            raise OracleError("Scoped images require their guarded run_checked handle")
+
+    # The loader-owned lifetime hook also blocks accidental raw emu_start calls.
+    uc.hook_add(UC_HOOK_CODE, require_guarded_run)
+    return image
 
 
 def run_checked(uc: Uc, begin: int, end: int | tuple[int, ...], *,
                 count: int = 5_000_000, timeout_us: int = 10_000_000,
-                required_addresses=(), context: dict | None = None) -> int:
+                required_addresses=(), context: dict | None = None,
+                image: ScopedImage | None = None, sinks: dict | None = None) -> int:
     """Execute to a declared return/region boundary or fail with a short trace.
 
     Boundaries are reached BEFORE executing their instruction. Existing hooks may
@@ -210,6 +292,11 @@ def run_checked(uc: Uc, begin: int, end: int | tuple[int, ...], *,
     A reached instruction budget is an observation, not proof that an external
     hook did not stop at that same instruction.
     """
+    bound_image = getattr(uc, "_vera20k_scoped_image", None)
+    if bound_image is not None and image is not bound_image:
+        raise OracleError("Scoped machine requires its matching image handle")
+    if bound_image is not None and uc._vera20k_scoped_run_active:
+        raise OracleError("Scoped native execution is not reentrant")
     ends = (end,) if isinstance(end, int) else tuple(end)
     if not ends or begin in ends or count <= 0 or timeout_us <= 0:
         raise ValueError("Use distinct entry/endpoints and positive instruction/time limits")
@@ -222,25 +309,95 @@ def run_checked(uc: Uc, begin: int, end: int | tuple[int, ...], *,
     # running anything. This does not change the successful result schema.
     diagnostic_context = json.loads(_canonical(context or {}))
     initial = _machine_state(uc)
+    violation = None
+    allowed_sinks = {}
+    if image is not None:
+        if image.machine is not uc:
+            raise OracleError("Scoped image belongs to a different machine")
+        if not any(begin == entry and set(ends) <= set(boundaries)
+                   for entry, boundaries in image.profile.entries):
+            raise OracleError("Profile does not authorize this entry/endpoint pair")
+        image.verify_code()
+        allowed_sinks = dict(image.profile.sinks)
+        if set(sinks or {}) - set(allowed_sinks):
+            raise OracleError("Profile does not authorize supplied sink callbacks")
+        if required.intersection(allowed_sinks):
+            raise OracleError("A substituted sink is not original instruction coverage")
+    elif sinks:
+        raise OracleError("Runner-owned sinks require an explicit scoped image")
     visited = set()
     trail = deque(maxlen=16)
     observed = 0
 
-    def observe(_uc, address, _size, _data):
+    def reject(address, size, kind, detail):
+        nonlocal violation
+        if violation is None:
+            violation = {"address": address, "bytes": size, "kind": kind, "detail": detail}
+        uc.emu_stop()
+
+    def memory_guard(_uc, access, address, size, _value, _data):
+        from unicorn import UC_MEM_WRITE
+        if access == UC_MEM_WRITE:
+            try:
+                image._check_code_write(address, size)
+            except OracleError as error:
+                reject(address, size, "native_code_write", str(error))
+                return
+            ranges = image.profile.writes
+            kind = "undeclared_write"
+        else:
+            ranges = image.profile.reads
+            kind = "undeclared_read"
+        if not _within(address, size, ranges):
+            reject(address, size, kind, "Guest data access outside declared ranges")
+
+    def observe(_uc, address, size, _data):
         nonlocal observed
         trail.append(address)
-        if address in required:
-            visited.add(address)
+        # Stop boundaries never authorize executing their original instruction.
         if address in ends:
             _uc.emu_stop()
-        else:
-            observed += 1
+            return
+        if image is not None:
+            if address in allowed_sinks:
+                callback = (sinks or {}).get(address)
+                if callback is None:
+                    reject(address, size, "missing_sink", "Declared sink has no callback")
+                    return
+                sp = uc.reg_read(UC_X86_REG_ESP)
+                if not _within(sp, 4 + allowed_sinks[address], image.profile.reads):
+                    reject(sp, 4, "sink_stack", "Sink return/arguments outside declared data")
+                    return
+                destination = struct.unpack("<I", uc.mem_read(sp, 4))[0]
+                try:
+                    callback(uc)
+                except Exception as error:
+                    reject(address, size, "sink_failure", f"{type(error).__name__}: {error}")
+                    return
+                if (uc.reg_read(UC_X86_REG_EIP) != destination
+                        or uc.reg_read(UC_X86_REG_ESP) != sp + 4 + allowed_sinks[address]):
+                    reject(address, size, "sink_abi", "Sink did not redirect through declared return/stack cleanup")
+                    return
+            elif not any(start <= address and address + size <= end
+                         for start, end, _digest in image.profile.regions):
+                reject(address, size, "undeclared_instruction", "Instruction outside qualified closure or straddles its boundary")
+                return
+            elif bytes(uc.mem_read(address, size)) != file_span(image.data, address, size)[1]:
+                reject(address, size, "native_code_changed", "Mapped instruction differs from immutable original bytes")
+                return
+        if address in required:
+            visited.add(address)
+        observed += 1
 
     uc.ctl_exits_enabled(False)
     hook = uc.hook_add(UC_HOOK_CODE, observe)
+    memory_hook = (uc.hook_add(UC_HOOK_MEM_READ | UC_HOOK_MEM_WRITE, memory_guard)
+                   if image is not None else None)
     try:
         fault = None
         try:
+            if image is not None:
+                uc._vera20k_scoped_run_active = True
             uc.emu_start(begin, ends[0], timeout=timeout_us, count=count)
         except UcError as error:
             fault = error
@@ -248,8 +405,11 @@ def run_checked(uc: Uc, begin: int, end: int | tuple[int, ...], *,
         timed_out = bool(uc.query(UC_QUERY_TIMEOUT))
         pc = uc.reg_read(UC_X86_REG_EIP)
         missing = required - visited
-        if fault or timed_out or pc not in ends or missing:
-            if fault:
+        if violation or fault or timed_out or pc not in ends or missing:
+            if violation:
+                reason = "profile_violation"
+                message = f"Profile {image.profile.name}: {violation['kind']} at {violation['address']:#x}"
+            elif fault:
                 reason = "fault"
                 message = f"Native execution 0x{begin:08X} faulted: {fault}"
             elif timed_out or pc not in ends:
@@ -273,14 +433,22 @@ def run_checked(uc: Uc, begin: int, end: int | tuple[int, ...], *,
                 "unicorn_binding": unicorn.__version__, "unicorn_core": list(unicorn.uc_version()),
                 # run_checked also accepts synthetic machines and cannot attest
                 # their image identity just because this runner knows the pin.
-                "expected_native_sha256": NATIVE_SHA256,
+                "expected_native_sha256": (image.profile.native_sha256 if image is not None else NATIVE_SHA256),
             }
+            if image is not None:
+                diagnostics.update(profile=image.identity(), profile_violation=violation)
             raise NativeExecutionError(
                 f"{message}; reason={reason}, timeout={timed_out}, "
                 f"observed={observed}/{count}; trace: {trace}", diagnostics) from fault
+        if image is not None:
+            image.verify_code()
         return pc
     finally:
+        if image is not None:
+            uc._vera20k_scoped_run_active = False
         uc.hook_del(hook)
+        if memory_hook is not None:
+            uc.hook_del(memory_hook)
 
 
 def call(func: int, *, ecx=None, edx=None, stack_args=None, writes=None,
@@ -347,16 +515,19 @@ def call(func: int, *, ecx=None, edx=None, stack_args=None, writes=None,
 
 
 def provenance(*, scope: str, assumptions: list[str], substitutions: list[str],
-               entry_points: dict[str, int]) -> dict:
+               entry_points: dict[str, int], image: ScopedImage | None = None) -> dict:
     """Record identity and claims separately from legacy vector payloads."""
     if not scope.strip() or not assumptions or not entry_points:
         raise ValueError("Declare scope, runtime assumptions, and native entry points")
-    return {
-        "schema_version": 1, "native_sha256": hashlib.sha256(image_bytes()).hexdigest(),
+    result = {
+        "schema_version": 1, "native_sha256": hashlib.sha256(image.data if image is not None else image_bytes()).hexdigest(),
         "unicorn_binding": unicorn.__version__, "unicorn_core": list(unicorn.uc_version()),
         "scope": scope, "assumptions": assumptions, "substitutions": substitutions,
         "entry_points": {name: f"0x{value:08X}" for name, value in entry_points.items()},
     }
+    if image is not None:
+        result["execution_profile"] = image.identity()
+    return result
 
 
 def _canonical(data) -> bytes:
@@ -393,7 +564,8 @@ def first_difference(expected, actual, path="$", limit=180) -> str | None:
 
 
 def finish_vectors(data, default_path: Path, *, provenance: dict, argv=None,
-                   source_paths: dict[str, Path] | None = None) -> None:
+                   source_paths: dict[str, Path] | None = None,
+                   description: str | None = None) -> None:
     """Default: check without writing. --write deliberately replaces the reference.
 
     Existing payloads retain their Rust-facing schema. A .meta.json sidecar records
@@ -402,7 +574,7 @@ def finish_vectors(data, default_path: Path, *, provenance: dict, argv=None,
     source_paths captures UTF-8/LF source identity before invoking the lazy
     generator and rejects drift immediately before comparison or publication.
     """
-    parser = argparse.ArgumentParser(description="Compare native outputs with recorded reference data")
+    parser = argparse.ArgumentParser(description=description or "Compare native outputs with recorded reference data")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--check", action="store_true", help="compare only (default)")
     mode.add_argument("--write", action="store_true", help="explicitly write outputs and provenance")

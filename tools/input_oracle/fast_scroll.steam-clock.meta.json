@@ -1,0 +1,277 @@
+{
+  "schema_version": 1,
+  "native_sha256": "3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600",
+  "unicorn_binding": "2.1.4",
+  "unicorn_core": [
+    2,
+    1,
+    33621247
+  ],
+  "scope": "Authenticated Steam15918130 integer clock, offline timer setup and bounded throttle arithmetic/service branches.",
+  "assumptions": [
+    "Fresh mapped PE and supplied explicit fixture globals/stack; no Windows loader initialization.",
+    "Timer setup modes0/5 only; campaign override flag supplied, including force2 and rawspeed arms.",
+    "Native ranges execute unchanged; sinks redirect through runner-checked original return address and ABI."
+  ],
+  "substitutions": [
+    "Imported timeGetTime returns explicit u32 Windows uptime inputs; native SHR4 and raw-millisecond thunk execute.",
+    "Sleep, network/offline service, Input, commands, tactical callback and render are observed sinks.",
+    "Prefix endpoint55E197 observes remaining wait without entering a potentially unbounded sentinel/rollover loop."
+  ],
+  "entry_points": {
+    "offline_mode_setup": "0x0055D440",
+    "timer_setup_end": "0x0055D7C2",
+    "bucket_clock": "0x006C8C40",
+    "raw_ms_clock": "0x005D5890",
+    "throttle": "0x0055E160",
+    "remaining_wait_end": "0x0055E197",
+    "throttle_end": "0x0055E33B"
+  },
+  "execution_profile": {
+    "name": "steam-15918130-offline-clock-throttle-v1",
+    "native_sha256": "3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600",
+    "regions": [
+      {
+        "start": 7113792,
+        "end": 7113802,
+        "sha256": "f8a2617ea9394730b6c02512237bac06e406279f56fae63b097a022daf8f913f"
+      },
+      {
+        "start": 6117520,
+        "end": 6117526,
+        "sha256": "213dc513f7bdb5401120321c31284e5db19ebb4866e9d0c425e408f94405decc"
+      },
+      {
+        "start": 5624896,
+        "end": 5624918,
+        "sha256": "2869a984e312c287697aa31e201791797922fcebb25a50adf3d743efb7b61401"
+      },
+      {
+        "start": 5625703,
+        "end": 5625794,
+        "sha256": "25d25205fdf422b2c2ecc534b9f9f40d36a54440867f80c9bca3c2583fd74e88"
+      },
+      {
+        "start": 5628256,
+        "end": 5628731,
+        "sha256": "085ed64d67ca8a311acb562d107275c3981260d89b39aff0fc8549f80bfc6d64"
+      }
+    ],
+    "entries": [
+      {
+        "start": 5624896,
+        "ends": [
+          5625794
+        ]
+      },
+      {
+        "start": 5628256,
+        "ends": [
+          5628311,
+          5628731
+        ]
+      }
+    ],
+    "reads": [
+      [
+        8262128,
+        4
+      ],
+      [
+        8262960,
+        4
+      ],
+      [
+        8942372,
+        4
+      ],
+      [
+        8942376,
+        4
+      ],
+      [
+        8942384,
+        4
+      ],
+      [
+        8942408,
+        4
+      ],
+      [
+        8942416,
+        4
+      ],
+      [
+        11055672,
+        4
+      ],
+      [
+        11070304,
+        4
+      ],
+      [
+        11068180,
+        4
+      ],
+      [
+        11070880,
+        4
+      ],
+      [
+        11070848,
+        1
+      ],
+      [
+        11070940,
+        1
+      ],
+      [
+        268435456,
+        1048576
+      ],
+      [
+        536870912,
+        4
+      ],
+      [
+        536875100,
+        4
+      ]
+    ],
+    "writes": [
+      [
+        8942408,
+        12
+      ],
+      [
+        11070304,
+        4
+      ],
+      [
+        11068180,
+        4
+      ],
+      [
+        268435456,
+        1048576
+      ]
+    ],
+    "fixture_writes": [
+      [
+        8262128,
+        4
+      ],
+      [
+        8262960,
+        4
+      ],
+      [
+        8942372,
+        4
+      ],
+      [
+        8942376,
+        4
+      ],
+      [
+        8942384,
+        4
+      ],
+      [
+        8942408,
+        4
+      ],
+      [
+        8942416,
+        4
+      ],
+      [
+        11055672,
+        4
+      ],
+      [
+        11070304,
+        4
+      ],
+      [
+        11068180,
+        4
+      ],
+      [
+        11070880,
+        4
+      ],
+      [
+        11070848,
+        1
+      ],
+      [
+        11070940,
+        1
+      ],
+      [
+        8942408,
+        12
+      ],
+      [
+        11070304,
+        4
+      ],
+      [
+        11068180,
+        4
+      ],
+      [
+        268435456,
+        1048576
+      ],
+      [
+        536870912,
+        4
+      ],
+      [
+        536875100,
+        4
+      ]
+    ],
+    "sinks": [
+      [
+        5194528,
+        12
+      ],
+      [
+        4771968,
+        0
+      ],
+      [
+        4868144,
+        0
+      ],
+      [
+        5627616,
+        0
+      ],
+      [
+        5194880,
+        0
+      ],
+      [
+        536883200,
+        4
+      ],
+      [
+        536883216,
+        0
+      ],
+      [
+        536883232,
+        0
+      ]
+    ]
+  },
+  "source_normalized_lf_sha256": {
+    "producer": "2f79be45310677771479ae054376b2e37e733f52548651605dc2b6d68e29b96a",
+    "shared_runner": "cc1360a4a3a20de6657a37873f81dc1e3712856b72c621abba57f92e5f72e1b5"
+  },
+  "payload_sha256": "c96d15b32b3c81f001a44ed8f8d4ea08d9d7e2676ba9892af2339a208c3a6c01"
+}

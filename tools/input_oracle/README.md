@@ -251,3 +251,60 @@ stock right-drag comparison. The existing pan cursor probes the committed view
 rather than retaining the native pre-commit probe, a presentation-only timing
 residual at map limits. No simulation state, RNG draw or simulation timer is
 introduced by the camera's pending request.
+
+## Authenticated Steam clock/throttle qualification
+
+The separate `--steam-clock` mode accepts only Steam build15918130's authenticated
+whole SHA-256 `3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600`
+through an explicit scoped image. This does not enroll Steam for the default
+right-drag/camera corpus, `call()`, static inspection or any other oracle.
+
+```sh
+VERA20K_GAMEMD_EXE=/absolute/official/gamemd.exe \
+  python -m tools.input_oracle.fast_scroll --steam-clock --check
+# Explicit capture into the separate Steam artifacts; review before accepting:
+VERA20K_GAMEMD_EXE=/absolute/official/gamemd.exe \
+  python -m tools.input_oracle.fast_scroll --steam-clock --write
+```
+
+[Separate results](fast_scroll.steam-clock.json) and
+[identity/profile/source receipt](fast_scroll.steam-clock.meta.json) retain:
+
+- 37 historical throttle controls, with supplied bucket inputs converted into
+  explicit raw Windows uptime inputs; original `6C8C40` (`SHR4`) and `5D5890`
+  (raw milliseconds) execute. Every original observation matches the historical
+  `throttle_cases` payload. Its full corpus and historical sidecar remain intact.
+- 112 offline timer setup controls: modes0/5, supplied campaign override flag,
+  raw stored speeds0..6 and uptime0/15/16/`UINT_MAX`. Original Main dispatch
+  `55D440..55D456` and setup `55D767..55D7C2` execute, including campaign's
+  force2 arm and skirmish's unchanged stored-speed arm.
+- 168 physical uptime/remaining-wait controls across speeds0..6, six starting
+  uptime words, bucket boundaries and long stalls. Each executes original Main
+  timer setup and throttle in the same mapped machine with the supplied timeline
+  `[start_ms, now_ms]`; the native clock supplies the stored start and elapsed
+  sample. Three additional explicitly supplied stopped
+  sentinel controls. `55E160..55E197` executes and original ESI supplies the
+  remaining wait. A prefix result is not a completed wait or an admitted frame.
+
+The profile fingerprints these five instruction spans, permits only declared
+image data, stack and two fixture vtable words, and owns the external callback
+allowlist. Native writes are limited to timer setup globals, accumulated wait and
+stack; native executable writes fail. Service/Input/command/render bodies are
+nonexecuting sinks with checked original return address and stack cleanup. The
+imported `timeGetTime` result is supplied; real Windows waiting and scheduling
+are outside the fixture. Missing callbacks, undeclared accesses/instructions,
+straddling instructions and unexpected stops fail with structured diagnostics.
+
+Native timer subtraction is signed after wrapping. This applies even to speed0:
+across Windows uptime rollover, a negative elapsed word yields positive remaining
+wait rather than unconditional admission. The production `LocalFramePacer` golden
+test consumes the native prefix values, including that correction; the wake-policy
+consumer continues retrying within16ms without changing native admission. Positive
+stopped-sentinel controls stop before the wait loop, which need not terminate.
+`None` first-frame pacer state is not certified by the native stopped sentinel.
+
+Campaign setup is characterized, not integrated campaign support. Timer duration
+is a raw native word; production's0..6 UI clamp and `Option` lifecycle are separate
+policies. Supplied globals are fixture inputs, not observed loaded Scenario state.
+No RNG/x87 calculation, complete simulation frame, command attribution, real OS
+service cadence, full F01/F02, rendered output or whole-game parity is claimed.

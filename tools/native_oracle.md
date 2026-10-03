@@ -31,8 +31,8 @@ cargo test -p vera20k --lib rules::color_scheme::tests::hsv_to_rgb_matches_nativ
 ```
 
 `RA2_DIR` is an alternative; an explicit executable path takes precedence and never
-silently falls back. The loader hashes the same immutable bytes it maps. Only the
-retail executable with SHA-256
+silently falls back. The loader hashes the same immutable bytes it maps. Default
+loading accepts only the retail executable with SHA-256
 `1cdd1180e49024fbda8ad568caac2e86e856063ff67ab38f62b7d2c7bb84298c`
 is accepted, including under optimized Python. No executable is distributed here.
 
@@ -328,3 +328,38 @@ first-save RNG state.
 * [Unicorn 2.1.4 execution implementation](https://github.com/unicorn-engine/unicorn/blob/2.1.4/uc.c):
   the instruction-count hook stops emulation normally; success alone does not
   establish that a native return was reached.
+
+## Explicit bounded image profiles
+
+The default whole-image pin above remains unchanged. The existing loader can
+return an immutable `ScopedImage` only when a trusted mechanism supplies an
+`ExecutionProfile` with a separately pinned whole SHA, original region hashes,
+entry/end pairs, data read/write ranges, fixture-write ranges and sink ABIs.
+There is no CLI option or environment variable for arbitrary identity enrollment.
+The first profile belongs to the existing
+[clock/throttle owner](input_oracle/README.md#authenticated-steam-clockthrottle-qualification),
+not a replacement Windows loader or a generic qualification of the Steam game.
+
+`load_image(uc, profile=profile)` binds the handle to that machine. Every scoped
+run must pass it to `run_checked(..., image=image, sinks=callbacks)`; an omitted
+or mismatched handle fails, and a loader-owned lifetime hook rejects raw
+`emu_start` outside a guarded run. Scoped fixture writes use `image.write`, which
+rejects executable-section writes and undeclared ranges. Mapped qualified code is
+rehashed before and after execution; guest writes to native code fail immediately.
+Calling host Unicorn mutation APIs directly is not a supported fixture workflow.
+
+The runner owns code/data guards and dispatches declared sink callbacks before
+any sink instruction executes. Callbacks must return to the original stack return
+word with their declared argument cleanup; merely allowlisting an address cannot
+execute its original body. Endpoints stop before their instruction and cannot be
+claimed as executed coverage. Out-of-closure instructions, boundary-straddling
+instructions, undeclared data reads/writes and missing/incorrect sink handlers
+raise `NativeExecutionError` with `reason=profile_violation`, profile identity,
+access details, context, registers and a bounded trace. Existing completion,
+budget, timeout and required-address checks still apply. `provenance(image=...)`
+records the actual scoped buffer and complete profile; unscoped provenance retains
+its historical identity gate.
+
+Synthetic failure tests in `tools/tests/test_native_scope.py` establish these
+runner contracts, not retail behavior. Only the mechanism's executable capture
+and production consumer checks demonstrate its stated bounded comparisons.

@@ -9,6 +9,7 @@ use std::time::{Duration, Instant};
 const FRAME_BUCKET_SHIFT: u32 = 4;
 #[cfg(test)]
 const FRAME_BUCKET_MS: u64 = 1 << FRAME_BUCKET_SHIFT;
+#[cfg(test)]
 const MIN_TIMED_GAME_SPEED: u8 = 1;
 const MAX_TIMED_GAME_SPEED: u8 = 6;
 const ELAPSED_CLOCK_STOPPED: u32 = u32::MAX;
@@ -139,18 +140,18 @@ impl LocalFramePacer {
         }
     }
 
+    /// Original clock6C8C40 -> Main offline setup55D79E -> throttle55E160.
+    /// Native signed elapsed comparison includes speed0: it is uncapped only
+    /// while elapsed is nonnegative. Authenticated executable controls live in
+    /// tools/input_oracle/fast_scroll.steam-clock.{json,meta.json}.
     pub(crate) fn should_admit(&self, now_ms: u64, game_speed: u8, paused: bool) -> bool {
         if paused {
             return false;
         }
-        if game_speed == 0 {
-            return true;
-        }
         let Some(last_bucket) = self.last_frame_start_bucket else {
             return true;
         };
-        let required_buckets =
-            u32::from(game_speed.clamp(MIN_TIMED_GAME_SPEED, MAX_TIMED_GAME_SPEED));
+        let required_buckets = u32::from(game_speed.min(MAX_TIMED_GAME_SPEED));
         let elapsed = frame_bucket(now_ms).wrapping_sub(last_bucket) as i32;
         elapsed >= required_buckets as i32
     }
@@ -207,6 +208,63 @@ const fn frame_bucket(now_ms: u64) -> u32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Authenticated Steam clock6C8C40 and throttle55E160..55E197 executed by
+    /// tools.input_oracle.fast_scroll --steam-clock. Raw OS inputs are fixture
+    /// uptime words. Original Main_Tick setup and throttle run in one machine;
+    /// the JSON's start bucket and remaining wait come from native writes/ESI.
+    #[test]
+    fn frame_admission_matches_authenticated_native_timer_prefixes() {
+        let evidence: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../tools/input_oracle/fast_scroll.steam-clock.json"
+        ))
+        .expect("native clock corpus");
+        for row in evidence["timer_cases"].as_array().expect("timer cases") {
+            let input = &row["input"];
+            let Some(speed) = input["game_speed"].as_u64() else {
+                // Stopped native timer sentinels are characterized separately;
+                // they are not LocalFramePacer's first-iteration Option state.
+                continue;
+            };
+            let mut pacer = LocalFramePacer::new();
+            pacer.record_admitted_frame(input["start_wall_ms"].as_u64().unwrap());
+            assert_eq!(
+                u64::from(pacer.last_frame_start_bucket.unwrap()),
+                row["native"]["timer_start_bucket"].as_u64().unwrap(),
+                "native start case {}",
+                input["name"]
+            );
+            let now = input["now_wall_ms"].as_u64().unwrap();
+            let admitted = row["native"]["remaining_wait"].as_u64().unwrap() == 0;
+            assert_eq!(
+                pacer.should_admit(now, speed as u8, false),
+                admitted,
+                "native timer case {}",
+                input["name"]
+            );
+            assert!(!pacer.should_admit(now, speed as u8, true));
+            let delay = pacer.poll_delay(now, speed as u8);
+            assert_eq!(delay.is_zero(), admitted, "wake case {}", input["name"]);
+            assert!(delay <= std::time::Duration::from_millis(16));
+        }
+    }
+
+    #[test]
+    fn frame_bucket_matches_original_offline_timer_setup_clock() {
+        let evidence: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../tools/input_oracle/fast_scroll.steam-clock.json"
+        ))
+        .expect("native clock corpus");
+        for row in evidence["setup_cases"].as_array().expect("setup cases") {
+            let wall = row["input"]["frame_clock"][0].as_u64().unwrap();
+            assert_eq!(
+                u64::from(frame_bucket(wall)),
+                row["native"]["timer_start_bucket"].as_u64().unwrap(),
+                "native setup case {}",
+                row["input"]["name"]
+            );
+        }
+    }
 
     #[test]
     fn first_unpaused_iteration_is_immediately_eligible() {
@@ -293,13 +351,16 @@ mod tests {
     }
 
     #[test]
-    fn service_wake_keeps_native_rollover_rejection_and_uncapped_admission() {
+    fn service_wake_keeps_native_rollover_rejection_including_speed_zero() {
         let mut pacer = LocalFramePacer::new();
         pacer.record_admitted_frame(u64::from(u32::MAX - 7));
         let wrapped = u64::from(u32::MAX) + 1;
         assert_eq!(pacer.poll_delay(wrapped, 1), Duration::from_millis(16));
         assert!(!pacer.should_admit(wrapped, 1, false));
-        assert_eq!(pacer.poll_delay(wrapped, 0), Duration::ZERO);
+        // Native speed0_start4294967288_now7 observes positive remaining
+        // wait despite duration0; the original signed elapsed is negative.
+        assert_eq!(pacer.poll_delay(wrapped, 0), Duration::from_millis(16));
+        assert!(!pacer.should_admit(wrapped, 0, false));
         assert_eq!(LocalFramePacer::new().poll_delay(7, 6), Duration::ZERO);
     }
 
