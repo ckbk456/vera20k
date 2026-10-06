@@ -8,12 +8,88 @@ import unittest
 from unittest.mock import Mock,patch
 
 from tools.sidebar_oracle.stock import mix, mix_hash, mix_index
-from tools.spatial_oracle.fv_cell_attack.steam_live_assets import PhysicalAssets, ReadOnlyFiles, Span
+from tools.spatial_oracle.fv_cell_attack.steam_live_assets import (
+    PhysicalAssets, ReadOnlyFiles, Span, initialize_live_theater_assets)
 from tools.storage_oracle.keyboard_bindings import parse_csf
 from tools.rules_oracle.bridge_anim_inputs import Reader
 
 
 class ImmutableSupplierTests(unittest.TestCase):
+    @staticmethod
+    def theater_record(label,long,iso_long,iso_short,short):
+        record=bytearray(112)
+        for offset,width,value in((0,16,label),(0x30,10,long),(0x3A,10,iso_long),(0x44,10,iso_short),(0x4E,4,short)):
+            raw=value.encode('ascii')+b'\0';assert len(raw)<=width
+            record[offset:offset+len(raw)]=raw
+        return bytes(record)
+
+    @staticmethod
+    def archive_owner(directory,payloads):
+        owner=PhysicalAssets.__new__(PhysicalAssets);owner.root=Path(directory)
+        owner.loose={};owner.archives=[];owner.winners={};owner.buffers={};owner.requests=[]
+        owner.audio_pair={};owner.theater_registration=None
+        for name,entries in payloads.items():
+            body=b'';index=b''
+            for leaf,blob in entries.items():
+                index+=struct.pack('<III',mix_hash(leaf),len(body),len(blob));body+=blob
+            path=owner.root/name;path.write_bytes(struct.pack('<HI',len(entries),len(body))+index+body)
+            owner.loose[name.upper()]=Span.disk(path)
+        return owner
+
+    def test_theater_registration_preserves_crc_winners_and_existing_buffers(self):
+        with tempfile.TemporaryDirectory()as directory:
+            assets=self.archive_owner(directory,{
+                'CORE.MIX':{'CACHED.SHP':b'core'},
+                'URBAN.MIX':{'CACHED.SHP':b'theater','NEW.URB':b'long'},
+                'URB.MIX':{'NEW.URB':b'short'},
+                'ISOURBMD.MIX':{'NEW.URB':b'iso override'},
+                'ISOURB.MIX':{'NEW.URB':b'iso base'}})
+            assets.mount('CORE.MIX');cached=assets.read('CACHED.SHP')[0]
+            buffers=assets.buffers;winner=assets.winners[mix_hash('CACHED.SHP')]
+            record=self.theater_record('URBAN','URBAN','ISOURB','ISOURB','URB')
+            receipt=assets.register_theater(2,record)
+            self.assertEqual(receipt['archive_order'],['URBAN.MIX','URB.MIX','ISOURBMD.MIX','ISOURB.MIX'])
+            self.assertTrue(all(row['present']for row in receipt['mounts']))
+            self.assertIs(assets.buffers,buffers);self.assertIs(assets.read('CACHED.SHP')[0],cached)
+            self.assertIs(assets.winners[mix_hash('CACHED.SHP')],winner)
+            self.assertEqual(assets.read('NEW.URB')[0],b'long')
+
+    def test_theater_snow_only_override_records_real_absence_and_is_idempotent(self):
+        with tempfile.TemporaryDirectory()as directory:
+            assets=self.archive_owner(directory,{'SNOWMD.MIX':{'WATER.SNO':b'override'},
+                                                 'SNOW.MIX':{'WATER.SNO':b'base'}})
+            record=self.theater_record('SNOW','SNOW','ISOSNOW','ISOSNO','SNO')
+            receipt=assets.register_theater(1,record)
+            self.assertEqual(receipt['archive_order'],['SNOWMD.MIX','SNOW.MIX','SNO.MIX','ISOSNOMD.MIX','ISOSNOW.MIX'])
+            self.assertEqual([row['present']for row in receipt['mounts']],[True,True,False,False,False])
+            self.assertEqual(assets.read('WATER.SNO')[0],b'override')
+            count=len(assets.archives)
+            self.assertIs(assets.register_theater(1,record),receipt)
+            self.assertEqual(len(assets.archives),count)
+            with self.assertRaisesRegex(ValueError,'switch'):
+                assets.register_theater(2,self.theater_record('URBAN','URBAN','ISOURB','ISOURB','URB'))
+
+    def test_theater_registration_rejects_cold_or_invalid_native_record(self):
+        with tempfile.TemporaryDirectory()as directory:
+            assets=self.archive_owner(directory,{})
+            record=self.theater_record('URBAN','URBAN','ISOURB','ISOURB','URB')
+            for index in(-1,6,True):
+                with self.assertRaisesRegex(ValueError,'index'):assets.register_theater(index,record)
+            with self.assertRaisesRegex(ValueError,'extent'):assets.register_theater(2,record[:-1])
+            malformed=bytearray(record);malformed[0x30:0x3A]=b'X'*10
+            with self.assertRaisesRegex(ValueError,'Unterminated'):assets.register_theater(2,malformed)
+            self.assertEqual(assets.archives,[])
+
+    def test_theater_attached_helper_rejects_wrong_native_image_before_mounting(self):
+        with tempfile.TemporaryDirectory()as directory:
+            assets=self.archive_owner(directory,{})
+            owner=Mock();owner.asset_source=assets;owner.image.machine=owner.u
+            owner.image.profile.native_sha256='wrong image'
+            with self.assertRaisesRegex(ValueError,'Authenticated original Steam'):
+                initialize_live_theater_assets(owner,assets)
+            self.assertEqual(assets.archives,[])
+            owner.image.verify_code.assert_not_called()
+
     @staticmethod
     def lexical_owner():
         owner=Reader.__new__(Reader);owner.u=object();owner.image=Mock()
@@ -90,6 +166,24 @@ class ImmutableSupplierTests(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get('VERA20K_GAMEMD_EXE'),'Requires explicit authenticated Steam install')
 class PhysicalRetailSupplierTests(unittest.TestCase):
+    def test_theater_helper_authenticates_table_and_uses_existing_scenario_field(self):
+        from tools.native_oracle import configured_gamemd,file_span
+        from tools.spatial_oracle.fv_cell_attack.steam_bullet_startup_scope import STEAM_NATIVE_SHA256
+        from tools.spatial_oracle.fv_cell_attack.steam_live_assets import THEATER_TABLE_ADDRESS,THEATER_TABLE_BYTES
+        data=configured_gamemd().read_bytes();assets=PhysicalAssets(configured_gamemd().parent)
+        owner=Mock();owner.asset_source=assets;owner.image.machine=owner.u
+        owner.image.data=data;owner.image.profile.native_sha256=STEAM_NATIVE_SHA256
+        table=file_span(data,THEATER_TABLE_ADDRESS,THEATER_TABLE_BYTES)[1]
+        owner.u.mem_read.return_value=table
+        owner.read32.side_effect=lambda address:{0xA8B230:0x24001000,0x24002258:2}[address]
+        # Mocked Scenario words check the supplier protocol, not native execution.
+        receipt=initialize_live_theater_assets(owner,assets)
+        self.assertEqual((receipt['native_index'],receipt['name']),(2,'URBAN'))
+        self.assertEqual(receipt['archive_order'],['URBAN.MIX','URB.MIX','ISOURBMD.MIX','ISOURB.MIX'])
+        owner.u.mem_read.return_value=table[:-1]+bytes([table[-1]^1])
+        with self.assertRaisesRegex(ValueError,'Mapped original theater table changed'):
+            initialize_live_theater_assets(owner,assets)
+
     def test_original_csf_lookup_uses_native_sort_for_all_labels_and_missing_label(self):
         from unicorn.x86_const import UC_X86_REG_EDX,UC_X86_REG_ESP
         from tools.native_oracle import configured_gamemd,file_span

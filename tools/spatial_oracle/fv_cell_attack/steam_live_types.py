@@ -194,9 +194,11 @@ def metadata():
     from tools.native_oracle import load_image,provenance
     image=load_image(Uc(UC_ARCH_X86,UC_MODE_32),profile=live_types_profile())
     return provenance(image=image,scope='Original selected Bullet/Sound/EVA CRT, retained Rules prerequisites and live type caller668EED→668EF5',
-        entry_points=dict(live_caller=BEGIN,live_pass=0x679A10,boundary=END),
+        entry_points=dict(map_theater=0x687631,map_theater_end=0x68764F,
+            live_caller=BEGIN,live_pass=0x679A10,boundary=END),
         assumptions=['One fresh original-order selected CRT VM; original Scenario and retained Rules/ART objects.',
             'Physical unique lexical Rules/ART receivers; complete resident type loop rather than selected FV body.',
+            'Physical selected dragon-cadence.map supplies a distinct Map-only cache; original theater lookup/store executes before retained Process, without map Rules layering or whole Full_Init execution.',
             'Explicit128MiB bounded heap for resident native parsers and immutable physical assets; historical32MiB profiles unchanged.',
             'Full physical decoded CSF cache is supplied before native type readers; original lookups execute.',
             'Original disabled-output sound factory and full SoundList execute before entering retained Process.',
@@ -222,7 +224,8 @@ def main():
     # separately freezes complete current producer and physical file inventories.
     paths={str(path.relative_to(root)):path for path in(root/'tools').rglob('*.py')if'__pycache__'not in path.parts}
     physical=Path(os.environ['VERA20K_FV_MOVEMENT_ASSETS'])
-    paths.update({name:physical/leaf for name,leaf in(('physical_rules_root','RULESMD.INI'),('physical_art_root','ARTMD.INI'))})
+    paths.update({name:physical/leaf for name,leaf in(('physical_rules_root','RULESMD.INI'),
+        ('physical_art_root','ARTMD.INI'),('physical_map_theater','dragon-cadence.map'))})
     paths.update({'physical_'+name:color_palette_root()/name for name in PALETTE_ASSETS})
     captured={}
     generator=partial(generate_typed_master,retained_startup=True,retained_dialog=True,

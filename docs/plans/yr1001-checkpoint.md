@@ -29,10 +29,14 @@ boundaries and reproduction commands. Standalone full Sound/EVA and FV VXL/HVA
 controls passed. Joined native qualification, final receipt, single fresh critic
 and PR/merge must be reconciled against actual completion before delivery is
 reported. Partial native observations do not establish a successful live pass.
+All 611 stock Anim bodies passed the isolated native control with physical theater
+archives. The corrected original Map/Theater prerequisite and Terrain dispatch
+are included; 38 final native/transport checks passed. The next whole joined run
+uses these complete declarations from fresh VM creation.
 
 Retail Rust lib: 9,589 passed, zero failed, 231 ignored. Clippy completed with
 729 existing warnings. Named release retail scenario/map construction passed.
-Portable Python: 640 tests, zero failures, 22 explicit native/device/environment
+Portable Python: 655 tests, zero failures, 24 explicit native/device/environment
 skips. Build retirement continues to fail closed when idle state is unavailable;
 its real disposable-process test skips only after that preflight cannot prove
 an inspectable host. Synthetic busy/unknown controls remain active.

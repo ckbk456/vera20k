@@ -35,6 +35,32 @@ three original `CALL EBP` seek sites. No write/device/unknown imports are grante
 See [asset boundaries](../../tools/spatial_oracle/fv_cell_attack/steam_live_assets.md)
 and [EVA caller proof](../../tools/spatial_oracle/fv_cell_attack/steam_live_catalog_scope.md).
 
+The original CSF comparator `7C8D20` folds ASCII letters to lowercase. Its
+punctuation ordering differs from uppercase byte order. Supplied records now
+sort by the native fold while retaining physical value ordinals and extra
+payloads. Native `734E60` checks passed for all 5,211 physical labels and 14
+actually absent retail UIName labels. Original missing-label `%hs` formatting
+executes through its eight-way switch and native ASCII conversion, with two
+checked single-thread Interlocked calls updating the original reader counter.
+No missing string or formatter result is supplied. See the
+[formatter scope](../../tools/spatial_oracle/fv_cell_attack/steam_live_formatter_scope.md).
+
+Building's two occupancy-key `wsprintfA` sites remain explicitly supplied
+Windows boundaries: only original patterns, indices 1–8, exact stack destinations
+and caller-owned cleanup are admitted. The contract follows Microsoft's
+[wsprintfA documentation](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-wsprintfa).
+Original `_itoa` and Terrain frame-color bodies execute; the Windows formatter
+implementation is not executed or measured. See
+[reader helper scope](../../tools/spatial_oracle/fv_cell_attack/steam_live_reader_helpers_scope.md).
+
+Original `Full_Init` binds the incoming map's `[Map]/Theater` at
+`687631..68764F`, before `6686C0` enters the root Rules.Process prefix.
+The live owner reuses that native reader on a separate 58-byte Map-only cache,
+then retains its original Scenario store. The physical map is source-bound;
+ART and root Rules cache identities, ID counter and RNG remain intact.
+Original later map Rules processing is outside this early binding. The supplied
+boundary does not claim that the complete `Init_Theater` or `Full_Init` executed.
+
 Native Sound and EVA loaders read complete physical definition lists before the
 retained Process pass. Original disabled-output Sound factory establishes its
 null-index state. The full decoded physical CSF cache is supplied through the

@@ -5,6 +5,12 @@ The declarations identify only original Steam image bytes with SHA256
 They contain no discovery, emulation, fixture patches, callbacks or sinks.
 Static inspection does not establish retail execution or W02 parity.
 
+Anim primary reader `427D00` dispatches its image accessor at `427DDD` through
+vtable slot+A0. Original word `7E36A8` is `427B50`; the four-byte grant retains
+its literal digest. The accessor's original body remains with the existing type
+scope. This slot was reached by the fresh joined run and independently by the
+TWLT100 primary-body control; no accessor result or virtual pointer is supplied.
+
 Building reader `45FE50` calls original `_itoa` at `4602DF` and `4603D4`
 to form indexed `MuzzleFlash` (`81AC74`) and `DamageFireOffset` (`81AC60`)
 keys. The caller supplies radix10 and stack destination. Original wrapper
@@ -13,6 +19,12 @@ destination pointer and leaves caller argument cleanup to native code. The
 leaf divides the supplied integer by its radix, writes digits, terminates and
 reverses them in native code. Neither root has further helper or fixed-table
 dependencies. Their literal regions include every rooted direct branch and RET.
+
+Terrain always dispatches its image getter at `71DFCA` through primary
+vtable+9C, after Object reading succeeds. Original slot `7F54F4` contains
+`41CFA0`; that seven-byte leaf returns the retained object pointer at+A4.
+The null check follows the dispatch at `71DFD0`, so even a genuinely missing
+SHP does not bypass the slot or leaf. Only this word and literal leaf are added.
 
 Terrain reader `71DEA0` calls `69E860` at `71DFDD` after its original SHP
 accessor returns a nonnull object. The wrapper calls existing asset-owned

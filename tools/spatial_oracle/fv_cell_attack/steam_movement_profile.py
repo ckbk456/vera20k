@@ -1833,6 +1833,32 @@ def typed_master_inputs(root,*,native_state=None,profile=None,heap_bytes=None,re
     assert m.read32(reader_ini+0x2C)==len(sections),('Root INI index not bound',reader_ini,len(sections))
     if retained_dialog:
         assert m.read32(INI+0x2C)==len(art_sections),('ART INI index not bound',INI,len(art_sections))
+    if retained_live_types:
+        # Original Full_Init binds Map/Theater687631 before6686C0 calls the
+        # root Process668BF0, then processes map Rules separately at68774F.
+        # Execute that native setter on this fresh VM before the Process frame
+        # exists. The Map-only supplier never overlays the root Rules cache.
+        from tools.spatial_oracle.anytown_damage.navigation_inputs import Inputs
+        map_receiver=m.alloc(0x58)
+        root_cache=m.ini_cache_snapshot(reader_ini);art_cache=m.ini_cache_snapshot(INI)
+        theater_counter=m.read32(scene+0x214)
+        theater_rng={name:bytes(m.u.mem_read(address,0x3F4))for name,address in rngs.items()}
+        binding=Inputs.read_map_theater(m,root/'dragon-cadence.map',ini_pointer=map_receiver)
+        if binding['value']>=6:
+            raise ValueError('Native Map/Theater lookup did not select an original theater record')
+        if not all((m.ini_cache_snapshot(reader_ini)==root_cache,m.ini_cache_snapshot(INI)==art_cache,
+                    m.read32(scene+0x214)==theater_counter,
+                    all(bytes(m.u.mem_read(address,0x3F4))==theater_rng[name]for name,address in rngs.items()))):
+            raise ValueError('Map/Theater prerequisite changed retained Rules/ART/counter/RNG authority')
+        binding.update(before_process=True,process_entry=0x668BF0,
+            original_order=(0x68763E,0x687649,0x68765B,0x6876AC,0x668A27,0x68774F),
+            original_order_basis='Static Full_Init686B20/Rules6686C0 caller review; not an executed Full_Init trace.',
+            rules_receiver=reader_ini,art_receiver=INI,
+            retained_cache_counter_rng=True)
+        setup['live_map_theater']=binding
+        from tools.spatial_oracle.fv_cell_attack.steam_live_assets import initialize_live_theater_assets
+        setup['live_theater_assets']=initialize_live_theater_assets(m,live_assets)
+        if progress:progress('Original Map/Theater prerequisite bound before retained Rules.Process')
     cache_prepared_cursor=m.cursor
     calls=Counter();constructors=[];color_args=[];allocation_mark=len(m.allocation_events)
     watched={ctor:family for family,_,ctor,_,_,_,_ in TYPED_MASTER_FAMILIES}

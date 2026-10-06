@@ -1,5 +1,6 @@
 """Native controls for the actual retained live type caller, not retail parity."""
 import os
+import hashlib
 from pathlib import Path
 import tempfile
 import unittest
@@ -33,12 +34,29 @@ class NativeLiveCallerControls(unittest.TestCase):
             root = Path(directory)
             (root / 'RULESMD.INI').write_text('[VehicleTypes]\n0=FV\n[JumpjetControls]\nTurnRate=4\n[MultiplayerDialogSettings]\nMinPlayers=2\n')
             (root / 'ARTMD.INI').write_text('')
+            (root / 'dragon-cadence.map').write_text('[Map]\nTheater=TEMPERATE\n')
             with patch.object(assets, 'initialize_live_asset_inputs',
-                    return_value=dict(boundary='Empty physical supplier control; no retail assets'), create=True):
+                    return_value=dict(boundary='Empty physical supplier control; no retail assets'), create=True), \
+                 patch.object(assets, 'initialize_live_theater_assets',
+                    return_value=dict(boundary='No physical theater assets in absent-section control'), create=True):
                 owner, selected, _, receipt = driver.typed_master_inputs(root,
                     retained_startup=True, retained_dialog=True, ordered_cold_startup=True,
                     retained_prereaders=True, retained_live_types=True, live_assets=object())
         observation = receipt['retained_live_types']
+        binding = receipt['setup']['live_map_theater']
+        self.assertEqual((binding['before'], binding['value']), (0xFFFFFFFF, 0))
+        self.assertEqual(owner.read32(owner.read32(0xA8B230) + 0x1258), binding['value'])
+        self.assertEqual(binding['source_value'], 'TEMPERATE')
+        self.assertEqual(binding['map_sha256'], hashlib.sha256(b'[Map]\nTheater=TEMPERATE\n').hexdigest())
+        self.assertEqual((binding['native_entry'], binding['native_end']), (0x687631, 0x68764F))
+        self.assertTrue(binding['before_process'])
+        self.assertTrue(binding['retained_cache_counter_rng'])
+        self.assertEqual(binding['original_order'],
+            (0x68763E, 0x687649, 0x68765B, 0x6876AC, 0x668A27, 0x68774F))
+        self.assertEqual(binding['rules_receiver'], receipt['cache_preparation']['rules_receiver'])
+        self.assertEqual(binding['art_receiver'], receipt['cache_preparation']['art_receiver'])
+        self.assertNotIn(binding['ini_pointer'], (binding['rules_receiver'], binding['art_receiver']))
+        self.assertEqual(owner.ini_cache_snapshot(binding['art_receiver'])['sections'], [])
         self.assertEqual(observation['end'], 0x668EF5)
         self.assertTrue(all(observation['checks'].values()))
         self.assertEqual([(row['family'], row['name']) for row in observation['calls']], [('Unit', 'FV')])

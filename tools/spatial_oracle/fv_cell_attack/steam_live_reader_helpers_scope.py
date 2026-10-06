@@ -5,6 +5,8 @@ See steam_live_reader_helpers_scope.md for the bounded Windows import contract.
 """
 
 LIVE_READER_HELPER_REGIONS = (
+    # Concrete Terrain image getter through original primary vtable+9C.
+    (0x41CFA0, 0x41CFA7, "aabd205c59f5a2ae488fe7441a532856f43654015b0bf5af7c8432912465f8b7"),
     # Building MuzzleFlash / DamageFireOffset suffix conversion: original _itoa.
     (0x7D468C, 0x7D46B9, "0b10051bfe983a39084ed57ab72f0bd42db98bbb410280c695c0bf184fb02308"),
     (0x7D46B9, 0x7D4715, "54f936226be9f51f7f9ab44240f5dbece70134c0aa2cd2fcbf98441ee7e33527"),
@@ -13,12 +15,16 @@ LIVE_READER_HELPER_REGIONS = (
 )
 
 LIVE_READER_HELPER_READ_ONLY = (
+    (0x7F54F4, 4),  # Original Terrain primary vtable+9C points to41CFA0.
+    (0x7E36A8, 4),  # Original Anim primary vtable+A0 points to427B50.
     (0x81A634, 12),  # AddOccupy%d plus NUL.
     (0x81A624, 15),  # RemoveOccupy%d plus NUL.
     (0x7E14B0, 4),   # Original USER32.dll!wsprintfA import slot.
 )
 
 LIVE_READER_HELPER_DATA_SHA256 = {
+    "0x007F54F4:4": "d83ed6eae01db6c93c6998f74a53b6dbdd5b3fa1105c73f78e1c7228c5dfbdb4",
+    "0x007E36A8:4": "b606e4e9ca7004a4d89c4e0e8854932d37bc0b5c2a3b4f82bc6520659b8f0839",
     "0x0081A634:12": "36f59756e6cbaa25c18f7332b6a85bcda86a2f723d93f3ce3c750470d505feb8",
     "0x0081A624:15": "2fb9c1ac38073a478621c8324d4f3ae74edf76ddde74e6c44c0becd5ae195e77",
     "0x007E14B0:4": "b8d50566df5511b781d7e87b1d5737fd053ca08c33ed072d6027aa54f4f80ffb",

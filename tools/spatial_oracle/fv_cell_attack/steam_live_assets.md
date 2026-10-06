@@ -15,6 +15,40 @@ winner. The selected audio pair is frozen before bulk mounts. Media index and
 additional theater/side archives are explicit caller inputs. These host
 registration/file boundaries are not native MIX traversal or Windows startup.
 
+After the same VM's original Map/Theater read stores Scenario `+1258`,
+`initialize_live_theater_assets` supplies the selected named theater archive
+registrations on that existing asset owner. It authenticates the Steam image,
+original `InitTheater5349C0..534DD2` body, format literals and full six-record
+table `7E1B78`, and rejects a changed guest table or cold/invalid theater index.
+The native index selects a 112-byte original record; its long, short and
+isometric names form the filenames, without a hardcoded temperate selection.
+
+Original archive constructor sites establish the registration order: index1
+alone mounts long-name `MD.MIX` at `534AC0`; long-name `.MIX` follows at
+`534B00`, short-name `.MIX` at `534B3C`, isometric-short-name `MD.MIX` at
+`534B94`, then isometric-long-name `.MIX` at `534BD0`. The complete original
+body SHA256 is
+`68de0c2b9de7bab294a8d5e2c533b81b570f201479aa08c50efefbd73d558d91`;
+the 672-byte theater table SHA256 is
+`2881748ca63cb213fff046915e5a0e994ffc76b8135822a9b984da56ff7b6a93`.
+This reuses the existing named MIX index/extent owner and the same registrations
+already reviewed by `navigation_inputs.extract_tiles`. Earlier CRC winners,
+resident physical buffers and guest pointers remain retained. Actual missing
+named archives stay absent. Rebinding to a different theater is rejected because
+native unloads and a theater switch are outside this cold-owner continuation.
+
+A static physical-source control used the independently observed native
+TEMPERATE index0. `WA01X.TEM` was absent from the core-only stack and became
+available after `TEMPERAT.MIX`, `TEM.MIX`, `ISOTEMMD.MIX`, `ISOTEMP.MIX`.
+Its original source is `ra2.mix -> ISOTEMP.MIX`, 7,768 bytes, SHA256
+`394b4770777e289cdcd08d6c8741c628a4fe39b6df41054efbe0d460950ded03`,
+with SHP header `(0,180,149,16)`. This control ran no guest instructions;
+the subsequent same-VM native Anim qualification is reported separately.
+Four portable protocol tests and one authenticated-source test cover archive
+order, absent mounts, first-winner/cache preservation, rebind/index rejection,
+native index2 selection and changed-table rejection. The latter mocks Scenario
+words to test supplier behavior and does not claim native Map execution.
+
 The existing `Reader` owns the one guest physical-buffer cache and `5B40B0`
 service. Physical full bytes, lengths, hashes, sources and missing requests are
 recorded; original caller names and image metadata execute. FV body VXL/HVA are

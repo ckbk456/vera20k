@@ -12,6 +12,13 @@ import struct
 
 from tools.sidebar_oracle.stock import mix_hash, mix_index
 
+THEATER_TABLE_ADDRESS=0x7E1B78
+THEATER_RECORD_BYTES=112
+THEATER_TABLE_BYTES=6*THEATER_RECORD_BYTES
+THEATER_TABLE_SHA256='2881748ca63cb213fff046915e5a0e994ffc76b8135822a9b984da56ff7b6a93'
+THEATER_INIT_BEGIN,THEATER_INIT_END=0x5349C0,0x534DD2
+THEATER_INIT_SHA256='68de0c2b9de7bab294a8d5e2c533b81b570f201479aa08c50efefbd73d558d91'
+
 
 def filename(value):
     """Native resource basenames only, without host path traversal or aliases."""
@@ -68,7 +75,7 @@ class PhysicalAssets:
             name=filename(path.name)
             if name in self.loose:raise ValueError('Ambiguous case-insensitive loose filename: '+name)
             self.loose[name]=Span.disk(path)
-        self.archives=[];self.winners={};self.buffers={};self.requests=[]
+        self.archives=[];self.winners={};self.buffers={};self.requests=[];self.theater_registration=None
         for name in ('langmd.mix','language.mix'):self.mount(name)
         for index in reversed(range(100)):self.mount(f'expandmd{index:02}.mix')
         for name in ('ra2md.mix','ra2.mix','cachemd.mix','cache.mix','localmd.mix','local.mix'):
@@ -127,11 +134,53 @@ class PhysicalAssets:
         if buffer and blob is not None:self.buffers[key]=(blob,source)
         return blob,source
 
+    def register_theater(self,native_index,original_record):
+        """Supply the reviewed InitTheater named mounts on this existing owner.
+
+        The attached-VM helper authenticates the record and native index. No
+        cache is invalidated, earlier CRC winners are retained, and a theater
+        switch requires a different cold owner rather than simulated unloads.
+        """
+        if type(native_index)is not int or not 0<=native_index<6:
+            raise ValueError('Original native theater index must select one of six records')
+        record=bytes(original_record)
+        if len(record)!=THEATER_RECORD_BYTES:raise ValueError('Original theater record extent required')
+        def text(offset,size):
+            field=record[offset:offset+size]
+            if b'\0'not in field:raise ValueError('Unterminated original theater archive field')
+            value=field.split(b'\0',1)[0].decode('ascii')
+            if not value or not all(c.isascii()and(c.isalnum()or c=='_')for c in value):
+                raise ValueError('Invalid original theater archive field')
+            return value
+        label=text(0,16);long=text(0x30,10);iso_long=text(0x3A,10)
+        iso_short=text(0x44,10);short=text(0x4E,4)
+        fingerprint=hashlib.sha256(record).hexdigest()
+        if self.theater_registration is not None:
+            if (self.theater_registration['native_index'],self.theater_registration['record_sha256'])!=(native_index,fingerprint):
+                raise ValueError('Physical theater registration cannot switch its cold owner')
+            return self.theater_registration
+        names=(([long+'MD.MIX']if native_index==1 else[])+
+               [long+'.MIX',short+'.MIX',iso_short+'MD.MIX',iso_long+'.MIX'])
+        rows=[]
+        for name in names:
+            already=any(row['name']==filename(name)for row in self.archives)
+            present=self.mount(name)
+            mounted=next((row for row in self.archives if row['name']==filename(name)),None)
+            rows.append(dict(name=filename(name),present=present,already_registered=already,
+                             **({k:mounted[k]for k in('source','bytes','index_sha256','entries')}if mounted else{})))
+        self.theater_registration=dict(native_index=native_index,name=label,record_sha256=fingerprint,
+            archive_order=[filename(name)for name in names],mounts=rows,
+            original_entry=THEATER_INIT_BEGIN,original_body_sha256=THEATER_INIT_SHA256,
+            boundary='Supplied original InitTheater named archive registration; native archive construction, theater initialization and unloads are not executed')
+        return self.theater_registration
+
     def manifest(self):
-        return dict(boundary='Supplied named archive registration and immutable physical byte IO; original MIX traversal is not executed',
+        result=dict(boundary='Supplied named archive registration and immutable physical byte IO; original MIX traversal is not executed',
                     root=str(self.root),archives=self.archives,requests=self.requests,
                     frozen_files={name:dict(path=str(span.path),identity=list(span.identity))for name,span in self.loose.items()},
                     audio_pair={name:span.source if span else None for name,span in self.audio_pair.items()})
+        if self.theater_registration is not None:result['theater_registration']=self.theater_registration
+        return result
 
     def attach(self,owner):
         if owner.asset_source is not None:raise ValueError('Physical asset supplier already attached')
@@ -141,6 +190,34 @@ class PhysicalAssets:
             if actual!=blob:raise ValueError('Existing physical asset disagrees with frozen winner: '+name)
         owner.asset_source=self
         return self.manifest()
+
+
+def initialize_live_theater_assets(owner,assets):
+    """Register physical theater sources selected by the same VM's native Map read."""
+    from tools.native_oracle import file_span
+    from tools.spatial_oracle.fv_cell_attack.steam_bullet_startup_scope import STEAM_NATIVE_SHA256
+    if not isinstance(assets,PhysicalAssets)or owner.asset_source is not assets:
+        raise ValueError('Existing attached physical asset owner required for theater registration')
+    image=owner.image
+    if image is None or image.machine is not owner.u or image.profile.native_sha256!=STEAM_NATIVE_SHA256:
+        raise ValueError('Authenticated original Steam owner required for theater registration')
+    if hashlib.sha256(image.data).hexdigest()!=STEAM_NATIVE_SHA256:
+        raise ValueError('Original Steam theater source image changed')
+    image.verify_code()
+    body=file_span(image.data,THEATER_INIT_BEGIN,THEATER_INIT_END-THEATER_INIT_BEGIN)[1]
+    table=file_span(image.data,THEATER_TABLE_ADDRESS,THEATER_TABLE_BYTES)[1]
+    if (hashlib.sha256(body).hexdigest()!=THEATER_INIT_SHA256 or
+        hashlib.sha256(table).hexdigest()!=THEATER_TABLE_SHA256 or
+        file_span(image.data,0x827D64,7)[1]!=b'%s.MIX\0'or
+        file_span(image.data,0x827D58,9)[1]!=b'%sMD.MIX\0'):
+        raise ValueError('Original InitTheater archive name/order proof changed')
+    if bytes(owner.u.mem_read(THEATER_TABLE_ADDRESS,THEATER_TABLE_BYTES))!=table:
+        raise ValueError('Mapped original theater table changed')
+    scene=owner.read32(0xA8B230)
+    if not scene:raise ValueError('Native Scenario owner required before theater registration')
+    index=owner.read32(scene+0x1258)
+    if not 0<=index<6:raise ValueError('Native Map/Theater prerequisite required before archive registration')
+    return assets.register_theater(index,table[index*THEATER_RECORD_BYTES:(index+1)*THEATER_RECORD_BYTES])
 
 
 class ReadOnlyFiles:

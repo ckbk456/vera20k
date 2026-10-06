@@ -1,0 +1,380 @@
+{
+  "schema": "yr1001-bullet-live-readers-validation-v1",
+  "recorded_utc": "2026-10-06T19:21:10.964516+00:00",
+  "base_sha": "b43304db864b49979e2246317ebfd16a496ade49",
+  "implementation_sha": "5b5e21231fcf043035f56797acc02858e531acab",
+  "status": "awaiting_joined_native_qualification_and_fresh_critic",
+  "native_sha256": "3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600",
+  "source_sha256": {
+    "tools/_cargo_cache.py": "4495ca93688794cb4cc32f06995b9f1fd9dd91271cb5358c8fde8f88e4af3c1a",
+    "tools/input_oracle/fast_scroll.py": "02a2d87b37eff71df850fc70a6c31ec0a2f7f658e8aee8d616ab27b67b908e9f",
+    "tools/native_inspect.py": "ef7ff6551c943a79a02939462d6da9bb1ff9d2e46afe6142251a94e1447824a6",
+    "tools/native_oracle.py": "bbb46b4c6ed5d8e8bc49c821432b7c7c48037f08ec8943bc1d07a12861f73dfd",
+    "tools/projectile_oracle/bridge_render_inputs_palette.py": "94b2d81d145533d67994b725c314f80ba1d105f73b99250a5a93e8049e37dd2a",
+    "tools/projectile_oracle/bridge_render_inputs_selection.py": "93973b90c5355ce6ca955fd942eeb9e8d5a6bfceb995acf1d50807259464997f",
+    "tools/projectile_oracle/flat_art.py": "d7bec7ed89075bfd9f50138b54fa0bdc95599083b997c2b031f596851029be29",
+    "tools/projectile_oracle/ifv_fire_coord.py": "737cfdb438c73477d596d760dca430e0199c30471878c9fcc4903e100ebd6396",
+    "tools/projectile_oracle/ifv_launch.py": "12b465b3b7c80f5e0bba8385d81c85612fab5c1673cf150e0291f075dd3889f8",
+    "tools/rules_oracle/bridge_anim_inputs.py": "40c597dcc13599ee3a74b4232264937f86161588450fd3366bd431e30240815c",
+    "tools/rules_oracle/bridge_anim_lists.py": "960eda2fe04bd9edbb250cc9e9374d417b2c051848a6fd0eb701a230cc9c4394",
+    "tools/rules_oracle/bridge_child_sound.py": "4132e5307f9592c2e18c5930712e2c6b4239108726f038f4509b2137c3e27928",
+    "tools/rules_oracle/bridge_landing_inputs.py": "0d8755b9150edaf94b8992465b2ab4505520fd51c7d3708e5b2fd52f2c77d52b",
+    "tools/rules_oracle/read_double_percent.py": "75a1a98d74e1ecf6d69eb899c41b3c350db1758684f36af6c8e07bc35540eec2",
+    "tools/rules_oracle/theater_general_reader.py": "80aa99a8b1c5685233165090e9bc2f906b6c1f44057e1500fc9cd9a5d02509f2",
+    "tools/rules_oracle/weapon_speed_order.py": "9c5ffa4644a371d90c139d2ddae98c9abc0b7cbd0b83925cffd08d333c8b7105",
+    "tools/sidebar_oracle/stock.py": "a7daa5bd8a02ed846527420567552fe98612c4669c453e40c5667f0de725eeec",
+    "tools/spatial_oracle/anytown_damage/mission.py": "8a1030ae74eeb0a64740a856058b116a27edcd58b49915cede3dea821a23d6ca",
+    "tools/spatial_oracle/anytown_damage/navigation.py": "0058cea0b7aa7c40961f65960d843a96de539a3d09e5d5625e9c8def7e41bc68",
+    "tools/spatial_oracle/anytown_damage/navigation_inputs.py": "3f567ae0ad07ea3d17ba794a05d69b29e2e28ce1acaf3ff43994471137269c76",
+    "tools/spatial_oracle/bridge_rim.py": "cd32ca8f068bf7cf7ebe4b71f5c0f5855226b9f85ff38e73d23d84eae9bd1268",
+    "tools/spatial_oracle/building_body_rules.py": "a88f3b58b55d7587b79221eb94f99782328a2a2d38c404e28009caea30d01d55",
+    "tools/spatial_oracle/fv_cell_attack/retained_startup_run.py": "82525e998c2ac26ee91d5f2e4bfb75a8802d2158eeb43cab7920d65ad2a54ca2",
+    "tools/spatial_oracle/fv_cell_attack/steam_bullet_startup_scope.py": "90905930e14bfea96ee3a42b5edf5c7f4dbb6ba8f40cdfe874db6a0e8c0b34ea",
+    "tools/spatial_oracle/fv_cell_attack/steam_live_asset_scope.py": "82185427a06561026e9e7f89b0e808be16d98be8a2e37debd7054dc0b188b99c",
+    "tools/spatial_oracle/fv_cell_attack/steam_live_assets.py": "d2d50ce23c5e73097b1f45b69d3092b40116067201f8d26a31b20f777c5d1d28",
+    "tools/spatial_oracle/fv_cell_attack/steam_live_catalog_scope.py": "04777a88415b026d641478a1702c69dee37a0e2b0538599a75da5f24e4408d4e",
+    "tools/spatial_oracle/fv_cell_attack/steam_live_formatter_scope.py": "39fc0156c79b35e02ef3ec62842b20d9c003c1b8fba5cc34c15504bb852089da",
+    "tools/spatial_oracle/fv_cell_attack/steam_live_reader_helpers_scope.py": "74b3b0352887b197e07223b6e82a446958529938137f5d1da4cf2c4a13ee0e98",
+    "tools/spatial_oracle/fv_cell_attack/steam_live_types.py": "f2ef2dfde6582320a068c8c1a097fdbf52539ae0929c3ab7b900554e1be6a5d0",
+    "tools/spatial_oracle/fv_cell_attack/steam_live_types_scope.py": "51f74b324bb33aba5bcff280ee3ab805d34d06981c640f8f67a4443e18889542",
+    "tools/spatial_oracle/fv_cell_attack/steam_movement_profile.py": "4dc93c2dd50c6c5a14dff067fa0837b5a4777be45c705428dfc729fa71a0cb1c",
+    "tools/spatial_oracle/fv_cell_attack/steam_physical_navigation_profile.py": "631f114dd66cd3ee607c6aacaf3c7bcc317951c92c6892cb6e3833b5b4862a41",
+    "tools/spatial_oracle/fv_cell_attack/steam_rules_general_scope.py": "803d1d374f4468cbdb94b1faa5ea7ee0dd2a78c6ced7966d4767311bd1b00546",
+    "tools/spatial_oracle/fv_cell_attack/steam_rules_prereader_scope.py": "06dea2bfd149284f0d382330fc9ffed3847dd150bc06a236e95d085922b50e32",
+    "tools/spatial_oracle/ifv_turret_switching.py": "7e2098127c640a918f42c4178c57a1d1dd831c007aa907fc0cc67ce7cfbdb28f",
+    "tools/spatial_oracle/locomotor_force_track.py": "e9789d1bbf3e8d31e67ec26ab238e0657c2d161d7a00bf1e1f3a6c155ffa83d7",
+    "tools/spatial_oracle/map_queries.py": "699ada143ed69210dd12ff5099b516dd2f28c689b7db6c27ae38e04ed1a73b78",
+    "tools/spatial_oracle/mapgen_range.py": "34d7123fb8441155bb5e216b16cda209daf769b7d33aabf3556503807094e890",
+    "tools/spatial_oracle/shrapnel_repair/hierarchy_composition.py": "85b978786ced97710c5b8b1968edafc434f04b118ebfe6dd5270fc2804c87cc6",
+    "tools/spatial_oracle/shrapnel_repair/retail_inputs.py": "3ab84f391a0ac10e6fe5893c89e7f7ed45e1993ca2b9c7dd130dc54cbfc7fd00",
+    "tools/spatial_oracle/shrapnel_repair/shrapnel_repair.py": "1f1deed4a437400a6e7c4fb2d63b57727bd71a3da16d2d213fcfef420c6bc945",
+    "tools/spatial_oracle/shrapnel_repair/zone_composition.py": "841ca72d0017949600beee624b2121070b36d7b624c8261dfb09283a25dff995",
+    "tools/spatial_oracle/track_destination.py": "ec08b5710891d115acbdb71c18cbcd48243cb84737efad3983c8aa82340d291b",
+    "tools/spatial_oracle/track_outer_continuation.py": "3aae5a0a13111e2dc9b3908461db1f3a33ca2224212cd445f8c06af41d891480",
+    "tools/spatial_oracle/track_speed_native.py": "ca4fa1421338171d2f02e50a9ba2312f3341139149491b51f1fd7cae3f23f451",
+    "tools/storage_oracle/keyboard_bindings.py": "8ab6dca7657122f0c5669eee11e5121362305465e51652a6983e6a42dc674c4b",
+    "tools/test_native_oracle.py": "d96ce81353540dbc6829334d26eb24d65cf9c46a54981f06ba6879ccf88c7f25",
+    "tools/tests/test_cargo_labels.py": "1dc69292d062d84aeb2078c8a170ce7c110657d505d50405108350db2cf0ca7b",
+    "tools/tests/test_fv_bullet_cold_startup.py": "0a71a63e4f854c1bea70b8b23152c541f65018a3f83ffc2b5d640a22481f7865",
+    "tools/tests/test_fv_live_types.py": "42a6f10c44b8f81e3333762e67a35d73ea557f8682e07582acf2d03dc78521ad",
+    "tools/tests/test_fv_ordered_cold_startup.py": "db606f3e584e1b5cc56c9b033762e2ea5d0a9aef14711b401210fabcfc00fdc6",
+    "tools/tests/test_fv_rules_prereaders.py": "a461d8aad5bd8193e6aa257cc839d75dd9ff52410367638af7a7539823f811e4",
+    "tools/tests/test_live_type_transports.py": "9df92feaa82e7224d2ee9b0a393b2bb37799ab75f8347cf48ab425a3354e026d",
+    "tools/tests/test_native_ebp_transport.py": "54e1d5c8d45d5433d4ad578256d8fb5c96bbfc237a20d6348622912ea79e5c96",
+    "tools/tests/test_native_range_index.py": "9231502a5591d519c48916bc5e929660da313a6c58dfb76ca338f8bb0ced4a25",
+    "tools/tests/test_native_scope.py": "cda2fd91af1ced8b19a84f0f1ff209c19d63fa50dc81630386ffe30b19e50fd7",
+    "tools/tests/test_steam_live_assets.py": "766462ae393c5ad729cf0d1af7f8d6011d3652355429b4742f2c3571a0b7a937",
+    "tools/voxel_oracle/recoil.py": "4e469402429c27e7ef341d36c1d311a3cfe2d8bc53a1d46bec8f887ba62b1de3"
+  },
+  "checks": [
+    {
+      "command": "VERA20K_REQUIRE_RETAIL_INI=1 VERA20K_REQUIRE_RETAIL_ASSETS=1 python -m tools.cargo_run -- test -p vera20k --lib",
+      "exit_code": 0,
+      "result": "9589 passed; 0 failed; 231 ignored",
+      "log": ".local/bullet-live-validation/rust-retail-lib.log",
+      "log_sha256": "ff2945ed7b2d92f4df018ead09a53efe945414092880959a2a6ad88bf4e124bc"
+    },
+    {
+      "command": "VERA20K_REQUIRE_RETAIL_INI=1 VERA20K_REQUIRE_RETAIL_ASSETS=1 python -m tools.cargo_run -- clippy -p vera20k --lib",
+      "exit_code": 0,
+      "result": "exit 0; existing 729 warnings",
+      "log": ".local/bullet-live-validation/rust-clippy-lib.log",
+      "log_sha256": "7a2fd6d06fe9dfadea0b1510c52ce61743ab0a9e93539011966132222b1f3066"
+    },
+    {
+      "command": "VERA20K_REQUIRE_RETAIL_INI=1 VERA20K_REQUIRE_RETAIL_ASSETS=1 python -m tools.cargo_run -- test --release -p vera20k --lib headless_scenario::retail_construction_tests::retail_headless_funnel_construction_is_deterministic_and_populated -- --ignored --exact",
+      "exit_code": 0,
+      "result": "1 passed; 0 failed; retail deterministic populated scenario construction",
+      "log": ".local/bullet-live-validation/release-retail-map-corrected.log",
+      "log_sha256": "dd245b7b0b64af56c69f0e985e7c8b403139f9dcd376b75019e8a483ea21e205"
+    },
+    {
+      "command": "env -u VERA20K_GAMEMD_EXE python -m tools.run_tests",
+      "exit_code": 0,
+      "result": "655 tests; zero failures; 24 explicit native/device/environment skips",
+      "log": ".local/bullet-live-validation/python-theater-final.log",
+      "log_sha256": "cd11d85cf597ca61aeaece99d79662920edb1aa63e2c336fb4b8d5b5ee28de21"
+    },
+    {
+      "command": "python -m unittest tools.tests.test_steam_live_assets tools.tests.test_fv_bullet_cold_startup tools.tests.test_fv_live_types tools.tests.test_native_ebp_transport tools.tests.test_native_range_index tools.tests.test_live_type_transports",
+      "exit_code": 0,
+      "result": "38 passed; all 5211 physical CSF labels and extras, 14 genuinely missing UIName labels, native Map/Theater binding, authenticated theater registration guards, bounded occupancy keys and EBP/EDI transports",
+      "log": ".local/bullet-live-validation/native-theater-final.log",
+      "log_sha256": "f500320ddbbcfdd9aea48117ffe59717ec5217e88071699e0fa604c73086123b"
+    },
+    {
+      "command": "python -m tools.spatial_oracle.fv_cell_attack.steam_bullet_startup_scope --check",
+      "exit_code": 0,
+      "result": "native golden and source metadata reproduced",
+      "log": ".local/bullet-live-validation/bullet-theater-check.log",
+      "log_sha256": "107c199cb4af21716c1420266e8be78508bc0ac19900d4c8e864fce14ca294ad"
+    },
+    {
+      "command": "python tools/skill_sync.py --check",
+      "exit_code": 0,
+      "result": "passed",
+      "log": ".local/bullet-live-validation/skill-sync.log",
+      "log_sha256": "75262509650ce729d238e21d471f799bdd0ba9bb5f853986b74d5de69cd5e4a4"
+    },
+    {
+      "command": "python tools/sim_field_ratchet.py --base delivery/main",
+      "exit_code": 0,
+      "result": "2513 fields unchanged",
+      "log": ".local/bullet-live-validation/sim-field-ratchet.log",
+      "log_sha256": "57616c1e6459abe184b4e8ab4cbd069250f98419960d053ac68a591e08ef9189"
+    }
+  ],
+  "standalone_native_controls": [
+    {
+      "result": {
+        "path": ".local/fv-movement-validation/live-assets-20261006/native-catalog-seventh.result.json",
+        "sha256": "cab0534530cfd06c48535e6c255941d60519589562b09c96a87ae3b4d651b4d7",
+        "bytes": 382954
+      },
+      "log": {
+        "path": ".local/fv-movement-validation/live-assets-20261006/native-catalog-seventh.log",
+        "sha256": "5166536f3a8607c3aeb4aa7391a71f1646c9052229d9959033cd1fc584362602",
+        "bytes": 571
+      },
+      "native_sha256": "3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600",
+      "profile_name": "steam-15918130-fv-ordered-live-types-v1",
+      "profile_sha256": "6dd633d2fbae3f1ae032b6ade4c2d8373635e894c310e516113b84afd4e77424",
+      "profile_code_regions": 1029,
+      "sources_at_execution": {
+        "tools/spatial_oracle/fv_cell_attack/steam_live_assets.py": "5694865ea4f58c55d803185e25740fe3036e1c07f6c92f44ec698fef8fcd021e",
+        "tools/spatial_oracle/fv_cell_attack/steam_live_asset_scope.py": "24027a851ea116dff6adfb697a157fe6feeb2f836f2306629912411c19983846",
+        "tools/rules_oracle/bridge_anim_inputs.py": "26f2bc0d56a1fce6a849dad3073b6c010357ccf6fcaa69c7e1491807383cc633",
+        "tools/rules_oracle/bridge_anim_lists.py": "960eda2fe04bd9edbb250cc9e9374d417b2c051848a6fd0eb701a230cc9c4394",
+        "tools/sidebar_oracle/stock.py": "a7daa5bd8a02ed846527420567552fe98612c4669c453e40c5667f0de725eeec",
+        "tools/storage_oracle/keyboard_bindings.py": "8ab6dca7657122f0c5669eee11e5121362305465e51652a6983e6a42dc674c4b",
+        "tools/native_oracle.py": "0e71c346ee8066cf75abe09c16f51b06c6d02177a4bf7ddba861948b59ad8e59"
+      },
+      "scenario_counter_unchanged": true,
+      "rng_unchanged": true,
+      "source_hashes_unchanged": true,
+      "elapsed_seconds": 497.85243344306946,
+      "status": "passed",
+      "observations": {
+        "csf_entries": 5211,
+        "sound_unique_native_names": 818,
+        "sound_full_unique_source_order_matched": true,
+        "sample_counts_all_zero": true,
+        "factory_ready": 1,
+        "audio_index": 0,
+        "sound_physical_sha256": "0a8e85381aef1a0f97074c953bfe99504da00c6220fae1a023a1afd857023232",
+        "csf_physical_sha256": "f3382231d7eb3bd713bf3908ecdba175a1b2e20d9d80fa2702e9ab84c3a79deb"
+      }
+    },
+    {
+      "result": {
+        "path": ".local/fv-movement-validation/live-assets-20261006/native-voxel-files-third.result.json",
+        "sha256": "ddf42cc6d7f582142634910e0bea82877817d81d19186a186e59273df9357bfa",
+        "bytes": 354907
+      },
+      "log": {
+        "path": ".local/fv-movement-validation/live-assets-20261006/native-voxel-files-third.log",
+        "sha256": "7d439c625de6aa8d4601e188167243e0f8c7f45df98340bd8522e9af2ec75db7",
+        "bytes": 1004
+      },
+      "native_sha256": "3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600",
+      "profile_name": "steam-15918130-fv-ordered-live-types-v1",
+      "profile_sha256": "4e02329a82a9060b726af616fcc6bd5af7524681eae637245a38ee5c60f6ab78",
+      "profile_code_regions": 1030,
+      "sources_at_execution": {
+        "tools/spatial_oracle/fv_cell_attack/steam_live_assets.py": "5694865ea4f58c55d803185e25740fe3036e1c07f6c92f44ec698fef8fcd021e",
+        "tools/spatial_oracle/fv_cell_attack/steam_live_asset_scope.py": "82185427a06561026e9e7f89b0e808be16d98be8a2e37debd7054dc0b188b99c",
+        "tools/rules_oracle/bridge_anim_inputs.py": "26f2bc0d56a1fce6a849dad3073b6c010357ccf6fcaa69c7e1491807383cc633",
+        "tools/rules_oracle/bridge_anim_lists.py": "960eda2fe04bd9edbb250cc9e9374d417b2c051848a6fd0eb701a230cc9c4394",
+        "tools/sidebar_oracle/stock.py": "a7daa5bd8a02ed846527420567552fe98612c4669c453e40c5667f0de725eeec",
+        "tools/storage_oracle/keyboard_bindings.py": "8ab6dca7657122f0c5669eee11e5121362305465e51652a6983e6a42dc674c4b",
+        "tools/native_oracle.py": "0e71c346ee8066cf75abe09c16f51b06c6d02177a4bf7ddba861948b59ad8e59"
+      },
+      "scenario_counter_unchanged": true,
+      "rng_unchanged": true,
+      "source_hashes_unchanged": true,
+      "elapsed_seconds": 0.49478888511657715,
+      "status": "passed",
+      "control_only_entry_pairs": [
+        [
+          4667888,
+          [
+            805306368
+          ]
+        ],
+        [
+          7691472,
+          [
+            805306368
+          ]
+        ],
+        [
+          6018416,
+          [
+            805306368
+          ]
+        ],
+        [
+          6018864,
+          [
+            805306368
+          ]
+        ]
+      ],
+      "observations": {
+        "physical_resources": [
+          {
+            "resource": "FV.VXL",
+            "native_missing": false,
+            "header_hex": "00000000010000000100000065870000f037012400380124b0380124"
+          },
+          {
+            "resource": "FV.HVA",
+            "native_missing": false,
+            "header_hex": "000000000100000001000000c0c00124"
+          },
+          {
+            "resource": "FVBARL.VXL",
+            "native_missing": true,
+            "header_hex": "01000000000000000000000000000000000000000000000000000000"
+          },
+          {
+            "resource": "FVBARL.HVA",
+            "native_missing": true,
+            "header_hex": "01000000000000000000000000000000"
+          }
+        ],
+        "file_events": 20,
+        "hva_scale_from_native_loaded_vxl": true
+      }
+    },
+    {
+      "result": {
+        "path": ".local/fv-movement-validation/live-assets-20261006/native-eva-first.result.json",
+        "sha256": "814ff0a68e210cf165033f1fcd63a92afd39b06a885e0614074a3b464cbfddb6",
+        "bytes": 455107
+      },
+      "log": {
+        "path": ".local/fv-movement-validation/live-assets-20261006/native-eva-first.log",
+        "sha256": "cef06532d2c4ece307c19e1adc5963ddd505efea06975f70da5b556b514ca585",
+        "bytes": 358
+      },
+      "native_sha256": "3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600",
+      "profile_name": "steam-15918130-fv-ordered-live-types-v1",
+      "profile_sha256": "f61211f5eae9d142292fa938aa2d43002867c396e774f99fea48a40e0f9fbb72",
+      "profile_code_regions": 1038,
+      "sources_at_execution": {
+        "tools/spatial_oracle/fv_cell_attack/steam_live_assets.py": "87604c952844d9aafeaecaed06fad74d827bbb318b11e952d2242a06231bba8b",
+        "tools/spatial_oracle/fv_cell_attack/steam_live_asset_scope.py": "82185427a06561026e9e7f89b0e808be16d98be8a2e37debd7054dc0b188b99c",
+        "tools/rules_oracle/bridge_anim_inputs.py": "26f2bc0d56a1fce6a849dad3073b6c010357ccf6fcaa69c7e1491807383cc633",
+        "tools/rules_oracle/bridge_anim_lists.py": "960eda2fe04bd9edbb250cc9e9374d417b2c051848a6fd0eb701a230cc9c4394",
+        "tools/sidebar_oracle/stock.py": "a7daa5bd8a02ed846527420567552fe98612c4669c453e40c5667f0de725eeec",
+        "tools/storage_oracle/keyboard_bindings.py": "8ab6dca7657122f0c5669eee11e5121362305465e51652a6983e6a42dc674c4b",
+        "tools/native_oracle.py": "0e71c346ee8066cf75abe09c16f51b06c6d02177a4bf7ddba861948b59ad8e59",
+        "tools/spatial_oracle/fv_cell_attack/steam_live_catalog_scope.py": "04777a88415b026d641478a1702c69dee37a0e2b0538599a75da5f24e4408d4e",
+        "tools/spatial_oracle/fv_cell_attack/steam_live_types.py": "ea404bf0404864d89a6d466e3e3bd16355073287d99411202333cbac1dd67d40",
+        "tools/spatial_oracle/fv_cell_attack/steam_movement_profile.py": "f23ee06d89374dc3c8c6f5ff17490e5ef184f5b3b8127a29ab7225bbf23c15ae"
+      },
+      "scenario_counter_unchanged": true,
+      "rng_unchanged": true,
+      "source_hashes_unchanged": true,
+      "elapsed_seconds": 105.34628319740295,
+      "status": "passed",
+      "observations": {
+        "eva_native_count": 470,
+        "source_entries": 470,
+        "unique_source_names": 470,
+        "full_unique_source_order_matched": true,
+        "physical_sha256": "e4df441ac619ba3b68e84ceee55e3eaf7c64c0410176cf2ea442085da9feeadc",
+        "native_lookup_indices": [
+          0,
+          235,
+          469
+        ],
+        "missing_lookup": 4294967295
+      }
+    }
+  ],
+  "standalone_control_limits": [
+    "These earlier independent controls retain their own source and profile hashes; they are not an exact-publication-source joined retail type pass.",
+    "Full Sound source entries819/native unique818; native null audio index, no manufactured sample ordinals.",
+    "Partial failures and original timeout diagnostics are preserved locally; no failed control is counted as a successful corpus."
+  ],
+  "critic": {
+    "status": "not_yet_run"
+  },
+  "delivery": {
+    "status": "not_yet_published",
+    "target": "ckbk456/vera20k",
+    "source_only": true
+  },
+  "remaining": [
+    "Full Process/Session after668EF5",
+    "House/map placement chronology",
+    "Native paid Move/Stop/resume",
+    "Windows capture and human gameplay acceptance"
+  ],
+  "preserved_joined_attempts": [
+    {
+      "worktree": "held-w02-engineering",
+      "run_name": "ordered-live-types-first-vm",
+      "exit_code": 1,
+      "producer_unchanged": true,
+      "elapsed_seconds": 1095.053817469161,
+      "freeze_sha256": "6391d9e8a52db6a742a1adf32fa7981104b16c036f85dd401c0bcf3989dc051a",
+      "status": "failed_closed_no_successful_corpus",
+      "finding": "Nativecase-insensitive CSF search was supplieduppercasebyte order instead oflowercasefold order; falsemissingNAME:ALLIANCE thenunownedoriginalwideformatswitch"
+    },
+    {
+      "worktree": "publication",
+      "run_name": "ordered-live-types-publication-first-vm",
+      "exit_code": -15,
+      "producer_unchanged": true,
+      "freeze_sha256": "7d16b357ff6f0b92905d1e1cbd6888d1092d0bad354e2bd4433741c472709e99",
+      "status": "owned_cancellation_after_confirmed_identical_scope_failure_before_source_edits"
+    },
+    {
+      "status": "failed_closed_no_successful_corpus",
+      "run_name": "ordered-live-types-publication-second-vm",
+      "freeze_sha256": "ac9b19ec3e1287371955c34d1c843973252ae0fa720431c71c1f1b17032ea0e7",
+      "outputs_local_only": true,
+      "exit_code": 1,
+      "producer_unchanged": true,
+      "elapsed_seconds": 1020.8567048530094,
+      "producer_count": 2463,
+      "finding": "Original Anim vtable+A0 four-byte slot7E36A8 was not declared; no successful corpus. Precise slot grant added; independent Anim-body control then exposed missing prior native Map/Theater binding."
+    }
+  ],
+  "corrected_prerequisites": [
+    "OriginalCSF strcmp-style comparator7C8D20 foldsASCII A-Z tolowercase; suppliedrecords sortbythatorder andpreservephysicalvalueordinals/extras. All5211nativeGetString comparisons plus14absentphysicaltags pass.",
+    "OriginalmissingCSF wide%hs switch andASCII conversion execute; onlytwo exactsinglethreadInterlocked OS calls updateactualguestDWORD B78BA4 andreturnupdated32bitvalues.",
+    "Building originaloccupancykey WS printfA is a suppliedOS boundary restrictedtooriginaltwoformatliterals,indices1..8,exactstackdestination andcdeclcleanup. OriginalWindowsAPIbody is notexecuted/measured.",
+    "Nativebuildingitoa andTerrainframe-color wrapper are originalhashedbodies; locale/I64/scanset/errorbranches retainfailclosed boundaries.",
+    "Original Anim vtable+A0 dispatch word7E36A8 and unconditional Terrain+9C dispatch word7F54F4/getter41CFA0 are precisely enrolled with literal original hashes.",
+    "Original Full_Init Map/Theater687631..68764F executes before retained root Process using a distinct physical Map-only receiver; native Scenario+1258 setter preserves Rules/ART caches, counter and RNG.",
+    "Supplied theater archive registration follows authenticated InitTheater5349C0 call order and original six-record table, selected by the same VM native theater result. Original archive construction, full InitTheater and unloads are not executed."
+  ],
+  "joined_native": {
+    "status": "not_yet_started_corrected_final_candidate",
+    "outputs_local_only": true
+  },
+  "anim_body_controls": [
+    {
+      "status": "passed",
+      "bodies": 611,
+      "elapsed_seconds": 228.3508622739464,
+      "physical_requests": 927,
+      "log": ".local/bullet-live-validation/anim-family-theater-control-second.log",
+      "priors": "Fresh native selected CRT/Scenario/Rules/Anim constructors, full ART/CSF and palette buffers; cold empty Sound/EVA/namedColors; core archive stack only; other type masters omitted. Not joined retail parity.",
+      "log_sha256": "d832627c5497f8847e861fd4a0fb0db77df09650b587bbfd892143f9aee859fe"
+    },
+    {
+      "status": "passed",
+      "bodies": 611,
+      "elapsed_seconds": 227.32593223406002,
+      "physical_requests": 902,
+      "log": ".local/bullet-live-validation/anim-family-theater-assets-control.log",
+      "priors": "Same isolated native body control with actual native Map/Theater binding and supplied original theater archive order. Cold empty Sound/EVA/namedColors and omitted other-family masters. Not joined retail parity.",
+      "log_sha256": "932208d0098b4c0b284aa6dff4758f8341c3f241ef43cf8ca750da3f47d4bd1e"
+    }
+  ]
+}

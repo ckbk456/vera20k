@@ -238,18 +238,33 @@ class Inputs(ri.Rules):
               starting_dropships_key_absent=True,dropship_timer_boundary=dict(boundary),
               fields_3528_355c=list(struct.unpack('<14i',self.u.mem_read(scenario+0x3528,56))),
               palette_initialized=bool(self.read32(0x887308)))
- def read_map_theater(self,map_file=None):
+ def read_map_theater(self,map_file=None,*,ini_pointer=None):
   # Full_Init687631..68764F executes the exact Map/Theater read, original
   # 475870 -> 528A10 -> 48DBE0 lookup and Scenario+1258 store. The surrounding
   # Scenario allocation and lexical INI cache remain declared host boundaries.
-  raw=Path(map_file or self.map_file).read_bytes();lex,_=lexical(raw,{'Map'});self.make_ini(lex)
+  source=Path(map_file or self.map_file);raw=source.read_bytes()
+  if ini_pointer is None:
+   # Historical isolated callers retain their default receiver and supplier.
+   lex,_=lexical(raw,{'Map'});pointer=ri.INI;self.make_ini(lex)
+  else:
+   # Live startup retains ART/root Rules. Prepare only a distinct Map cache;
+   # original INI/type/scalar readers remain the result authority. Reject
+   # duplicate physical sections/keys rather than select a host winner.
+   from tools.rules_oracle.bridge_anim_inputs import physical_sections
+   if ini_pointer==ri.INI:raise ValueError('Explicit Map receiver must be distinct from global ART')
+   lex=physical_sections(raw,names=('Map',));pointer=ini_pointer;self.make_ini(lex,pointer=pointer)
   scenario=self.read32(0xA8B230);before=self.read32(scenario+0x1258)
-  self.u.reg_write(UC_X86_REG_ESP,ri.SP);self.u.reg_write(UC_X86_REG_EBP,ri.INI);self.u.reg_write(UC_X86_REG_EBX,0)
-  self.run_native(0x687631,0x68764F,count=6000000)
-  return dict(map_sha256=sha(raw),section='Map',key='Theater',default=0,
+  self.u.reg_write(UC_X86_REG_ESP,ri.SP);self.u.reg_write(UC_X86_REG_EBP,pointer);self.u.reg_write(UC_X86_REG_EBX,0)
+  options={}if ini_pointer is None else dict(context=dict(case='physical-map-theater-prerequisite',source=str(source),map_sha256=sha(raw),ini_pointer=pointer))
+  self.run_native(0x687631,0x68764F,count=6000000,**options)
+  result=dict(map_sha256=sha(raw),section='Map',key='Theater',default=0,
               source_value=lex.get('Map',{}).get('Theater'),before=before,
               value=self.read32(scenario+0x1258),reader='0x475870',
               lookup='0x48DBE0',caller='0x687631..0x68764F',field='Scenario+0x1258')
+  if ini_pointer is not None:result.update(source=str(source),ini_pointer=pointer,ini_allocation_bytes=0x58,
+      native_entry=0x687631,native_end=0x68764F,
+      supplier_boundary='Unique physical Map-only lexical cache; no map Rules layering or native file-loader claim.')
+  return result
  def snapshot(self):
   used=sorted({c['overlay'] for c in self.physical.values() if c['overlay'] is not None}|set(self.damage_overlays))
   terrains={}
