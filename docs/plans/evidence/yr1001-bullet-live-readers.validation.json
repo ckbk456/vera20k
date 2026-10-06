@@ -1,8 +1,8 @@
 {
   "schema": "yr1001-bullet-live-readers-validation-v1",
-  "recorded_utc": "2026-10-06T23:51:05.944099+00:00",
+  "recorded_utc": "2026-10-06T23:55:45.641143+00:00",
   "base_sha": "b43304db864b49979e2246317ebfd16a496ade49",
-  "implementation_sha": "c174da17bd03c872abeb64e92255dea37b94a9df",
+  "implementation_sha": "08590f1348f8452ce252a99067922e83876d978d",
   "status": "qualified_native_prerequisite_review_fixed_pending_delivery",
   "native_sha256": "3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600",
   "checks": [
@@ -279,9 +279,13 @@
     "joined_receipt_assessment": "Neither finding invalidates the successful joined live-reader run; original execution provenance is retained."
   },
   "delivery": {
-    "status": "not_yet_published",
+    "status": "ready_PR_auto_merge_enabled_waiting_corrected_exact_head_CI",
     "target": "ckbk456/vera20k",
-    "source_only": true
+    "source_only": true,
+    "pr_number": 10,
+    "pr_url": "https://github.com/ckbk456/vera20k/pull/10",
+    "first_published_head": "9ae364a55e611f57704d9fc4f7773da14a687ea4",
+    "first_CI": "six passed, Windows Python failed; preserved and corrected, not waived"
   },
   "remaining": [
     "Full Process/Session after668EF5",
@@ -834,9 +838,10 @@
     "tools/tests/test_live_type_transports.py": "9df92feaa82e7224d2ee9b0a393b2bb37799ab75f8347cf48ab425a3354e026d",
     "tools/tests/test_native_ebp_transport.py": "54e1d5c8d45d5433d4ad578256d8fb5c96bbfc237a20d6348622912ea79e5c96",
     "tools/tests/test_native_range_index.py": "9231502a5591d519c48916bc5e929660da313a6c58dfb76ca338f8bb0ced4a25",
-    "tools/tests/test_native_scope.py": "c8ee9703b758b0528437a8d2b78f90b8f5d2f784b494b1e4412c8375a0f24f9c",
+    "tools/tests/test_native_scope.py": "41072816c775be2fca94ee9ddef09c51e9da03286992f182f617b418ef4d6f0a",
     "tools/tests/test_steam_live_assets.py": "eba50eaa24f8f9c0221e1aa17d43da6fa65515cb60602d976423d1e06ea378e2",
-    "tools/voxel_oracle/recoil.py": "4e469402429c27e7ef341d36c1d311a3cfe2d8bc53a1d46bec8f887ba62b1de3"
+    "tools/voxel_oracle/recoil.py": "4e469402429c27e7ef341d36c1d311a3cfe2d8bc53a1d46bec8f887ba62b1de3",
+    ".gitattributes": "46873f37c7c86139a62206c7aeb883a94508e82bb7ef05e71f425941ed872e52"
   },
   "post_review_checks": [
     {
@@ -968,5 +973,34 @@
     "cli": "Changed only six __main__ evidence source bindings; the joined generator does not execute these branches. Authentication owner unchanged.",
     "metadata": "Regenerated Bullet source hashes only; native golden payload unchanged.",
     "limits": "The original 2463-producer freeze proves the original execution, not a new execution at the post-review commit. Focused/native equality and unchanged executed functions qualify these subsequent fixes; wider W02 remains open."
+  },
+  "windows_checkout_correction": {
+    "trigger": "First published head 9ae364a55e611f57704d9fc4f7773da14a687ea4 failed Windows Python CI while the other six checks passed.",
+    "failed_workflow": 37548857528,
+    "failed_log_sha256": "d57e92261ec19e4da542b67575d291ee4974fcdadbdcb8e4761f90379834d159",
+    "cause": "Git autocrlf checkout changed the two hash-pinned LF OleRun evidence files. Exact byte authentication correctly rejected source and projection digests.",
+    "failed_first_log_sha256": "de9d847f3781397ed5db61d7aca83a8a634355fcfbdb0e68681a5b97c1d70f4e",
+    "resolution": "Two exact-path text eol=lf attributes; real git core.autocrlf=true checkout-filter regression authenticates both original file hashes. No normalization in the validator, no hash weakening, no native runtime change.",
+    "source_commit": "08590f1348f8452ce252a99067922e83876d978d",
+    "checks": [
+      {
+        "command": "python -m unittest tools.tests.test_native_scope",
+        "result": "54 passed in 0.178 seconds",
+        "execution_head": "9ae364a55e611f57704d9fc4f7773da14a687ea4",
+        "validated_source_commit": "08590f1348f8452ce252a99067922e83876d978d",
+        "provenance": "Dirty line-ending policy/regression bytes subsequently committed unchanged; native runtime files unchanged.",
+        "log_sha256": "24e0c35cc74f4d44d314d333951837db1204dd67e251a120052c44be66a6216c"
+      },
+      {
+        "command": "env -u VERA20K_GAMEMD_EXE python -m tools.run_tests",
+        "result": "665 tests in 24.626 seconds; zero failures, 26 explicit skips",
+        "execution_head": "9ae364a55e611f57704d9fc4f7773da14a687ea4",
+        "validated_source_commit": "08590f1348f8452ce252a99067922e83876d978d",
+        "provenance": "Dirty line-ending policy/regression bytes subsequently committed unchanged; native runtime files unchanged.",
+        "log_sha256": "7475463a5b8b08400d1635ae574fcaf6fc401eba0394bc1ea1cbf64c3ee10aa8"
+      }
+    ],
+    "joined_rerun": false,
+    "qualification": "Joined runtime remains exactly c174da17 after the validated review fixes; this later commit changes only two checkout attributes and a portable test."
   }
 }

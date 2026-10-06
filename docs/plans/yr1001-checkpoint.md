@@ -37,12 +37,12 @@ recorded separately in the sanitized validation receipt.
 All 611 isolated Anim bodies and all 402 unique Building bodies also passed
 under their stated diagnostic priors. The native palette activation executes
 before Process; actual library palette bytes are loaded through the shared
-physical owner. The sole fresh read-only critic found two P2 compatibility/reproducibility defects. Both are fixed and validated at `c174da17`; authorized PR/merge remains pending.
+physical owner. The sole fresh read-only critic found two P2 compatibility/reproducibility defects. Both are fixed and validated at `c174da17`; PR #10 is ready; corrected exact-head CI and authorized auto-merge remain pending.
 
 Retail Rust lib: 9,589 passed, zero failed, 231 ignored. Clippy completed with
 729 existing warnings. Named release retail scenario/map construction passed.
 These Rust checks ran at the delivery base; the Rust source tree is unchanged.
-Final portable Python: 664 tests, zero failures, 26 explicit skips. The final
+Final portable Python: 665 tests, zero failures, 26 explicit skips. The final
 retail native/transport/prereader/guard suite passed all 102 checks. A missing
 palette override in an earlier test setup is preserved separately from the
 successful retry. Build retirement continues to fail closed when idle state is unavailable;
