@@ -25,19 +25,26 @@ def live_types_profile():
         LIVE_ASSET_REGIONS,READ_ONLY,NATIVE_DATA,FIXTURE_DATA,SINKS,TRANSPORTS)
     from tools.spatial_oracle.fv_cell_attack.steam_live_catalog_scope import (
         CATALOG_REGIONS,CATALOG_READ_ONLY,CATALOG_NATIVE_DATA,CATALOG_ENTRIES)
+    from tools.spatial_oracle.fv_cell_attack.steam_live_formatter_scope import (
+        FORMATTER_REGIONS,FORMATTER_READ_ONLY,FORMATTER_NATIVE_DATA,FORMATTER_TRANSPORTS)
+    from tools.spatial_oracle.fv_cell_attack.steam_live_reader_helpers_scope import (
+        LIVE_READER_HELPER_REGIONS,LIVE_READER_HELPER_READ_ONLY,LIVE_READER_WS_PRINTF_CALLS)
+    from tools.native_oracle import ImportTransport
+    key_transports=tuple(ImportTransport(row['site'],row['iat'],row['cleanup_bytes'],
+        stack_reads=row['stack_reads'],stack_writes=row['stack_writes'])for row in LIVE_READER_WS_PRINTF_CALLS)
     profile=extend_ordered_startup_profile(rules_prereader_profile(),name=PROFILE_NAME)
     transports={spec.site:spec for spec in profile.transports}
-    for spec in TRANSPORTS:
+    for spec in TRANSPORTS+FORMATTER_TRANSPORTS+key_transports:
         old=transports.get(spec.site)
         if old is not None and(old.iat!=spec.iat or old.argument_bytes!=spec.argument_bytes):
             raise ValueError('Live file transport changes the original import ABI')
         transports[spec.site]=spec
     heap=((0x24000000,LIVE_HEAP_BYTES),)
-    return replace(profile,regions=profile.regions+LIVE_REGIONS+LIVE_ASSET_REGIONS+CATALOG_REGIONS,
+    return replace(profile,regions=profile.regions+LIVE_REGIONS+LIVE_ASSET_REGIONS+CATALOG_REGIONS+FORMATTER_REGIONS+LIVE_READER_HELPER_REGIONS,
         entries=profile.entries+((BEGIN,(END,)),)+tuple((row['entry'],(RET_MAGIC,))for row in LIVE_READERS)+
             tuple((entry,(RET_MAGIC,))for entry in(0x750300,0x403ED0,0x7510D0,0x734E60))+CATALOG_ENTRIES,
-        reads=profile.reads+LIVE_READ_ONLY+LIVE_NATIVE_DATA+READ_ONLY+NATIVE_DATA+FIXTURE_DATA+CATALOG_READ_ONLY+CATALOG_NATIVE_DATA+heap,
-        writes=profile.writes+LIVE_NATIVE_DATA+NATIVE_DATA+FIXTURE_DATA+CATALOG_NATIVE_DATA+heap,
+        reads=profile.reads+LIVE_READ_ONLY+LIVE_NATIVE_DATA+READ_ONLY+NATIVE_DATA+FIXTURE_DATA+CATALOG_READ_ONLY+CATALOG_NATIVE_DATA+FORMATTER_READ_ONLY+FORMATTER_NATIVE_DATA+LIVE_READER_HELPER_READ_ONLY+heap,
+        writes=profile.writes+LIVE_NATIVE_DATA+NATIVE_DATA+FIXTURE_DATA+CATALOG_NATIVE_DATA+FORMATTER_NATIVE_DATA+heap,
         fixture_writes=profile.fixture_writes+FIXTURE_DATA+heap,
         sinks=profile.sinks+SINKS,transports=tuple(transports.values()))
 
@@ -65,7 +72,7 @@ def registry_snapshot(m):
     return result
 
 
-def continue_live_types(m,rules,reader_ini,receipt):
+def continue_live_types(m,rules,reader_ini,receipt,*,progress=None):
     from unicorn import UC_HOOK_CODE
     from unicorn.x86_const import (UC_X86_REG_EIP,UC_X86_REG_EDI,UC_X86_REG_ESI,
         UC_X86_REG_ESP,UC_X86_REG_ECX)
@@ -96,6 +103,8 @@ def continue_live_types(m,rules,reader_ini,receipt):
         entry_sp=uc.reg_read(UC_X86_REG_ESP)
         if pc in readers:
             row=readers[pc];pointer=uc.reg_read(UC_X86_REG_ECX)
+            if progress and(not calls or calls[-1]['family']!=row['family']):
+                progress('Original '+row['family']+' readers starting')
             array=m.read32(row['registry']+4);count=m.read32(row['registry']+16)
             indices=[index for index in range(count)if m.read32(array+index*4)==pointer]
             calls.append(dict(family=row['family'],entry=pc,caller=m.read32(entry_sp),
@@ -184,7 +193,7 @@ def metadata():
     from unicorn import Uc,UC_ARCH_X86,UC_MODE_32
     from tools.native_oracle import load_image,provenance
     image=load_image(Uc(UC_ARCH_X86,UC_MODE_32),profile=live_types_profile())
-    return provenance(image=image,scope='Original selected Bullet/Sound CRT, retained Rules prerequisites and live type caller668EED→668EF5',
+    return provenance(image=image,scope='Original selected Bullet/Sound/EVA CRT, retained Rules prerequisites and live type caller668EED→668EF5',
         entry_points=dict(live_caller=BEGIN,live_pass=0x679A10,boundary=END),
         assumptions=['One fresh original-order selected CRT VM; original Scenario and retained Rules/ART objects.',
             'Physical unique lexical Rules/ART receivers; complete resident type loop rather than selected FV body.',
@@ -218,7 +227,8 @@ def main():
     captured={}
     generator=partial(generate_typed_master,retained_startup=True,retained_dialog=True,
         ordered_cold_startup=True,retained_prereaders=True,retained_live_types=True,
-        execution_source_paths=paths,reference_capture=captured)
+        execution_source_paths=paths,reference_capture=captured,
+        progress=lambda stage:print('NATIVE STAGE',stage,flush=True))
     default=root/'.local/fv-movement-validation/live-types/full.json'
     finish_vectors(generator,default,provenance=metadata,argv=argv,source_paths=paths,description=__doc__)
     companion_argv,companion_path=retained_dialog_companion_argv(argv,default)

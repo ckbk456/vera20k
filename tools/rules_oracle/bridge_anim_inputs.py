@@ -12,6 +12,7 @@ from tools.rules_oracle.bridge_anim_lists import Lists,HEAP
 from tools.projectile_oracle.flat_art import crc
 from tools.spatial_oracle.building_body_rules import INI,SP,dwords
 from tools.native_oracle import run_checked,RET_MAGIC,NATIVE_SHA256,finish_vectors,provenance
+from tools.spatial_oracle.fv_cell_attack.steam_live_reader_helpers_scope import LIVE_READER_WS_PRINTF_CALLS
 from unicorn.x86_const import *
 DEFAULT_ASSETS=Path(os.environ.get('CARGO_TARGET_DIR','target'))/'asset/bridge-anim-inputs/extract'
 ROOT=Path(os.environ.get('VERA20K_BRIDGE_ANIM_ASSETS',str(DEFAULT_ASSETS)))
@@ -181,6 +182,21 @@ class Reader(Lists):
       last_section_argument_pointer=argument,last_section_pointer=section,
       section_index_cache_pointer=index,sections=caches,cache_pointer_membership_valid=True)
  def import_transport(self,call):
+  for row in LIVE_READER_WS_PRINTF_CALLS:
+   if call.spec.site!=row['site']:continue
+   destination,pattern,index=struct.unpack('<III',call.read(call.sp,row['argument_bytes']))
+   if (destination!=call.sp+row['destination_sp_offset']or pattern!=row['format_address']or
+       not row['index_min']<=index<=row['index_max']):
+    raise ValueError('Original bounded occupancy-key wsprintf arguments changed')
+   if call.read(pattern,len(row['format_bytes']))!=row['format_bytes']:
+    raise ValueError('Original occupancy-key wsprintf format bytes changed')
+   # Supplied USER32 API: only original Add/RemoveOccupy%d with indices1..8.
+   # Signed decimal, NUL/count and cdecl contract:
+   # https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-wsprintfa
+   output=row['prefix_bytes']+bytes((ord('0')+index,))+b'\0'
+   call.write(destination,output);call.return_to_native(len(output)-1)
+   self.transport_events.append(dict(kind='OS_occupancy_key_wsprintfA',site=call.spec.site,
+       index=index,output_hex=output.hex(),return_characters=len(output)-1));return
   if call.spec.site==0x527AF9:
    codepage,flags,source,length,dest,capacity=call.arguments
    assert (codepage,flags,length,capacity)==(0,1,0xffffffff,128)

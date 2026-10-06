@@ -250,8 +250,19 @@ class EbpImportTransport(ImportTransport):
     """
 
 
+@dataclass(frozen=True)
+class EdiImportTransport(ImportTransport):
+    """Original CALL EDI site, bound to an unchanged declared IAT payload."""
+
+
+def _register_import(spec):
+    if isinstance(spec,EbpImportTransport):return 'EBP',b'\xff\xd5'
+    if isinstance(spec,EdiImportTransport):return 'EDI',b'\xff\xd7'
+    return None
+
+
 def _transport_instruction_bytes(spec):
-    return 2 if isinstance(spec,EbpImportTransport) else 6
+    return 2 if _register_import(spec) else 6
 
 
 @dataclass(frozen=True)
@@ -407,9 +418,10 @@ def _validate_transports(data,profile):
         instruction_bytes=_transport_instruction_bytes(spec)
         if not any(a<=spec.site and spec.site+instruction_bytes<=b for a,b,_ in profile.regions):
             raise OracleError('Import transport straddles or lies outside qualified original code')
-        if isinstance(spec,EbpImportTransport):
-            if file_span(data,spec.site,2)[1]!=b'\xff\xd5':
-                raise OracleError('Register import transport must identify original CALL EBP bytes')
+        if register_import:=_register_import(spec):
+            register,opcode=register_import
+            if file_span(data,spec.site,2)[1]!=opcode:
+                raise OracleError('Register import transport must identify original CALL '+register+' bytes')
             if spec.forward_entry is not None:
                 raise OracleError('Register import transport cannot forward a COM factory')
         elif file_span(data,spec.site,6)[1]!=b'\xff\x15'+struct.pack('<I',spec.iat):
@@ -589,11 +601,12 @@ def run_checked(uc: Uc, begin: int, end: int | tuple[int, ...], *,
                 reject(address,size,'missing_transport','Declared import transport has no callback');return
             if bytes(uc.mem_read(spec.iat,4))!=file_span(image.data,spec.iat,4)[1]:
                 reject(spec.iat,4,'transport_iat_changed','Original IAT slot changed');return
-            if isinstance(spec,EbpImportTransport):
-                from unicorn.x86_const import UC_X86_REG_EBP
+            if register_import:=_register_import(spec):
+                from unicorn.x86_const import UC_X86_REG_EBP,UC_X86_REG_EDI
+                register,_=register_import
                 target=struct.unpack('<I',file_span(image.data,spec.iat,4)[1])[0]
-                if uc.reg_read(UC_X86_REG_EBP)!=target:
-                    reject(address,size,'transport_register_target','CALL EBP target differs from original declared IAT payload');return
+                if uc.reg_read(UC_X86_REG_EBP if register=='EBP'else UC_X86_REG_EDI)!=target:
+                    reject(address,size,'transport_register_target','CALL '+register+' target differs from original declared IAT payload');return
             sp=uc.reg_read(UC_X86_REG_ESP)
             try:
                 call=TransportCall(image,spec,sp)

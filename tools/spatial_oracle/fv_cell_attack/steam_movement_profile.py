@@ -1720,7 +1720,7 @@ def cache_receiver_metadata():
         substitutions=['Existing scoped INI lexical cache/allocator/CRT transports.'],
         entry_points={'read_int':0x5276D0,'read_string':0x528A10})
 
-def typed_master_inputs(root,*,native_state=None,profile=None,heap_bytes=None,retained_startup=False,retained_dialog=False,ordered_cold_startup=False,retained_prereaders=False,retained_live_types=False,live_assets=None):
+def typed_master_inputs(root,*,native_state=None,profile=None,heap_bytes=None,retained_startup=False,retained_dialog=False,ordered_cold_startup=False,retained_prereaders=False,retained_live_types=False,live_assets=None,progress=None):
     """Original master discovery on the existing VM, ending before JumpjetControls.
 
     The fresh control is a bounded constructor milestone, not cold startup or
@@ -1765,7 +1765,8 @@ def typed_master_inputs(root,*,native_state=None,profile=None,heap_bytes=None,re
             from tools.spatial_oracle.fv_cell_attack.steam_live_assets import PhysicalAssets,initialize_live_asset_inputs
             from tools.native_oracle import configured_gamemd
             if live_assets is None:live_assets=PhysicalAssets(configured_gamemd().parent)
-            setup['live_asset_inputs']=initialize_live_asset_inputs(m,live_assets)
+            if progress:progress('Selected original cold CRT completed before Scenario and type discovery')
+            setup['live_asset_inputs']=initialize_live_asset_inputs(m,live_assets,progress=progress)
         # Original52BABE requests18C0; this bounded control supplies that exact
         # allocation to the existing Rules constructor owner. The caller's
         # complete allocation/publication instructions are not executed here.
@@ -2106,11 +2107,14 @@ def typed_master_inputs(root,*,native_state=None,profile=None,heap_bytes=None,re
             counter_after=suffix_counter,allocator_cursor=suffix_cursor,rng=suffix_rng,
             excluded='Dialogdefaults only; accepted Session unit_count0/Easy2/base choices and later AI/General/live type/House/placement are not executed.')
         receipt['excluded'][1]='Selected dual-cache endpoint668EC5 follows MultiplayerDialogSettings; later AI/General/live Type/Tiberium/House/Unit/placement remain excluded.'
+    if progress:progress('Original master/Colors/Jumpjet/Dialog prefix completed')
     if retained_prereaders:
         continue_rules_prereaders(m,rules,reader_ini,receipt)
     if retained_live_types:
         from tools.spatial_oracle.fv_cell_attack.steam_live_types import continue_live_types
-        continue_live_types(m,rules,reader_ini,receipt)
+        if progress:progress('Retained prereaders reached668EED; original live type pass starting')
+        continue_live_types(m,rules,reader_ini,receipt,progress=progress)
+        if progress:progress('Original live type pass reached668EF5')
     return m,selected,rules,receipt
 
 def rules_prereader_profile():
@@ -2303,7 +2307,7 @@ def retain_dialog_execution(receipt,reference,*,native_identity,source_identity,
     print('RAW EXECUTION '+str(path)+' SHA256 '+hashlib.sha256(path.read_bytes()).hexdigest(),flush=True)
     return path
 
-def generate_typed_master(*,retained_startup=False,retained_dialog=False,ordered_cold_startup=False,retained_prereaders=False,retained_live_types=False,execution_source_paths=None,reference_capture=None):
+def generate_typed_master(*,retained_startup=False,retained_dialog=False,ordered_cold_startup=False,retained_prereaders=False,retained_live_types=False,execution_source_paths=None,reference_capture=None,progress=None):
     import os
     from pathlib import Path
     from tools.native_oracle import source_identity
@@ -2311,7 +2315,7 @@ def generate_typed_master(*,retained_startup=False,retained_dialog=False,ordered
         raise ValueError('Retained dialog generation requires its producer source paths')
     sources=source_identity(execution_source_paths)
     m,_,_,receipt=typed_master_inputs(Path(os.environ['VERA20K_FV_MOVEMENT_ASSETS']),
-        retained_startup=retained_startup,retained_dialog=retained_dialog,ordered_cold_startup=ordered_cold_startup,retained_prereaders=retained_prereaders,retained_live_types=retained_live_types)
+        retained_startup=retained_startup,retained_dialog=retained_dialog,ordered_cold_startup=ordered_cold_startup,retained_prereaders=retained_prereaders,retained_live_types=retained_live_types,progress=progress)
     if not retained_dialog:return receipt
     reference=retained_dialog_reference(receipt)
     import unicorn

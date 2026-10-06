@@ -225,7 +225,9 @@ def prepare_csf(owner,assets):
     This explicitly supplies decoded immutable CSF records, not native CSF file
     parsing. Native lookups, missing-key allocation and consumer fields execute.
     The original qsort/bsearch comparator7C8D20 uses case-insensitive ASCII keys;
-    sorted uppercase records retain source-owned value ordinals in +24.
+    Records must sort by the comparator's ASCII lowercase fold, not uppercase
+    byte order: punctuation sorts differently relative to uppercase letters.
+    Stored uppercase keys retain source-owned value ordinals in +24.
     """
     from tools.storage_oracle.keyboard_bindings import parse_csf
     if any(owner.u.mem_read(0xB1CF6C,0x14)):
@@ -233,15 +235,17 @@ def prepare_csf(owner,assets):
     blob,source=assets.read('RA2MD.CSF',buffer=False)
     if blob is None:raise ValueError('Physical active-YR CSF is required before live readers')
     entries,digest,physical_extras=parse_csf(blob,include_extras=True)
-    names=sorted(entries)
+    names=sorted(entries,key=str.lower)
     if any(not key.isascii()or len(key.encode('ascii'))>=36 for key in names):
         raise ValueError('CSF keys exceed original native cached record extent')
     records=owner.alloc(len(names)*0x28);values=owner.alloc(len(names)*4);extras=owner.alloc(len(names)*4)
-    for ordinal,name in enumerate(names):
+    ordinals={name:index for index,name in enumerate(entries)}
+    for record_index,name in enumerate(names):
+        owner.fixture_write(records+record_index*0x28,name.encode('ascii')+b'\0')
+        owner.fixture_write(records+record_index*0x28+0x24,struct.pack('<I',ordinals[name]))
+    for ordinal,name in enumerate(entries):
         value=(entries[name]+'\0').encode('utf-16-le');pointer=owner.alloc(len(value))
         owner.fixture_write(pointer,value)
-        owner.fixture_write(records+ordinal*0x28,name.encode('ascii')+b'\0')
-        owner.fixture_write(records+ordinal*0x28+0x24,struct.pack('<I',ordinal))
         owner.fixture_write(values+ordinal*4,struct.pack('<I',pointer))
         extra=physical_extras[name];extra_pointer=0
         if extra is not None:
@@ -249,6 +253,20 @@ def prepare_csf(owner,assets):
         owner.fixture_write(extras+ordinal*4,struct.pack('<I',extra_pointer))
     owner.fixture_write(0xB1CF6C,struct.pack('<I',len(names)))
     owner.fixture_write(0xB1CF74,struct.pack('<III',records,values,extras))
+    from tools.spatial_oracle.fv_cell_attack.steam_live_formatter_scope import (
+        FORMATTER_TRANSPORTS,FORMATTER_INTERLOCKED_CALLS,FORMATTER_INTERLOCKED_ARGUMENT)
+    from tools.spatial_oracle.anytown_damage.mission import interlocked_update
+    sites={spec.site:spec for spec in owner.image.profile.transports}
+    deltas={site:delta for site,iat,size,register,delta in FORMATTER_INTERLOCKED_CALLS}
+    def atomic_reader_count(call):
+        if call.arguments!=(FORMATTER_INTERLOCKED_ARGUMENT,):
+            raise ValueError('Native formatter atomic call changed its original DWORD receiver')
+        call.return_to_native(interlocked_update(call.read,call.write,
+            FORMATTER_INTERLOCKED_ARGUMENT,deltas[call.spec.site]))
+    for spec in FORMATTER_TRANSPORTS:
+        if sites.get(spec.site)!=spec or spec.site in owner.transports:
+            raise ValueError('Native formatter import is absent or already owned')
+        owner.transports[spec.site]=atomic_reader_count
     return dict(physical_source=source,source_sha256=digest,entries=len(names),
                 boundary='Supplied full decoded physical CSF cache; native734E60 lookups execute; physical nativeCSF parser is excluded')
 
@@ -339,12 +357,21 @@ def prepare_eva(owner,assets):
                 boundary='Original cold clear7531A0 and full753000/752DB0 EVA definitions; supplied physicalINI lexical cache; queue/playback/Windows startup excluded')
 
 
-def initialize_live_asset_inputs(owner,assets):
+def initialize_live_asset_inputs(owner,assets,*,progress=None):
     """Attach the caller's already frozen physical IO and pre-live catalogs."""
     if not isinstance(assets,PhysicalAssets):raise ValueError('A frozen physical asset owner is required')
     assets.attach(owner)
+    from tools.spatial_oracle.fv_cell_attack.steam_live_reader_helpers_scope import LIVE_READER_WS_PRINTF_CALLS
+    for row in LIVE_READER_WS_PRINTF_CALLS:
+        if row['site']in owner.transports:raise ValueError('Occupancy-key Windows transport already owned')
+        owner.transports[row['site']]=owner.import_transport
     files=ReadOnlyFiles(assets);files.attach(owner)
-    csf=prepare_csf(owner,assets);sound=prepare_sound(owner,assets);eva=prepare_eva(owner,assets)
+    csf=prepare_csf(owner,assets)
+    if progress:progress('Physical CSF cache prepared; original full Sound loader starting')
+    sound=prepare_sound(owner,assets)
+    if progress:progress('Original Sound loader finished; original full EVA loader starting')
+    eva=prepare_eva(owner,assets)
+    if progress:progress('Original EVA loader finished')
     return dict(assets=assets.manifest(),csf=csf,sound=sound,eva=eva,
                 limitations=['Host archive registration/file IO and decoded CSF cache are supplied boundaries',
                              'Fullnative Windows startup/device lifecycle and audio waveform output are excluded'])

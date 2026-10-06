@@ -90,6 +90,60 @@ class ImmutableSupplierTests(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get('VERA20K_GAMEMD_EXE'),'Requires explicit authenticated Steam install')
 class PhysicalRetailSupplierTests(unittest.TestCase):
+    def test_original_csf_lookup_uses_native_sort_for_all_labels_and_missing_label(self):
+        from unicorn.x86_const import UC_X86_REG_EDX,UC_X86_REG_ESP
+        from tools.native_oracle import configured_gamemd,file_span
+        from tools.spatial_oracle.fv_cell_attack.steam_live_types import live_types_profile,LIVE_HEAP_BYTES
+        from tools.spatial_oracle.fv_cell_attack.steam_movement_profile import constructor_inputs,NATIVE_SCENARIO_BYTES
+        from tools.spatial_oracle.fv_cell_attack.steam_live_assets import prepare_csf
+        from tools.spatial_oracle.fv_cell_attack.steam_live_formatter_scope import (
+            MISSING_LOOKUP_ENTRY,MISSING_LOOKUP_SOURCE_FILE,MISSING_LOOKUP_SOURCE_LINE)
+        from tools.rules_oracle.bridge_anim_inputs import physical_sections
+        from tools.spatial_oracle.building_body_rules import SP
+        owner,_,_=constructor_inputs(profile=live_types_profile(),heap_bytes=LIVE_HEAP_BYTES,
+            initial_counter=None,scenario_bytes=NATIVE_SCENARIO_BYTES,native_scenario=True,
+            construct_selected_type=False,initialize_options=True,initialize_physical=True,ordered_cold_startup=True)
+        assets=PhysicalAssets(configured_gamemd().parent)
+        prepare_csf(owner,assets)
+        entries,_,extras=parse_csf(assets.read('RA2MD.CSF',buffer=False)[0],include_extras=True)
+        rules=Path(os.environ['VERA20K_FV_MOVEMENT_ASSETS'])/'RULESMD.INI'
+        sections=physical_sections(rules.read_bytes(),names=None)
+        missing=list(dict.fromkeys(values['UIName']for values in sections.values()
+            if 'UIName'in values and values['UIName'].upper()not in entries))
+        self.assertTrue(missing,'Control requires actually absent physical UIName labels')
+        scene=owner.read32(0xA8B230);counter=owner.read32(scene+0x214)
+        rng={address:bytes(owner.u.mem_read(address,0x3F4))for address in (0x886B88,scene+0x218,0xABE890)}
+        extra_output=owner.alloc(4)
+        for label in ('Name:Alliance',*entries,*missing):
+            owner.u.reg_write(UC_X86_REG_EDX,extra_output)
+            mark=len(owner.allocation_events)
+            prior_missing_head=owner.read32(0xB1CF88)
+            pointer=owner.invoke(MISSING_LOOKUP_ENTRY,owner.cstring(label),
+                (MISSING_LOOKUP_SOURCE_FILE,MISSING_LOOKUP_SOURCE_LINE))
+            self.assertEqual(owner.u.reg_read(UC_X86_REG_ESP),SP+12)
+            if label in missing:
+                pattern=file_span(owner.image.data,0x845820,28)[1].decode('utf-16-le').rstrip('\0')
+                expected=pattern.replace('%hs',label)
+                head=owner.read32(0xB1CF88)
+                self.assertEqual(pointer,head+4)
+                self.assertEqual(owner.read32(head),prior_missing_head)
+                self.assertEqual(owner.allocation_events[-1]['size'],0x208)
+                self.assertEqual(owner.read32(0xB78BA4),0)
+                events=owner.u._vera20k_last_import_transports
+                self.assertEqual([row['site']for row in events],[0x7D9D8B,0x7D9DD2]*len(label))
+                self.assertTrue(all(row['arguments']==[0xB78BA4]for row in events))
+            else:
+                expected=entries[label.upper()]
+                self.assertEqual(len(owner.allocation_events),mark) # Native lookup allocates nothing for a hit.
+            self.assertEqual(bytes(owner.u.mem_read(pointer,len((expected+'\0').encode('utf-16-le')))),
+                (expected+'\0').encode('utf-16-le'))
+            extra=extras.get(label.upper())
+            extra_pointer=owner.read32(extra_output)
+            if extra is None:self.assertEqual(extra_pointer,0)
+            else:self.assertEqual(bytes(owner.u.mem_read(extra_pointer,len(extra)+1)),extra+b'\0')
+        self.assertEqual(owner.read32(scene+0x214),counter)
+        self.assertTrue(all(bytes(owner.u.mem_read(address,0x3F4))==value for address,value in rng.items()))
+
     def test_selected_native_names_use_real_sources_and_missing_barrels(self):
         from tools.native_oracle import configured_gamemd
         assets=PhysicalAssets(configured_gamemd().parent)
