@@ -66,3 +66,30 @@ patterns for indices1..8 does not execute or measure the Windows implementation,
 qualify generic formatting, or establish numeric/gameplay parity. Every other
 format, index, destination, import or callsite must fail closed. This scope
 provides metadata for the runtime owner; it installs no transport itself.
+
+Original Building dock coordinate storage grows through the vector embedded
+at Building+`1784`. Constructor `45E27F` supplies1, stores the initial
+`NumberOfDocks` at+`1780` and capacity at+`178C`, allocates12 bytes and writes
+original vector vtable `7E4638` at `45E2AB`. Reader `464940` invokes original
+ReadInt with key `8194C4` (`NumberOfDocks`), stores its native result at+`1780`,
+and compares against capacity at `464951`. The native JLE skips resize only
+when the result is no greater than capacity. Selected stock physical Rules
+SHA256 `3d341ef8a13a4b5ab24af2eef48ac94931ac2bb87d950fe3330a07e2d25672ef`
+contains `NumberOfDocks=4` in both `GAAIRC` and `AMRADR`.
+
+Original `464964` (`FF 52 08`) dispatches vector+8 from slot `7E4640`
+to `465E70`. ECX is Building+`1784`; native pushes0 then the requested count,
+and original resize returns with RET8. It allocates count*12 through existing
+`7C8E17`, copies three DWORDs per preserved coordinate, frees owned old storage
+through existing `7C8B3D`, and publishes native buffer/capacity/ownership flags.
+Both existing allocator/free services retain their original owner; this scope
+adds no sinks, physical data, fixture writes or coordinate results.
+
+The complete reviewed resize root is `465E70..465F4D`. Its zero-count branch
+calls vector+C at `465F40`, selecting slot `7E4644` and original clear leaf
+`465F50..465F77`. That leaf conditionally frees owned data through existing
+`7C8B3D`, clears ownership and capacity and returns. The selected stock count4
+does not assert observation of this zero-count branch; enrolling its exact
+reviewed leaf closes the original helper's virtual dependency. Only the two
+four-byte readonly slots are added. New region and slot hashes are literal
+original bytes; static review alone is not a successful Building body control.

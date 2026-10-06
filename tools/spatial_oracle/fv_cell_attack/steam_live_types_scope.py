@@ -66,15 +66,15 @@ LIVE_REGIONS = (
     (0x74B050, 0x74B61D, "a01c00083385027fe2601dc98ed99a72347188c66111a1fa6b2f2583488e819f"),
     # Speed clamped0..100 to native integer scale.
     (0x474810, 0x474866, "fe814b0a3a18fb0d4837bb54dac07a04a38eb235cddea12071bcd26586b5e487"),
-    # Armor original eleven enum rows.
+    # Pip original eleven name/value records, including person colors.
     (0x4748A0, 0x47490A, "c8d4d08a963409378064862b075b3c65c9a6ab5e2c12006c7dc535ac2df04986"),
-    # Movement zone five enum rows.
+    # PipScale original five name/value records.
     (0x474940, 0x4749B0, "32450762b7c4ad74cca7cedc43d19acef656e5dc9fc9c7cf53792bd8a148554e"),
-    # Land-type name lookup.
+    # Category original name lookup.
     (0x4749E0, 0x474A18, "8a692730dc65a4f1f1220e81ae5a7efc399eae3a4294f78b8ec8db0bc9fd0597"),
-    # Mission original22 enum rows.
+    # Foundation original22 name/value records.
     (0x474DA0, 0x474E07, "854d6ddef79dc71b1d118d8dadaf6ccbc3f1302312c01f49cad9f995b0a6943b"),
-    # SuperWeapon original73 name slots.
+    # Action original73 name slots, read by SuperWeapon.
     (0x474EE0, 0x474F42, "fa48f761cdb9a319a3d09adefde962dfef93cff2bde760b07c48da44c351e208"),
     # SuperWeapon index name and existing lookup.
     (0x474F50, 0x474F99, "0a995d4c078d52bc6692ae6366ec6d69273adc66d1ecffe00aaee0c4b97dd2ce"),
@@ -86,7 +86,7 @@ LIVE_REGIONS = (
     (0x475060, 0x475098, "5e116a3d245fbf73b0a008fa5e67a55505c03acef2fa5a6b0231336f77853584"),
     # House bitset native token order.
     (0x4750D0, 0x475143, "380881a230e1c557543c288e79fa79c1df7abdb27e92d4ae3233b458ecfb1bf2"),
-    # Land-targeting three-name enum.
+    # Armor ReadString wrapper with original default-name lookup.
     (0x4753F0, 0x475433, "8455e66cab0f152ebbca5889fc6b97f9dbaf05db0d560c5e09c99cb5627b129a"),
     # Script type native lookup.
     (0x4756F0, 0x475792, "476867c7537874c99acdf9b70a90090f7155a3b466975414c4e507eb7429978b"),
@@ -98,7 +98,7 @@ LIVE_REGIONS = (
     (0x476B20, 0x476D76, "ffafd9eb9a2d5d1e80642fdfbcb08215fad9881d27d673ac75c36417aff7bd18"),
     # Techno type resolver existing four factories.
     (0x476EB0, 0x476F6A, "c4159da3b3b35a8a5cb88c80639a3d26c4642f4ffddaa9247b0ed9b6aa52abf5"),
-    # Facing original enum parser.
+    # Layer original ReadString wrapper and enum parser.
     (0x477050, 0x4770AF, "bc3a9685cb3bd36a56d5a8fd633133180beb72dd8141bddd4f278c720e56b3f4"),
     # Target restriction three-name enum.
     (0x477590, 0x47763A, "cb7b730774ae026bd00193daeff3c357955df5ff84a4519c1fdb49aa6699534e"),
@@ -152,9 +152,9 @@ LIVE_REGIONS = (
     (0x45DD20, 0x45DD44, "62a850a2c2ad1129ba2aaf10514acab6e62635f62ca60d6dd1533443ff3b1b62"),
     # Building enum parser.
     (0x45DD50, 0x45DD89, "36b54cd3072daec80d4feb743e39bbc69ad4b0f9543defc97f1145173aac659b"),
-    # Land enum formatter.
+    # Category enum formatter.
     (0x473960, 0x473973, "da075a82376572b5345f7d79110503ead2f28c07ae4fac2bbde702edbd1eb9af"),
-    # Land enum aliases parser.
+    # Category enum aliases parser.
     (0x473980, 0x4739CA, "d066985b4ab374832e4b20b72d5608a10a5c41f904730f71db6919b40e816f59"),
     # Named ColorScheme original name parser.
     (0x474A90, 0x474B1A, "96dc7d828887a3f449353f4027378e9ed379fcd38dfc14106cd3112e01245b0c"),
@@ -162,9 +162,9 @@ LIVE_REGIONS = (
     (0x478220, 0x4782D5, "9bb22f71bdf45da567aadef58afecc355650bad544d4c28083164de21117ead1"),
     # Country lookup to native House bit.
     (0x48DEB0, 0x48DECC, "c258651882530e4c8e3f74bf4b589ccd4185366f9bed5d62dee95de53d54506b"),
-    # Facing enum parser.
+    # Layer enum parser.
     (0x48E050, 0x48E089, "cb1e18466000f670443483dd87c1c33b81a79edaec8412f1531d29f5c05368f7"),
-    # Facing enum formatter.
+    # Layer enum formatter.
     (0x48E090, 0x48E0A3, "99e10019077c0413be29a88276ea84f746d335ecef1c0f89147039328c803115"),
     # Infantry name find existing registry.
     (0x523C90, 0x523CF1, "b47b000b5c789046d56994268f0d45ea702a4586d8e9b6a29854e9217669663e"),
@@ -176,7 +176,7 @@ LIVE_REGIONS = (
     (0x6CEE60, 0x6CEEA1, "400dba34045cae4538d6f9d72595fa8b6d05cb6aaba24d977dd3359ae86d35d5"),
     # Warhead affect-type original18 name parser.
     (0x74FEF0, 0x74FF25, "65f238866e4ae608613e6e82b0592f6cfe3df352601359922b1210e25447414d"),
-    # LandTargeting original enum parser.
+    # Armor original eleven-name parser; pointer bound7E523C.
     (0x772A50, 0x772A88, "63f05fe6a8dbc4e97ee3befe164bdfc9a86958e71f92d488be21d1cbc8860fd9"),
     # Bullet native derived pointer vector resize.
     (0x4EE5C0, 0x4EE670, "95cc7a9f6b8c01c5429fca069cb2462dd2494757c515f10b48851874a6eef734"),
@@ -227,10 +227,10 @@ LIVE_READ_ONLY = (
     (0x7E45D4, 4),  # Building +64
     (0x7E4974, 4),  # Bullet +2C
     (0x7E49AC, 4),  # Bullet +64
-    (0x7E4C50, 292),  # SuperWeapon73 enum-name slots
+    (0x7E4C50, 292),  # Action73 enum-name slots; native end7E4D74
     (0x7E5168, 4),  # Techno FPU scalar
     (0x7E5190, 8),  # Weapon postpass FPU multiplier
-    (0x7E5210, 12),  # LandTargeting three names
+    (0x7E5210, 44),  # Armor eleven name pointers; native end7E523C
     (0x7EA36C, 4),  # Concrete vector0x7ea364 0x8
     (0x7EA370, 4),  # Concrete vector0x7ea364 0xc
     (0x7EAB84, 4),  # Country +2C
@@ -366,7 +366,7 @@ LIVE_READ_ONLY = (
     (0x817830, 25),  # D:\ra2mdpost\AbsType.cpp
     (0x81784C, 7),  # UIName
     (0x817854, 5),  # Name
-    (0x817F64, 5),  # None
+    (0x817F64, 8),  # None default; strncpy7C9266 reads original NUL padding DWORD
     (0x817FF0, 8),  # FlyBack
     (0x817FF8, 6),  # FlyBy
     (0x818000, 11),  # SpawnDelay
@@ -834,7 +834,7 @@ LIVE_READ_ONLY = (
     (0x81B138, 6),  # Color
     (0x81B150, 19),  # CourseLockDuration
     (0x81B168, 4),  # Arm
-    (0x81B7C8, 88),  # Land eleven alternate-name pairs
+    (0x81B7C8, 88),  # Category eleven alternate-name pairs; native end81B820
     (0x81B820, 8),  # AirLift
     (0x81B828, 14),  # Air Transport
     (0x81B838, 9),  # AirPower
@@ -854,9 +854,9 @@ LIVE_READ_ONLY = (
     (0x81B910, 4),  # VIP
     (0x81B914, 10),  # VIP/Agent
     (0x81B920, 8),  # Soldier
-    (0x81B958, 88),  # Armor eleven name/value records
-    (0x81B9B0, 40),  # MovementZone five name/value records
-    (0x81B9D8, 176),  # Mission22 name/value records
+    (0x81B958, 88),  # Pip eleven name/value records; native end81B9B0
+    (0x81B9B0, 40),  # PipScale five name/value records; native end81B9D8
+    (0x81B9D8, 176),  # Foundation22 name/value records; native end81BA88
     (0x81BABC, 12),  # Target restriction three names
     (0x81BAC8, 7),  # Strong
     (0x81BB68, 4),  # 0x0
@@ -891,7 +891,7 @@ LIVE_READ_ONLY = (
     (0x81BC38, 5),  # blue
     (0x81BC40, 4),  # red
     (0x81BC44, 6),  # white
-    (0x81BC4C, 7),  # yellow
+    (0x81BC4C, 8),  # yellow Pip default; original strncpy DWORD includes padding
     (0x81BC54, 6),  # green
     (0x81BC5C, 14),  # PsychicReveal
     (0x81BC6C, 14),  # NoForceShield
@@ -954,7 +954,15 @@ LIVE_READ_ONLY = (
     (0x81BF6C, 5),  # Self
     (0x81BF74, 7),  # NoMove
     (0x81C000, 6),  # %d,%d
-    (0x81DA78, 20),  # Facing five names
+    (0x81DA78, 20),  # Layer five names; native end81DA8C
+    (0x81DB24, 10),  # special_2
+    (0x81DB30, 10),  # special_1
+    (0x81DB3C, 9),  # concrete
+    (0x81DB48, 6),  # steel
+    (0x81DB50, 5),  # wood
+    (0x81DB58, 6),  # heavy
+    (0x81DB60, 7),  # medium
+    (0x81DB68, 6),  # light
     (0x81DB70, 6),  # plate
     (0x81DB78, 5),  # flak
     (0x81DB80, 4),  # Top

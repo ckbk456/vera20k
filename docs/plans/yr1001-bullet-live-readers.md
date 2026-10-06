@@ -61,6 +61,15 @@ ART and root Rules cache identities, ID counter and RNG remain intact.
 Original later map Rules processing is outside this early binding. The supplied
 boundary does not claim that the complete `Init_Theater` or `Full_Init` executed.
 
+The stock GAAIRC/AMRADR `NumberOfDocks=4` path executes native vector resize
+`465E70` and its complete clear branch `465F50`, through the original virtual
+slots. Both complete primary-body controls grew the constructor's capacity1
+to4 with native allocation. Armor's actual eleven-row pointer table is retained
+in full. Native DWORD string copying admits only the precisely observed aligned
+`None`/`yellow` default extents. Helper declarations and enum labels follow
+original constructor/caller/loop evidence; these controls certify closure under
+stated cold priors, with joined qualification reported separately.
+
 Native Sound and EVA loaders read complete physical definition lists before the
 retained Process pass. Original disabled-output Sound factory establishes its
 null-index state. The full decoded physical CSF cache is supplied through the
