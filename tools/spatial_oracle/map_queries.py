@@ -77,26 +77,40 @@ def query(kind, xy, bounds=(80, 2, 4, 76, 48), dummy=(-7, 1), mode=1):
     return row
 
 
-def normalize(size, local):
+def normalize(size, local, *, owner=None, map_pointer=None):
     # Enter the full function with its real stack ABI; execute ClipRect and every
     # field write, stopping BEFORE the redraw call/Techno traversal. No hooks or
     # substituted calls. The result is only the normalization portion.
-    uc = Uc(UC_ARCH_X86, UC_MODE_32)
-    load_image(uc)
-    uc.mem_map(SCRATCH, 0x10000)
-    uc.mem_map(STACK_BASE, STACK_SIZE)
+    if owner is None:
+        if map_pointer is not None:
+            raise ValueError('A retained Map pointer requires its existing VM owner')
+        uc = Uc(UC_ARCH_X86, UC_MODE_32)
+        load_image(uc)
+        uc.mem_map(SCRATCH, 0x10000)
+        uc.mem_map(STACK_BASE, STACK_SIZE)
+        write = uc.mem_write
+        receiver, rectangle = MAP, INPUT
+    else:
+        if owner.image is None or map_pointer is None:
+            raise ValueError('Shared normalization requires a scoped owner and retained Map')
+        uc = owner.u
+        write = owner.fixture_write
+        receiver, rectangle = map_pointer, owner.alloc(16)
     sp = STACK_BASE + STACK_SIZE - 0x1000
-    uc.mem_write(sp, dwords(0, INPUT))
-    uc.mem_write(INPUT, dwords(*local))
-    uc.mem_write(MAP + 0xEC, dwords(0, 0, *size))
+    write(sp, dwords(0, rectangle))
+    write(rectangle, dwords(*local))
+    write(receiver + 0xEC, dwords(0, 0, *size))
     uc.reg_write(UC_X86_REG_ESP, sp)
-    uc.reg_write(UC_X86_REG_ECX, MAP)
-    run_checked(uc, ENTRIES["normalize"], 0x005672D3, count=1000,
-                required_addresses=[ENTRIES["clip_rect"], 0x005672CD])
-    if bytes(uc.mem_read(INPUT, 16)) != dwords(*local):
+    uc.reg_write(UC_X86_REG_ECX, receiver)
+    options = dict(count=1000, required_addresses=[ENTRIES["clip_rect"], 0x005672CD])
+    if owner is None:
+        run_checked(uc, ENTRIES["normalize"], 0x005672D3, **options)
+    else:
+        owner.run_native(ENTRIES["normalize"], 0x005672D3, **options)
+    if bytes(uc.mem_read(rectangle, 16)) != dwords(*local):
         raise RuntimeError("normalizer changed input rectangle")
     return {"size": size, "local": local,
-            "normalized": struct.unpack("<iiii", uc.mem_read(MAP + 0xFC, 16))}
+            "normalized": struct.unpack("<iiii", uc.mem_read(receiver + 0xFC, 16))}
 
 
 def retained_dummy_sequence():

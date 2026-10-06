@@ -263,6 +263,75 @@ def execute(row):
                 original_code_and_unit_vtable_unchanged=True)
 
 
+def rest_tail(row, *, profile=None):
+    """Actual Drive common tail with real interfaces, speed writer and getter.
+
+    The interior caller frame is supplied. Fresh/paid-point/arrival admission is
+    excluded here; unlike execute(), no caller or locomotor vtable is replaced.
+    """
+    from tools.spatial_oracle.track_speed_native import seed
+    from tools.spatial_oracle.locomotor_force_track import FOOT, LOCO, SP
+    n = seed(row, profile=profile)
+    u = n.uc
+    ship = row.get('family', 'drive') == 'ship'
+    family = FAMILIES['ship' if ship else 'drive']
+    rest, writer, return_pc = (0x69FEF0, 0x69FF43, 0x69FF5A) if ship else (0x4B0828, 0x4B0880, 0x4B0893)
+    n.write(LOCO + 0x34, dwords(*row.get('destination', (0, 0, 0))))
+    n.write(LOCO + 0x40, dwords(*row.get('head', (0, 0, 0))))
+    n.write(LOCO + 0x50, struct.pack('<d', row.get('target', 0.375)))
+    n.write(FOOT + 0x5E0, dwords(row.get('path_head', -1)))
+    n.write(FOOT + 0x388, bytes(0x18))
+    n.write(0xA8ED84, dwords(row.get('frame', 101)))
+    caller_entry = row.get('caller_entry', False)
+    if caller_entry:
+        n.write(FOOT + 0xAC, dwords(row.get('mission', 5)))
+        n.write(FOOT + 0x5A4, dwords(0))
+        n.write(LOCO + 0x58, dwords(row.get('selector', -1)))
+        n.write(LOCO + 0x62, bytes((0, row.get('valid', 0))))
+        if row.get('rotating', False):
+            n.write(FOOT + 0x390, dwords(100, 0, 4))
+            n.write(FOOT + 0x39C, struct.pack('<h', 16))
+    # The saved registers/local layout is the existing Process caller fixture.
+    n.write(SP, dwords(*SAVED))
+    n.write(SP + 0x20, dwords(RET_MAGIC, LOCO + 4))
+    for register, value in ((UC_X86_REG_ESP, SP), (UC_X86_REG_EBX, 0),
+                            (UC_X86_REG_EBP, 0xFFFFFFFF), (UC_X86_REG_ESI, LOCO + 4),
+                            (UC_X86_REG_EDI, LOCO), (UC_X86_REG_ECX, FOOT)):
+        u.reg_write(register, value)
+    if caller_entry:
+        n.write(SP, dwords(RET_MAGIC, LOCO + 4))
+        for register, value in zip((UC_X86_REG_EDI, UC_X86_REG_ESI,
+                                    UC_X86_REG_EBP, UC_X86_REG_EBX), SAVED):
+            u.reg_write(register, value)
+    before = dict(foot_raw=bytes(u.mem_read(FOOT, 0x800)).hex(),
+                  drive_raw=bytes(u.mem_read(LOCO, 0x80)).hex(),
+                  target_bits=n.double_bits(LOCO + 0x50), applied_bits=n.double_bits(FOOT + 0x578))
+    visited = []
+    def observe(_uc, address, _size, _data):
+        if address in (family['common_tail'], family['active_gate'], family['early'], family['sample'],
+                       rest, writer, return_pc, 0x69FC10, 0x69FF5D, 0x69FF98, 0x69FFB0,
+                       0x69F290, 0x69F330, 0x69FF4D,
+                       0x4B0500, 0x4B055A, 0x4B066C, 0x4B0775, 0x4B078C,
+                       0x4B08D1, 0x4B08E9, 0x4B0896, 0x4B0828, 0x4B0880, 0x4D3710, 0x4B0886,
+                       0x4B0889, 0x4AFB80, 0x4DB1A0, 0x4B0893):
+            visited.append(f'{address:08X}')
+    hook = u.hook_add(UC_HOOK_CODE, observe)
+    try:
+        n.run_native((0x69FC10 if ship else 0x4B0500) if caller_entry else family['common_tail'], RET_MAGIC, count=3000,
+                     required_addresses=(family['common_tail'], rest, return_pc))
+    finally:
+        u.hook_del(hook)
+    assert u.reg_read(UC_X86_REG_ESP) == SP + (8 if caller_entry else 0x28)
+    assert tuple(u.reg_read(register) for register in
+                 (UC_X86_REG_EDI, UC_X86_REG_ESI, UC_X86_REG_EBP, UC_X86_REG_EBX)) == SAVED
+    after = dict(foot_raw=bytes(u.mem_read(FOOT, 0x800)).hex(),
+                 drive_raw=bytes(u.mem_read(LOCO, 0x80)).hex(),
+                 target_bits=n.double_bits(LOCO + 0x50), applied_bits=n.double_bits(FOOT + 0x578))
+    return dict(input=row, before=before, after=after, visited=visited,
+                writes=n.writes, returned_al=u.reg_read(UC_X86_REG_EAX) & 255,
+                entry=f'{(0x69FC10 if ship else 0x4B0500):08X}' if caller_entry else f'{family["common_tail"]:08X}', original_return=f'{return_pc:08X}')
+
+
 def generate():
     rows = []
     for family in FAMILIES:

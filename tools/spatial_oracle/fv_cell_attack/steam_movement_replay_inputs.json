@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "source_receipt_sha256": "1c4b58fac120e48b22e63de037b17b6d10942a57e9ddc81ca87c0a18a86ec9b2",
+  "scope": "Recorded Rust replay caller state for native bounded causal characterization; no native Scenario admission or full lifetime claim. Constructor factor inputs are independently checked against actual full original constructor.",
+  "cases": [
+    {
+      "name": "dense",
+      "prefix_frame": 181,
+      "entity_id": 1,
+      "authored_Speed": 6,
+      "input": {
+        "raw": 15,
+        "family": "drive",
+        "applied_bits": "3fdb851eb851eb7c",
+        "target_bits": "3ff0000000000000",
+        "accel_bits": "3f9eb851eb851eb8",
+        "decel_bits": "3f60624dd2f1a9fc",
+        "accelerates": true,
+        "passive": false,
+        "slowdown": 500,
+        "selector": 18,
+        "current": [
+          6337,
+          1408,
+          0
+        ],
+        "destination": [
+          6528,
+          1408,
+          0
+        ],
+        "resolved_destination": [
+          6528,
+          1408,
+          0
+        ],
+        "destination_ground_level": 0,
+        "destination_slope": 0,
+        "destination_structural": false,
+        "on_bridge": false,
+        "sinking": {
+          "active": false,
+          "sound_edge_seen": false
+        },
+        "crate_bits": "3ff0000000000000",
+        "house_bits": "3f800000",
+        "veterancy_raw": 0,
+        "veterancy_rank_cache": 2,
+        "faster": false,
+        "flag_owner": -1,
+        "end_permitted": true,
+        "valid": true,
+        "head_to": {
+          "x": 6528,
+          "y": 1408,
+          "z": 0
+        },
+        "path": {
+          "cursor": 15,
+          "directions": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "reference_cell": [
+            25,
+            5
+          ]
+        },
+        "residual": 7,
+        "retry": false,
+        "native_process_track_argument": 0,
+        "cursor": 5,
+        "reversed": false,
+        "retry_source": "Initial active Process track gate, TrackInvocation.active_gate=true/retry=false; Drive4B0576. Argument1 only same-call continuation/retry Drive4B0665, not this initial paid prefix."
+      }
+    },
+    {
+      "name": "bridge",
+      "prefix_frame": 137,
+      "entity_id": 1,
+      "authored_Speed": 6,
+      "input": {
+        "raw": 15,
+        "family": "drive",
+        "applied_bits": "3fdb851eb851eb7c",
+        "target_bits": "3ff0000000000000",
+        "accel_bits": "3f9eb851eb851eb8",
+        "decel_bits": "3f60624dd2f1a9fc",
+        "accelerates": true,
+        "passive": false,
+        "slowdown": 500,
+        "selector": 18,
+        "current": [
+          6325,
+          5248,
+          416
+        ],
+        "destination": [
+          6528,
+          5248,
+          416
+        ],
+        "resolved_destination": [
+          6528,
+          5248,
+          416
+        ],
+        "destination_ground_level": 4,
+        "destination_slope": 0,
+        "destination_structural": false,
+        "on_bridge": false,
+        "sinking": {
+          "active": false,
+          "sound_edge_seen": false
+        },
+        "crate_bits": "3ff0000000000000",
+        "house_bits": "3f800000",
+        "veterancy_raw": 0,
+        "veterancy_rank_cache": 2,
+        "faster": false,
+        "flag_owner": -1,
+        "end_permitted": true,
+        "valid": true,
+        "head_to": {
+          "x": 6528,
+          "y": 5248,
+          "z": 416
+        },
+        "path": {
+          "cursor": 11,
+          "directions": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "reference_cell": [
+            25,
+            20
+          ]
+        },
+        "residual": 6,
+        "retry": false,
+        "native_process_track_argument": 0,
+        "cursor": 4,
+        "reversed": false,
+        "retry_source": "Initial active Process track gate, TrackInvocation.active_gate=true/retry=false; Drive4B0576. Argument1 only same-call continuation/retry Drive4B0665, not this initial paid prefix."
+      }
+    }
+  ]
+}

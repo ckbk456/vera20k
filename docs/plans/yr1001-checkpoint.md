@@ -1,50 +1,46 @@
 # Vanilla 1.001 — current agentic checkpoint
 
-Updated 2026-10-04. Reconcile Git, PRs and owned commands before continuation.
+Updated 2026-10-06. Reconcile Git, PRs and owned commands before continuation.
 
 ## Authority and delivery
 
-User authorized Stage 2 engineering, scoped PRs/merges into ckbk456/vera20k through
-`delivery`, then fast-forward clean primary main. Preserve upstream `origin`,
-original/local assets and unrelated worktrees/processes. Agents automate checks
-and native comparisons; humans playtest and assess feel. No routine approval is
-missing. WholeStage 2/R01–R04 and native compatibility acceptance remain open.
+The user explicitly authorized implementation, PR and merge of correctly ordered
+Bullet initialization and live type/asset readers into `ckbk456/vera20k` through
+`delivery`. Preserve upstream `origin`, licensed assets and held W02 work. Agents
+own checks/native evidence; humans own hands-on gameplay acceptance. Whole Stage 2
+and W02 remain open.
 
-PRs #1/#3/#4/#5/#6/#7 merged. Primary main and delivery/main are
-`7743c549e757a9d93e2458bf14fb2571cdfe7375`, clean. PR #7's seven checks all
-SUCCESS at `42585a36caa15da1321972bac6f73b9ccea5d1c4` (Clippy three platforms,
-Python tools three platforms, field ratchet). Rust retail tests remain local;
-CI lib tests are manual. No main commits were made.
+PRs #1/#3/#4/#5/#6/#7/#8 are merged. The fresh delivery base is
+`b43304db864b49979e2246317ebfd16a496ade49` (PR #8). Primary main is clean at that
+base. No direct main commits, held movement publication or deployment is authorized
+by this bounded checkpoint.
 
 ## Current owned chain
 
-Worktree `ra2-yr-rust-worktrees/yr1001-frame-duration-authority`, branch
-`feature/yr1001-frame-duration-authority`, fetched base `7743c549`. Official config
-and fresh 27 Steam INIs are bound. Runtime owner completed the source changes;
-root owns evidence, progress and publication. No owned active test/build/app or
-CI command remains. Legacy worktree is clean with retained local evidence.
+Branch `feature/yr1001-bullet-live-readers` is isolated from the held
+`feature/yr1001-fv-move-stop-resume` branch. The latter's committed checkpoint is
+`1a7e36aed2ccefda927a7765edee0666bfacdacd`; its local work and native outputs are
+preserved. Only the native tooling owners and required shared dependencies are
+included in this delivery candidate. No Rust source changes are included.
 
-F01 prerequisite is implemented and validated; one fresh read-only critic found no actionable defects.
-[PR #8](https://github.com/ckbk456/vera20k/pull/8) is open against delivery main;
-validated implementation commit is `e7a452845db3cc8b5dbdd6e3cf868bcf07ba7228`.
-CI/merge remain pending at this checkpoint:
-[admitted-frame rationale](yr1001-frame-duration.md) and
-[receipt](evidence/yr1001-frame-duration.validation.json). Old duration zero
-consumed and discarded pending missile impacts. The real V3 pool-child test first
-failed on target death, then passed through the bound Ordinary runtime for
-0/1/22/66/1000/MAX labels with complete outputs, all RNG states, lifecycle and hash.
-Unused duration forwarding was removed from combat; remaining nominal elapsed
-accumulation is explicitly diagnostic. Final retail lib: 9,589 passed, zero
-failed, 231 ignored. Clippy exits zero, 729 tree warnings. Field ratchet: 2,513
-unchanged. Raw logs and literal sessions live in ignored
-`.local/frame-duration-validation/`; local results SHA-256 is
-`b5aa984c08310af533f34def92f6766962695060b29ddca73454c307ab1f3bb5`.
+[Ordered startup and live readers](yr1001-bullet-live-readers.md) records the
+original Bullet/Sound/EVA CRT order, single retained native VM, physical supplier
+boundaries and reproduction commands. Standalone full Sound/EVA and FV VXL/HVA
+controls passed. Joined native qualification, final receipt, single fresh critic
+and PR/merge must be reconciled against actual completion before delivery is
+reported. Partial native observations do not establish a successful live pass.
 
-Native zero-clock Main controls are unchanged and reused for caller admission/
-frame commit only; Logic remains a declared sink. Native-inline/Rust-queued
-Rocket impact ordering, sparkle labels, full F01/F02 and Stage 2 stay open.
-Enable exact-head auto-merge, confirm delivery merge, and fast-forward
-clean primary main. No dependent implementation stack or direct main commits.
+Retail Rust lib: 9,589 passed, zero failed, 231 ignored. Clippy completed with
+729 existing warnings. Named release retail scenario/map construction passed.
+Portable Python: 640 tests, zero failures, 22 explicit native/device/environment
+skips. Build retirement continues to fail closed when idle state is unavailable;
+its real disposable-process test skips only after that preflight cannot prove
+an inspectable host. Synthetic busy/unknown controls remain active.
+
+The original caller after `668EF5`, accepted Session settings, House/map placement,
+native paid FV Move/Stop/resume and hands-on acceptance remain required W02 gates.
+Windows capture access is separate. No evidence of these gates follows from a
+native reader declaration or an asset request.
 
 ## Delivered Stage 2 prerequisites and evidence
 
@@ -95,16 +91,10 @@ runtime or fake Simulation snapshot. R03 Scenario-depth/render-gate producers,
 network/timed-resume/focus/minimize remain unqualified; other families share ranks
 but still read current geometry. Synchronous GPU still blocks this event-loop thread.
 
-W02/R02 read-only discovery: retail FV Accelerates=false bypasses braking/isqrt,
-conditional on native/production-layer read qualification. It does not bypass Stop:
-original4AFEA4 writes Drive+50 only to promoted-f32 .30000001192092896; next Process
-copies target to Foot+578 and moves. Both Rust owners quantize; getter75-case test
-accepts three .2 discrepancies and prefix/paid tests normalize expected fractions.
-Existing native Foot4D3710 clamp/current_type_speed/native_x87 owners must be extended,
-not duplicated. Native rest-tail4B0828 remains unmigrated; eager navcom Foot zero is
-wrong timing. Existing outer oracle stops4B078C, and paid corpus has no resume
-controls. Qualified clear-flat rookie full-health FV Move→turn→Stop/arrival→same/
-different-goal resume is a required later chain. Preserve raw fractions, head/selector,
-NavCom/queue, timers/facing/position/occupation and future RNG. No W02 implementation
-branch exists. Broader accelerating-vehicle math and F02/F03 initialization/history
-qualification stay open. All HP0/HP1/platform/feel acceptance remains pending.
+W02/R02 has a preserved engineering branch and a separate native-tooling
+publication candidate described above. Its movement source and Rust-only v7
+results remain held. Retail Accelerates=false does not establish native paid
+Move/Stop/resume or correct initialization/Session/House chronology. Preserve
+raw fractions, selector/head, NavCom/queue, timers/facing/position/occupation and
+future RNG. Broader accelerating-vehicle math, F02/F03 history and all
+HP0/HP1/platform/feel acceptance remain open.

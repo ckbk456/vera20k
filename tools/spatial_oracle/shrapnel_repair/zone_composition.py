@@ -37,7 +37,8 @@ class ConnectivityRepair(ResidentRepair):
    return
   super().observe(u,address,size,data)
  def nav_snapshot(self):
-  u=self.uc;nodes=bytes(u.mem_read(BASE,self.side*self.side*4));count=u32(u,MAP+0x4C)
+  u=self.uc;base=u32(u,MAP+0x68) if getattr(self,'owner',None) is not None else BASE
+  nodes=bytes(u.mem_read(base,self.side*self.side*4));count=u32(u,MAP+0x4C)
   return dict(classes=[nodes[(y*self.side+x)*4] for y in range(self.width) for x in range(self.width)],
    levels=[nodes[(y*self.side+x)*4+1] for y in range(self.width) for x in range(self.width)],
    base_ids=[struct.unpack_from('<H',nodes,(y*self.side+x)*4+2)[0] for y in range(self.width) for x in range(self.width)],

@@ -8,9 +8,11 @@ Unicorn 2.1.4 API: https://github.com/unicorn-engine/unicorn/blob/2.1.4/include/
 from __future__ import annotations
 
 import argparse
+from bisect import bisect_right
 from collections import deque
+import copy
 from dataclasses import dataclass, field
-from functools import lru_cache
+from functools import lru_cache, cached_property
 import hashlib
 import json
 import os
@@ -63,6 +65,48 @@ class NativeExecutionError(OracleError):
             except (OSError, ValueError) as error:
                 message += f"; Could not save failure report: {error}"
         super().__init__(message)
+
+
+def compare_cpu_context(uc: Uc, saved_context) -> dict:
+    """Compare every context byte without changing the saved restore snapshot.
+
+    The caller supplies a stopped VM's own CPU-only snapshot, using Unicorn's
+    default context mode. Memory snapshots are outside this helper's contract.
+    No guest memory is restored, and the caller's saved context remains usable.
+
+    Unicorn 2.1.4 allocates an opaque context with g_malloc, leaving the
+    CPU-only ramblock_freed/last_block metadata unset. Independent allocations
+    therefore need not have equal bytes even with identical CPU state:
+    https://github.com/unicorn-engine/unicorn/blob/2.1.4/uc.c#L2234-L2314
+    https://github.com/unicorn-engine/unicorn/blob/2.1.4/include/uc_priv.h#L438-L447
+    Serialize-copy the saved context, then update that inspection allocation
+    through the public Python context_update API. Compare ALL bytes, including
+    the complete native CPU payload (x87/vector state); never mask offsets or
+    replace this guard with a selected register list.
+    https://github.com/unicorn-engine/unicorn/blob/2.1.4/bindings/python/unicorn/unicorn_py3/unicorn.py
+    """
+    if (saved_context.arch, saved_context.mode) != (uc.ctl_get_arch(), uc.ctl_get_mode()):
+        raise OracleError("CPU observation requires the saved VM architecture and mode")
+    expected = bytes(saved_context)
+    inspection = copy.copy(saved_context)
+    uc.context_update(inspection)
+    actual = bytes(inspection)
+    if bytes(saved_context) != expected:
+        raise OracleError("CPU observation changed the saved restore snapshot")
+    if len(actual) != len(expected):
+        raise OracleError("CPU observation changed the complete context size")
+    return {
+        "matches": actual == expected,
+        "architecture": saved_context.arch,
+        "mode": saved_context.mode,
+        "context_bytes": len(expected),
+        "expected_context_hex": expected.hex(),
+        "observed_context_hex": actual.hex(),
+        "different_offsets": [index for index, (before, after) in enumerate(zip(expected, actual))
+                              if before != after],
+        "method": "full-byte comparison after context_update into a serialized inspection clone",
+        "saved_restore_snapshot_unchanged": True,
+    }
 
 
 def _machine_state(uc: Uc) -> dict:
@@ -181,6 +225,36 @@ def file_span(data: bytes, va: int, size: int) -> tuple[int, bytes]:
 
 
 @dataclass(frozen=True)
+class ImportTransport:
+    """One audited original FF15 import site; no imported instruction executes.
+
+    Stack ranges are offsets/bytes relative to ESP before CALL pushes a return.
+    forward_entry is limited to the original CoCreateInstance five-word to
+    native four-argument factory adaptation, not a generic call-forward API.
+    """
+    site: int
+    iat: int
+    argument_bytes: int
+    stack_reads: tuple[tuple[int, int], ...] = ()
+    stack_writes: tuple[tuple[int, int], ...] = ()
+    forward_entry: int | None = None
+
+
+@dataclass(frozen=True)
+class EbpImportTransport(ImportTransport):
+    """One original CALL EBP site with EBP equal to its immutable IAT payload.
+
+    RawFileClass::Seek65CF00 uses this form at65CF8B/65CFD4/65D030 after
+    loading SetFilePointer from7E11C0. This declaration permits no other
+    register/opcode or target and cannot forward a COM factory call.
+    """
+
+
+def _transport_instruction_bytes(spec):
+    return 2 if isinstance(spec,EbpImportTransport) else 6
+
+
+@dataclass(frozen=True)
 class ExecutionProfile:
     """Trusted mechanism declaration, never a CLI-configurable hash bypass.
 
@@ -196,11 +270,38 @@ class ExecutionProfile:
     writes: tuple[tuple[int, int], ...]
     fixture_writes: tuple[tuple[int, int], ...]
     sinks: tuple[tuple[int, int], ...] = ()
+    transports: tuple[ImportTransport, ...] = ()
 
 
 def _within(address: int, size: int, ranges) -> bool:
     return size > 0 and any(start <= address and address + size <= start + length
                            for start, length in ranges)
+
+
+@dataclass(frozen=True)
+class _RangeIndex:
+    """Exact single-grant containment; adjacent ranges are never merged.
+
+    At an address, the greatest end among starts at or before it belongs to
+    one original grant. Containment under that end therefore has exactly the
+    same meaning as the original linear predicate, even with nested grants.
+    """
+    starts: tuple[int, ...]
+    greatest_ends: tuple[int, ...]
+
+    @classmethod
+    def build(cls,ranges):
+        starts=[];ends=[];greatest=None
+        for start,length in sorted(ranges):
+            end=start+length
+            greatest=end if greatest is None else max(greatest,end)
+            starts.append(start);ends.append(greatest)
+        return cls(tuple(starts),tuple(ends))
+
+    def within(self,address,size):
+        if size<=0:return False
+        index=bisect_right(self.starts,address)-1
+        return index>=0 and address+size<=self.greatest_ends[index]
 
 
 @dataclass(frozen=True)
@@ -210,6 +311,16 @@ class ScopedImage:
     data: bytes = field(repr=False)
     profile: ExecutionProfile
 
+    @cached_property
+    def _instruction_index(self):
+        return _RangeIndex.build((start,end-start)for start,end,_ in self.profile.regions)
+
+    @cached_property
+    def _read_index(self):return _RangeIndex.build(self.profile.reads)
+
+    @cached_property
+    def _write_index(self):return _RangeIndex.build(self.profile.writes)
+
     def write(self, address: int, blob: bytes) -> None:
         self._check_code_write(address, len(blob))
         if not _within(address, len(blob), self.profile.fixture_writes):
@@ -217,6 +328,10 @@ class ScopedImage:
         self.machine.mem_write(address, blob)
 
     def _check_code_write(self, address: int, size: int) -> None:
+        # The loader maps executable sections only within this image. Keep
+        # the original overlap check for image accesses; ordinary heap/stack
+        # writes cannot touch code and need no repeated PE header decoding.
+        if address>=IMAGE_BASE+IMAGE_SIZE or address+size<=IMAGE_BASE:return
         if any(flags & 0x20000000 and address < IMAGE_BASE + rva + max(raw, virtual)
                and address + size > IMAGE_BASE + rva
                for rva, _, raw, virtual, flags in _sections(self.data)):
@@ -235,7 +350,78 @@ class ScopedImage:
                 "reads": [list(item) for item in self.profile.reads],
                 "writes": [list(item) for item in self.profile.writes],
                 "fixture_writes": [list(item) for item in self.profile.fixture_writes],
-                "sinks": [list(item) for item in self.profile.sinks]}
+                "sinks": [list(item) for item in self.profile.sinks],
+                "transports": [vars(item) for item in self.profile.transports]}
+
+
+class TransportCall:
+    """Checked data/stack access for a declared OS boundary; redirects owned here."""
+    def __init__(self,image,spec,sp):
+        self._image=image;self._machine=image.machine;self.spec=spec;self.sp=sp
+        # A no-argument API does not read the caller's stack. Keep zero-byte
+        # accesses invalid everywhere else rather than widening data guards.
+        self.arguments=(struct.unpack('<'+'I'*(spec.argument_bytes//4),self.read(sp,spec.argument_bytes))
+                        if spec.argument_bytes else ())
+
+    def _check(self,address,size,write):
+        ranges=self._image.profile.writes if write else self._image.profile.reads
+        if not _within(address,size,ranges):
+            raise OracleError('Import transport data access outside declared profile')
+        if address<STACK_BASE+STACK_SIZE and address+size>STACK_BASE:
+            allowed=self.spec.stack_writes if write else ((0,self.spec.argument_bytes),)+self.spec.stack_reads
+            if not _within(address,size,tuple((self.sp+a,n)for a,n in allowed)):
+                raise OracleError('Import transport stack access outside declared site ranges')
+        if write:self._image._check_code_write(address,size)
+
+    def read(self,address,size):
+        self._check(address,size,False)
+        return bytes(self._machine.mem_read(address,size))
+
+    def write(self,address,blob):
+        self._check(address,len(blob),True)
+        self._machine.mem_write(address,blob)
+
+    def return_to_native(self,eax):
+        if self.spec.forward_entry is not None:
+            raise OracleError('Factory transport must forward to its original body')
+        self._machine.reg_write(UC_X86_REG_EAX,eax)
+        self._machine.reg_write(UC_X86_REG_ESP,self.sp+self.spec.argument_bytes)
+        self._machine.reg_write(UC_X86_REG_EIP,self.spec.site+_transport_instruction_bytes(self.spec))
+
+    def forward_to_factory(self):
+        if self.spec.forward_entry is None or len(self.arguments)!=5:
+            raise OracleError('Only the declared five-word COM factory adaptation is supported')
+        _,outer,_,iid,ppv=self.arguments
+        self.write(self.sp,struct.pack('<5I',self.spec.site+6,0,outer,iid,ppv))
+        self._machine.reg_write(UC_X86_REG_EIP,self.spec.forward_entry)
+
+
+def _validate_transports(data,profile):
+    sites=set()
+    for spec in profile.transports:
+        if (not isinstance(spec,ImportTransport) or spec.site in sites
+                or spec.argument_bytes<0 or spec.argument_bytes%4
+                or spec.site in dict(profile.sinks)):
+            raise OracleError('Invalid or duplicate scoped import transport declaration')
+        sites.add(spec.site)
+        instruction_bytes=_transport_instruction_bytes(spec)
+        if not any(a<=spec.site and spec.site+instruction_bytes<=b for a,b,_ in profile.regions):
+            raise OracleError('Import transport straddles or lies outside qualified original code')
+        if isinstance(spec,EbpImportTransport):
+            if file_span(data,spec.site,2)[1]!=b'\xff\xd5':
+                raise OracleError('Register import transport must identify original CALL EBP bytes')
+            if spec.forward_entry is not None:
+                raise OracleError('Register import transport cannot forward a COM factory')
+        elif file_span(data,spec.site,6)[1]!=b'\xff\x15'+struct.pack('<I',spec.iat):
+            raise OracleError('Import transport must identify original FF15/IAT bytes')
+        if not _within(spec.iat,4,profile.reads):
+            raise OracleError('Import transport IAT must have declared read authorization')
+        for offset,size in spec.stack_reads+spec.stack_writes:
+            if offset<0 or size<=0:raise OracleError('Import transport stack ranges must be positive')
+        if spec.forward_entry is not None:
+            if (spec.argument_bytes!=20 or not _within(0,20,spec.stack_writes)
+                    or not any(a<=spec.forward_entry<b for a,b,_ in profile.regions)):
+                raise OracleError('Import transport factory adaptation requires five words and enrolled destination')
 
 
 def load_image(uc: Uc, *, profile: ExecutionProfile | None = None) -> ScopedImage | None:
@@ -253,6 +439,7 @@ def load_image(uc: Uc, *, profile: ExecutionProfile | None = None) -> ScopedImag
         for start, end, digest in profile.regions:
             if hashlib.sha256(file_span(data, start, end - start)[1]).hexdigest() != digest:
                 raise OracleError(f"Profile {profile.name}: original region mismatch at {start:#x}")
+    if profile is not None:_validate_transports(data,profile)
     sections = list(_sections(data))
     uc.mem_map(IMAGE_BASE, IMAGE_SIZE)
     uc.mem_write(IMAGE_BASE, data[:0x1000])
@@ -269,6 +456,7 @@ def load_image(uc: Uc, *, profile: ExecutionProfile | None = None) -> ScopedImag
         if not machine._vera20k_scoped_run_active:
             machine.emu_stop()
             raise OracleError("Scoped images require their guarded run_checked handle")
+        machine._vera20k_scope_instruction=(_address,machine.reg_read(UC_X86_REG_ESP))
 
     # The loader-owned lifetime hook also blocks accidental raw emu_start calls.
     uc.hook_add(UC_HOOK_CODE, require_guarded_run)
@@ -278,7 +466,8 @@ def load_image(uc: Uc, *, profile: ExecutionProfile | None = None) -> ScopedImag
 def run_checked(uc: Uc, begin: int, end: int | tuple[int, ...], *,
                 count: int = 5_000_000, timeout_us: int = 10_000_000,
                 required_addresses=(), context: dict | None = None,
-                image: ScopedImage | None = None, sinks: dict | None = None) -> int:
+                image: ScopedImage | None = None, sinks: dict | None = None,
+                transports: dict | None = None) -> int:
     """Execute to a declared return/region boundary or fail with a short trace.
 
     Boundaries are reached BEFORE executing their instruction. Existing hooks may
@@ -311,6 +500,8 @@ def run_checked(uc: Uc, begin: int, end: int | tuple[int, ...], *,
     initial = _machine_state(uc)
     violation = None
     allowed_sinks = {}
+    allowed_transports = {}
+    transport_events=[]
     if image is not None:
         if image.machine is not uc:
             raise OracleError("Scoped image belongs to a different machine")
@@ -319,11 +510,14 @@ def run_checked(uc: Uc, begin: int, end: int | tuple[int, ...], *,
             raise OracleError("Profile does not authorize this entry/endpoint pair")
         image.verify_code()
         allowed_sinks = dict(image.profile.sinks)
+        allowed_transports = {item.site:item for item in image.profile.transports}
+        if set(transports or {})-set(allowed_transports):
+            raise OracleError("Profile does not authorize supplied import transports")
         if set(sinks or {}) - set(allowed_sinks):
             raise OracleError("Profile does not authorize supplied sink callbacks")
-        if required.intersection(allowed_sinks):
+        if required.intersection(set(allowed_sinks)|set(allowed_transports)):
             raise OracleError("A substituted sink is not original instruction coverage")
-    elif sinks:
+    elif sinks or transports:
         raise OracleError("Runner-owned sinks require an explicit scoped image")
     visited = set()
     trail = deque(maxlen=16)
@@ -343,17 +537,21 @@ def run_checked(uc: Uc, begin: int, end: int | tuple[int, ...], *,
             except OracleError as error:
                 reject(address, size, "native_code_write", str(error))
                 return
-            ranges = image.profile.writes
+            index = image._write_index
             kind = "undeclared_write"
         else:
-            ranges = image.profile.reads
+            index = image._read_index
             kind = "undeclared_read"
-        if not _within(address, size, ranges):
+        if not index.within(address, size):
             reject(address, size, kind, "Guest data access outside declared ranges")
 
     def observe(_uc, address, size, _data):
         nonlocal observed
         trail.append(address)
+        if image is not None and (
+                uc.reg_read(UC_X86_REG_EIP)!=address
+                or getattr(uc,"_vera20k_scope_instruction",None)!=(address,uc.reg_read(UC_X86_REG_ESP))):
+            reject(address,size,"prehook_control_mutation","A prior hook changed native PC/ESP before the runner guard");return
         # Stop boundaries never authorize executing their original instruction.
         if address in ends:
             _uc.emu_stop()
@@ -378,13 +576,41 @@ def run_checked(uc: Uc, begin: int, end: int | tuple[int, ...], *,
                         or uc.reg_read(UC_X86_REG_ESP) != sp + 4 + allowed_sinks[address]):
                     reject(address, size, "sink_abi", "Sink did not redirect through declared return/stack cleanup")
                     return
-            elif not any(start <= address and address + size <= end
-                         for start, end, _digest in image.profile.regions):
+            elif not image._instruction_index.within(address,size):
                 reject(address, size, "undeclared_instruction", "Instruction outside qualified closure or straddles its boundary")
                 return
             elif bytes(uc.mem_read(address, size)) != file_span(image.data, address, size)[1]:
                 reject(address, size, "native_code_changed", "Mapped instruction differs from immutable original bytes")
                 return
+        if address in allowed_transports:
+            spec=allowed_transports[address]
+            callback=(transports or {}).get(address)
+            if callback is None:
+                reject(address,size,'missing_transport','Declared import transport has no callback');return
+            if bytes(uc.mem_read(spec.iat,4))!=file_span(image.data,spec.iat,4)[1]:
+                reject(spec.iat,4,'transport_iat_changed','Original IAT slot changed');return
+            if isinstance(spec,EbpImportTransport):
+                from unicorn.x86_const import UC_X86_REG_EBP
+                target=struct.unpack('<I',file_span(image.data,spec.iat,4)[1])[0]
+                if uc.reg_read(UC_X86_REG_EBP)!=target:
+                    reject(address,size,'transport_register_target','CALL EBP target differs from original declared IAT payload');return
+            sp=uc.reg_read(UC_X86_REG_ESP)
+            try:
+                call=TransportCall(image,spec,sp)
+                callback(call)
+            except Exception as error:
+                reject(address,size,'transport_failure',f'{type(error).__name__}: {error}');return
+            expected_pc=spec.site+_transport_instruction_bytes(spec) if spec.forward_entry is None else spec.forward_entry
+            expected_sp=sp+spec.argument_bytes if spec.forward_entry is None else sp
+            if uc.reg_read(UC_X86_REG_EIP)!=expected_pc or uc.reg_read(UC_X86_REG_ESP)!=expected_sp:
+                reject(address,size,'transport_abi','Import transport redirect/stack cleanup differs from declaration');return
+            if spec.forward_entry is not None:
+                _,outer,_,iid,ppv=call.arguments
+                if bytes(uc.mem_read(sp,20))!=struct.pack('<5I',spec.site+6,0,outer,iid,ppv):
+                    reject(sp,20,'transport_abi','Original five-word COM factory adaptation differs');return
+            transport_events.append(dict(site=address,iat=spec.iat,arguments=list(call.arguments),
+                                         original_instruction_executed=False,redirect=expected_pc,stack_after=expected_sp))
+            return
         if address in required:
             visited.add(address)
         observed += 1
@@ -436,7 +662,7 @@ def run_checked(uc: Uc, begin: int, end: int | tuple[int, ...], *,
                 "expected_native_sha256": (image.profile.native_sha256 if image is not None else NATIVE_SHA256),
             }
             if image is not None:
-                diagnostics.update(profile=image.identity(), profile_violation=violation)
+                diagnostics.update(profile=image.identity(), profile_violation=violation, import_transports=transport_events)
             raise NativeExecutionError(
                 f"{message}; reason={reason}, timeout={timed_out}, "
                 f"observed={observed}/{count}; trace: {trace}", diagnostics) from fault
@@ -445,6 +671,7 @@ def run_checked(uc: Uc, begin: int, end: int | tuple[int, ...], *,
         return pc
     finally:
         if image is not None:
+            uc._vera20k_last_import_transports=transport_events
             uc._vera20k_scoped_run_active = False
         uc.hook_del(hook)
         if memory_hook is not None:
@@ -454,7 +681,7 @@ def run_checked(uc: Uc, begin: int, end: int | tuple[int, ...], *,
 def call(func: int, *, ecx=None, edx=None, stack_args=None, writes=None,
          dumps=None, capture_st0=False, fpcw=NATIVE_FPCW,
          timeout_instr=5_000_000, timeout_us=10_000_000, required_addresses=(),
-         context: dict | None = None) -> dict:
+         context: dict | None = None, profile: ExecutionProfile | None = None) -> dict:
     """Run one function in fresh state. Results preserve the legacy harness schema.
 
     ECX/EDX and stack arguments are explicit calling-convention inputs. Writes
@@ -462,12 +689,14 @@ def call(func: int, *, ecx=None, edx=None, stack_args=None, writes=None,
     stores binary64 through a six-byte FSTP return stub outside native memory;
     it is a declared observation conversion, not full x87 80-bit capture.
     """
+    if profile is not None and capture_st0:
+        raise OracleError('Scoped call() cannot execute the external ST0 observation stub')
     uc = Uc(UC_ARCH_X86, UC_MODE_32)
-    sections = list(_sections(image_bytes()))
+    image = load_image(uc) if profile is None else load_image(uc, profile=profile)
+    sections = list(_sections(image.data if image is not None else image_bytes()))
     if not any(flags & 0x20000000 and IMAGE_BASE + rva <= func < IMAGE_BASE + rva + raw
                for rva, _, raw, _, flags in sections):
         raise OracleError("call() entry must be an original native executable-section address")
-    load_image(uc)
     uc.mem_map(STACK_BASE, STACK_SIZE)
     uc.mem_map(SCRATCH, SCRATCH_SIZE)
     uc.mem_map(RET_MAGIC, 0x1000)
@@ -476,7 +705,10 @@ def call(func: int, *, ecx=None, edx=None, stack_args=None, writes=None,
     for address, blob in (writes or {}).items():
         if any(address < high and address + len(blob) > low for low, high in executable):
             raise OracleError("call() fixture writes cannot replace native executable instructions")
-        uc.mem_write(address, blob)
+        if image is None:
+            uc.mem_write(address, blob)
+        else:
+            image.write(address, blob)
     stop_at = RET_MAGIC
     st0_slot = RET_MAGIC + 0x100
     if capture_st0:
@@ -485,9 +717,15 @@ def call(func: int, *, ecx=None, edx=None, stack_args=None, writes=None,
     sp = STACK_BASE + STACK_SIZE - 0x1000
     for value in reversed(stack_args or []):
         sp -= 4
-        uc.mem_write(sp, struct.pack("<I", value))
+        if image is None:
+            uc.mem_write(sp, struct.pack("<I", value))
+        else:
+            image.write(sp, struct.pack("<I", value))
     sp -= 4
-    uc.mem_write(sp, struct.pack("<I", RET_MAGIC))
+    if image is None:
+        uc.mem_write(sp, struct.pack("<I", RET_MAGIC))
+    else:
+        image.write(sp, struct.pack("<I", RET_MAGIC))
     uc.reg_write(UC_X86_REG_ESP, sp)
     for register, value in [(UC_X86_REG_FPCW, fpcw), (UC_X86_REG_ECX, ecx), (UC_X86_REG_EDX, edx)]:
         if value is not None:
@@ -504,9 +742,11 @@ def call(func: int, *, ecx=None, edx=None, stack_args=None, writes=None,
         "writes": [{"address": address, "bytes": len(blob)} for address, blob in (writes or {}).items()],
     }
     run_checked(uc, func, stop_at, count=timeout_instr, timeout_us=timeout_us,
-                required_addresses=required, context=detail)
+                required_addresses=required, context=detail, image=image)
     result = {"eax": uc.reg_read(UC_X86_REG_EAX) & 0xFFFFFFFF, "dumps": {}}
     for name, (address, length) in (dumps or {}).items():
+        if image is not None and not _within(address, length, image.profile.reads):
+            raise OracleError('Scoped call() dump must lie within declared data reads')
         result["dumps"][name] = bytes(uc.mem_read(address, length)).hex()
     if capture_st0:
         raw = bytes(uc.mem_read(st0_slot, 8))
@@ -563,6 +803,12 @@ def first_difference(expected, actual, path="$", limit=180) -> str | None:
     return None
 
 
+def source_identity(source_paths: dict[str, Path] | None = None) -> dict:
+    """One UTF-8/LF identity owner for native reference producers."""
+    return {name: hashlib.sha256(path.read_text(encoding="utf-8").encode("utf-8")).hexdigest()
+            for name, path in (source_paths or {}).items()}
+
+
 def finish_vectors(data, default_path: Path, *, provenance: dict, argv=None,
                    source_paths: dict[str, Path] | None = None,
                    description: str | None = None) -> None:
@@ -580,25 +826,24 @@ def finish_vectors(data, default_path: Path, *, provenance: dict, argv=None,
     mode.add_argument("--write", action="store_true", help="explicitly write outputs and provenance")
     parser.add_argument("--output", type=Path, default=default_path)
     args = parser.parse_args(argv)
-    def source_identity():
-        return {name: hashlib.sha256(path.read_text(encoding="utf-8").encode("utf-8")).hexdigest()
-                for name, path in (source_paths or {}).items()}
-
-    sources = source_identity()
+    sources = source_identity(source_paths)
     data = data() if callable(data) else data
     provenance = provenance() if callable(provenance) else provenance
     if source_paths is not None:
         if "source_normalized_lf_sha256" in provenance:
             raise OracleError("Source provenance must be supplied through source_paths")
         provenance = dict(provenance, source_normalized_lf_sha256=sources)
-    # Normalize tuples before comparisons; reject NaN/Infinity in either workflow.
+    # Compare payload and provenance in their persisted JSON representation:
+    # tuples (including nested transport ranges) become arrays in sidecars.
+    # Canonical serialization rejects NaN/Infinity in either workflow.
     normalized = json.loads(_canonical(data))
-    metadata = dict(provenance, payload_sha256=hashlib.sha256(_canonical(normalized)).hexdigest())
+    metadata = json.loads(_canonical(dict(
+        provenance, payload_sha256=hashlib.sha256(_canonical(normalized)).hexdigest())))
     payload_text = json.dumps(normalized, indent=2, allow_nan=False) + "\n"
     metadata_text = json.dumps(metadata, indent=2, allow_nan=False) + "\n"
     target = args.output
     sidecar = target.with_suffix(".meta.json")
-    if difference := first_difference(sources, source_identity()):
+    if difference := first_difference(sources, source_identity(source_paths)):
         raise OracleError(f"Source changed during native generation: {difference}")
     if args.write:
         target.parent.mkdir(parents=True, exist_ok=True)

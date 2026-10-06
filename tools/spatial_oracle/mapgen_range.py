@@ -55,9 +55,9 @@ def retained(*raw, disabled=0, indices=(0, 103), padding=(0xA1, 0xB2, 0xC3)):
 
 
 class Machine:
-    def __init__(self):
+    def __init__(self, *, profile=None):
         self.u = u = Uc(UC_ARCH_X86, UC_MODE_32)
-        load_image(u)
+        self.image = load_image(u, profile=profile)
         u.mem_map(STACK_BASE, STACK_SIZE)
         u.mem_map(RET_MAGIC, 0x1000)
         self.original = [bytes(u.mem_read(a, b-a)) for a, b in SPANS]
@@ -67,6 +67,15 @@ class Machine:
         u.hook_add(UC_HOOK_CODE, self.observe)
         u.hook_add(UC_HOOK_MEM_WRITE, self.write)
 
+    def fixture_write(self, address, blob):
+        if self.image is None:
+            self.u.mem_write(address, blob)
+        else:
+            self.image.write(address, blob)
+
+    def run_native(self, begin, end, **kwargs):
+        return run_checked(self.u, begin, end, image=self.image, **kwargs)
+
     def startup(self):
         u = self.u
         image_cached_fpcw = read32(u, CACHED_CW)
@@ -74,13 +83,13 @@ class Machine:
         # actual CRT precision tail, excluding the preceding OS feature probe.
         u.reg_write(UC_X86_REG_FPCW, 0x037F)
         u.reg_write(UC_X86_REG_ESP, SP)
-        u.mem_write(SP, dw(RET_MAGIC))
-        run_checked(u, 0x7C8F55, RET_MAGIC, count=10000,
+        self.fixture_write(SP, dw(RET_MAGIC))
+        self.run_native(0x7C8F55, RET_MAGIC, count=10000,
                     required_addresses=(0x7CEAAF, 0x7CBF49, 0x7CBF14, 0x7CBF41))
         crt = u.reg_read(UC_X86_REG_FPCW)
-        u.mem_write(CACHED_CW, dw(0))  # prove the original cache writer executes
+        self.fixture_write(CACHED_CW, dw(0))  # prove the original cache writer executes
         u.reg_write(UC_X86_REG_ESP, SP)
-        run_checked(u, 0x6BBFB7, 0x6BBFCE, count=10000,
+        self.run_native(0x6BBFB7, 0x6BBFCE, count=10000,
                     required_addresses=(0x7CBF49, 0x7C5EE4, 0x7C5EF9))
         return dict(image_cached_fpcw=image_cached_fpcw, supplied_initial_fpcw=0x037F, after_crt_fpcw=crt,
                     after_winmain_fpcw=u.reg_read(UC_X86_REG_FPCW),
@@ -130,9 +139,9 @@ class Machine:
         u = self.u
         for _ in range(count):
             u.reg_write(UC_X86_REG_ESP, SP)
-            u.mem_write(SP, dw(RET_MAGIC))
+            self.fixture_write(SP, dw(RET_MAGIC))
             u.reg_write(UC_X86_REG_ECX, RNG)
-            run_checked(u, NEXT, RET_MAGIC, count=1000, required_addresses=(NEXT,))
+            self.run_native(NEXT, RET_MAGIC, count=1000, required_addresses=(NEXT,))
 
     def request(self, low, high):
         u = self.u
@@ -141,11 +150,11 @@ class Machine:
                       before_control=self.control(), range_entry_count=0,
                       raw_draw_count=0, raw_draws=[], candidates=[], state_writes=[])
         u.reg_write(UC_X86_REG_ESP, SP)
-        u.mem_write(SP, dw(RET_MAGIC))
+        self.fixture_write(SP, dw(RET_MAGIC))
         u.reg_write(UC_X86_REG_ECX, low)
         u.reg_write(UC_X86_REG_EDX, high)
         self.active = record
-        run_checked(u, RANGE, RET_MAGIC, count=20000,
+        self.run_native(RANGE, RET_MAGIC, count=20000,
                     required_addresses=(RANGE, NEXT, 0x598063, 0x598078,
                                         0x7C5F00, 0x598087, 0x598089))
         self.active = None
@@ -212,7 +221,7 @@ def execute(case):
         initial = retained(*case['raw_words'], disabled=case.get('disabled', 0),
                            indices=case.get('indices', (0, 103)))
         source = 'supplied_complete_retained_state_not_seed_reachability'
-    machine.u.mem_write(RNG, initial)
+    machine.fixture_write(RNG, initial)
     machine.advance(case.get('advance_raw', 0))
     if 'ambient_fpcw' in case:
         machine.u.reg_write(UC_X86_REG_FPCW, case['ambient_fpcw'])

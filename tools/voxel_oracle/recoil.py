@@ -53,10 +53,21 @@ class Machine(Reader):
         for key, value in values.items():
             self.u.reg_write(registers[key], value & 0xFFFFFFFF)
 
-    def config(self):
-        return dict(enabled=bool(self.u.mem_read(TYPE + 0xCA2, 1)[0]),
-                    turret=list(struct.unpack('<4i', self.u.mem_read(TYPE + 0xCA4, 16))),
-                    barrel=list(struct.unpack('<4i', self.u.mem_read(TYPE + 0xCB8, 16))))
+    def config(self, type_pointer=TYPE):
+        return dict(enabled=bool(self.u.mem_read(type_pointer + 0xCA2, 1)[0]),
+                    turret=list(struct.unpack('<4i', self.u.mem_read(type_pointer + 0xCA4, 16))),
+                    barrel=list(struct.unpack('<4i', self.u.mem_read(type_pointer + 0xCB8, 16))))
+
+    @staticmethod
+    def read_admitted_type(owner, type_pointer=TYPE):
+        """Resume the existing original reader in its declared caller frame."""
+        owner.fixture_write(SP + 0x380, dwords(INI))
+        for reg, value in ((UC_X86_REG_ESP, SP), (UC_X86_REG_EBP, type_pointer),
+                           (UC_X86_REG_EDI, INI), (UC_X86_REG_EBX, type_pointer + 0x24)):
+            owner.u.reg_write(reg, value)
+        owner.run_native(*READER, required_addresses=(0x5295F0, 0x5276D0,
+                                                     0x717A50, 0x717A80, 0x717AB0))
+        assert owner.u.reg_read(UC_X86_REG_ESP) == SP
 
     def actor_state(self):
         result = []
@@ -78,11 +89,7 @@ class Machine(Reader):
                            required_addresses=(0x526810,))
         admitted = stop == 0x410A8C
         if admitted:
-            self.u.mem_write(SP + 0x380, dwords(INI))
-            self.regs(esp=SP, ebp=TYPE, edi=INI, ebx=TYPE + 0x24)
-            run_checked(self.u, *READER, required_addresses=(0x5295F0, 0x5276D0,
-                                                            0x717A50, 0x717A80, 0x717AB0))
-            assert self.u.reg_read(UC_X86_REG_ESP) == SP
+            self.read_admitted_type(self)
         return dict(sections=sections, admitted=admitted, before=before, after=self.config())
 
     def initialize(self):

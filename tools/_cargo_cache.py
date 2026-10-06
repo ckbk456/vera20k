@@ -461,7 +461,9 @@ def _dependencies(binary: Path) -> set[Path]:
             for line in lines:
                 if any(name in line for name in ('DW_AT_dwo_name', 'DW_AT_GNU_dwo_name', 'DW_AT_GNU_dwo_id')):
                     raise ValueError('Unsupported split-DWARF dependency closure')
-        _stream([tool, '--debug-dump=info,no-follow-links,do-not-use-debuginfod', str(binary)], dwarf)
+        # no-follow-links also prevents debuginfod lookups. The separate
+        # do-not-use-debuginfod option exists only in debuginfod-enabled builds.
+        _stream([tool, '--debug-dump=info,no-follow-links', str(binary)], dwarf)
         return set()  # Embedded DWARF needs no original compiler object.
     # PE FASTLINK can require object files beyond its PDB. Do not pretend that
     # merely retaining *.pdb establishes closure (MSVC /DEBUG documentation).

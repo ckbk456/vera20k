@@ -211,6 +211,13 @@ class ProcessInspectionTests(unittest.TestCase):
             binary = Path(temporary).resolve() / 'sleep-copy'
             shutil.copyfile('/bin/sleep', binary)
             binary.chmod(0o755)
+            # Presence of lsof does not establish that this host can inspect
+            # files (restricted namespaces can make even an idle file unknown).
+            # Production retirement continues to fail closed in that case.
+            try:
+                labels._idle([binary])
+            except ValueError as error:
+                self.skipTest('Host cannot establish idle disposable files: '+str(error))
             if sys.platform == 'darwin':
                 # Some macOS hosts kill a relocated system-signed copy before
                 # lsof can observe it. Sign only this disposable test executable.

@@ -1,0 +1,216 @@
+{
+  "probe": "windows-olerun-rejecting-irunnableobject",
+  "script_sha256": "fd92347eca0683a2d68e871ca5b7caeead55be4b5bd8e8b7525c55f6a162fa57",
+  "csharp_source_sha256": "abde0330c574fc327b8fea535fe4ab95ea68a423b1e7377a15899ac552193323",
+  "os_64bit": true,
+  "process_64bit": false,
+  "projection_of_packet_sha256": "076cf0bc415c9db0587594d84a5b9cd2e5f8d798d70d92b9444c6f94d2c86e12",
+  "measurement": {
+    "SchemaVersion": 1,
+    "PointerBytes": 4,
+    "Measurements": [
+      {
+        "Control": "STA-CoInitializeEx",
+        "Apartment": "STA",
+        "InitializeHresult": "0x00000001",
+        "InitializeFlags": 2,
+        "OleRunHresult": "0x00000000",
+        "OleInitializeHresults": [],
+        "ReferencesBefore": 1,
+        "ReferencesAfter": 1,
+        "UnknownQueryHresult": "0x00000000",
+        "RunnableQueryHresult": "0x80004002",
+        "UnknownIdentityMatches": true,
+        "RunnableOutputNull": true,
+        "ObjectPointer": "0x7192b60",
+        "VtablePointer": "0x691ed50",
+        "Error": null,
+        "CallbackErrors": [],
+        "PreflightCalls": [
+          {
+            "Sequence": 0,
+            "Method": "QueryInterface",
+            "Iid": "00000000-0000-0000-c000-000000000046",
+            "Result": "0x00000000",
+            "Before": 1,
+            "After": 2,
+            "OutputNull": false
+          },
+          {
+            "Sequence": 1,
+            "Method": "Release",
+            "Iid": null,
+            "Result": null,
+            "Before": 2,
+            "After": 1,
+            "OutputNull": false
+          },
+          {
+            "Sequence": 2,
+            "Method": "QueryInterface",
+            "Iid": "00000126-0000-0000-c000-000000000046",
+            "Result": "0x80004002",
+            "Before": 1,
+            "After": 1,
+            "OutputNull": true
+          }
+        ],
+        "OleRunCalls": [
+          {
+            "Sequence": 0,
+            "Method": "QueryInterface",
+            "Iid": "00000126-0000-0000-c000-000000000046",
+            "Result": "0x80004002",
+            "Before": 1,
+            "After": 1,
+            "OutputNull": true
+          }
+        ]
+      },
+      {
+        "Control": "MTA-CoInitializeEx",
+        "Apartment": "MTA",
+        "InitializeHresult": "0x00000001",
+        "InitializeFlags": 0,
+        "OleRunHresult": "0x00000000",
+        "OleInitializeHresults": [],
+        "ReferencesBefore": 1,
+        "ReferencesAfter": 1,
+        "UnknownQueryHresult": "0x00000000",
+        "RunnableQueryHresult": "0x80004002",
+        "UnknownIdentityMatches": true,
+        "RunnableOutputNull": true,
+        "ObjectPointer": "0x7192b50",
+        "VtablePointer": "0x71969e8",
+        "Error": null,
+        "CallbackErrors": [],
+        "PreflightCalls": [
+          {
+            "Sequence": 0,
+            "Method": "QueryInterface",
+            "Iid": "00000000-0000-0000-c000-000000000046",
+            "Result": "0x00000000",
+            "Before": 1,
+            "After": 2,
+            "OutputNull": false
+          },
+          {
+            "Sequence": 1,
+            "Method": "Release",
+            "Iid": null,
+            "Result": null,
+            "Before": 2,
+            "After": 1,
+            "OutputNull": false
+          },
+          {
+            "Sequence": 2,
+            "Method": "QueryInterface",
+            "Iid": "00000126-0000-0000-c000-000000000046",
+            "Result": "0x80004002",
+            "Before": 1,
+            "After": 1,
+            "OutputNull": true
+          }
+        ],
+        "OleRunCalls": [
+          {
+            "Sequence": 0,
+            "Method": "QueryInterface",
+            "Iid": "00000126-0000-0000-c000-000000000046",
+            "Result": "0x80004002",
+            "Before": 1,
+            "After": 1,
+            "OutputNull": true
+          }
+        ]
+      },
+      {
+        "Control": "STA-OleInitialize-twice",
+        "Apartment": "STA",
+        "InitializeHresult": "0x00000001",
+        "InitializeFlags": 2,
+        "OleRunHresult": "0x00000000",
+        "OleInitializeHresults": [
+          "0x00000000",
+          "0x00000001"
+        ],
+        "ReferencesBefore": 1,
+        "ReferencesAfter": 1,
+        "UnknownQueryHresult": "0x00000000",
+        "RunnableQueryHresult": "0x80004002",
+        "UnknownIdentityMatches": true,
+        "RunnableOutputNull": true,
+        "ObjectPointer": "0x68a1900",
+        "VtablePointer": "0x68d4a48",
+        "Error": null,
+        "CallbackErrors": [],
+        "PreflightCalls": [
+          {
+            "Sequence": 0,
+            "Method": "QueryInterface",
+            "Iid": "00000000-0000-0000-c000-000000000046",
+            "Result": "0x00000000",
+            "Before": 1,
+            "After": 2,
+            "OutputNull": false
+          },
+          {
+            "Sequence": 1,
+            "Method": "Release",
+            "Iid": null,
+            "Result": null,
+            "Before": 2,
+            "After": 1,
+            "OutputNull": false
+          },
+          {
+            "Sequence": 2,
+            "Method": "QueryInterface",
+            "Iid": "00000126-0000-0000-c000-000000000046",
+            "Result": "0x80004002",
+            "Before": 1,
+            "After": 1,
+            "OutputNull": true
+          }
+        ],
+        "OleRunCalls": [
+          {
+            "Sequence": 0,
+            "Method": "QueryInterface",
+            "Iid": "00000126-0000-0000-c000-000000000046",
+            "Result": "0x80004002",
+            "Before": 1,
+            "After": 1,
+            "OutputNull": true
+          }
+        ]
+      }
+    ],
+    "Modules": [
+      {
+        "Name": "combase.dll",
+        "Path": "C:\\WINDOWS\\System32\\combase.dll",
+        "ResolvedFilePath": "C:\\WINDOWS\\SysWOW64\\combase.dll",
+        "LoadedPeMachine": "0x014c",
+        "FilePeMachine": "0x014c",
+        "Version": "10.0.26100.2304 (WinBuild.160101.0800)",
+        "Sha256": "3f152587249ff6623eb0023cf52cad64aac02f6d8117d8754349f83768f9a6f8"
+      },
+      {
+        "Name": "ole32.dll",
+        "Path": "C:\\WINDOWS\\System32\\OLE32.dll",
+        "ResolvedFilePath": "C:\\WINDOWS\\SysWOW64\\OLE32.dll",
+        "LoadedPeMachine": "0x014c",
+        "FilePeMachine": "0x014c",
+        "Version": "10.0.26100.2304 (WinBuild.160101.0800)",
+        "Sha256": "d178e227ede5073ecfed4528199b03327e1c2edff9ddd09d79d4af821fdde968"
+      }
+    ]
+  },
+  "execution": {
+    "child_exit_code": 0,
+    "ssh_exit_code": 0
+  },
+  "coverage": "Actual x86 Windows OleRun on manual valid IUnknown rejecting IRunnableObject. CoInitializeEx STA/MTA controls and STA with two literal OleInitialize(NULL) calls. No gamemd instructions or full startup execute here; CRT and WinMain call order/arguments have separate static native evidence."
+}

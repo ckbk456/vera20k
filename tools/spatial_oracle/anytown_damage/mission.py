@@ -5,20 +5,153 @@ FireAt/Bullet/Anim, collapse/target release and deferred retirement execute.
 Single supplied House, cropped map and omitted global phases remain boundaries.
 """
 from pathlib import Path
-import argparse,hashlib,json,struct,sys,uuid
+import argparse,hashlib,json,struct,sys
 from collections import deque
 from unicorn import UC_HOOK_CODE,UC_HOOK_MEM_INVALID
 from unicorn.x86_const import *
 from capstone import Cs,CS_ARCH_X86,CS_MODE_32
 
 HERE=Path(__file__).resolve().parent
-from . import mtnk_attack as base
 from .mission_publication import finish_vectors
 from tools.native_oracle import NATIVE_SHA256,RET_MAGIC,run_checked,finish_vectors as finish_unpublished_vectors,provenance
 from tools.spatial_oracle.building_body_rules import SP,RULES,dwords
+from tools.rules_oracle.bridge_anim_inputs import ascii_utf16,clsid_bytes
+
+def _fixture_base():
+ # Receipt/OS transport users do not load physical map/LZO dependencies.
+ from . import mtnk_attack
+ return mtnk_attack
+
+
+def __getattr__(name):
+ # Preserve historical `from mission import base` consumers on first use.
+ if name=='base':return _fixture_base()
+ raise AttributeError(name)
+
+def construct_country(m,name):
+ # Existing full original5113F0 owner, shared by historical and scoped readers.
+ # Registry initialization/order belongs to the caller; never reset shared IDs.
+ p=m.alloc(0x300)
+ m.invoke(0x5113F0,p,(m.cstring(name),))
+ return p
+
+def initialize_mission_controls(owner):
+ """Execute the sole original 4E7CF0 -> 32 x 5B3700 static owner.
+
+ Cold-start ordering and repeat admission belong to the caller. Historical
+ mission fixtures retain their existing explicit initialization boundary.
+ """
+ owner.invoke(0x4E7CF0,0)
+
+def interlocked_update(read,write,pointer,delta):
+ """Single-thread Windows Interlocked data transport, not guest execution.
+
+ The fixture is sequential. Original COM callers and their global counter
+ writes execute; only the declared OS import performs this atomic update.
+ """
+ value=(struct.unpack('<I',read(pointer,4))[0]+delta)&0xffffffff
+ write(pointer,struct.pack('<I',value))
+ return value
+
+OLERUN_PACKET_SHA256='076cf0bc415c9db0587594d84a5b9cd2e5f8d798d70d92b9444c6f94d2c86e12'
+OLERUN_SCRIPT_SHA256='fd92347eca0683a2d68e871ca5b7caeead55be4b5bd8e8b7525c55f6a162fa57'
+OLERUN_PROJECTION_SHA256='97c9094023cf9751fecd43b588f0fbe5913b38469cef50e06ac5432123c8c2dd'
+
+def validate_olerun_packet(packet,script_sha256):
+ """Accept only the measured x86 rejecting-IRO boundary; no OS model."""
+ from pathlib import PureWindowsPath
+ def require(ok,reason):
+  if not ok:raise ValueError('Unsupported OleRun measurement: '+reason)
+ require(script_sha256==OLERUN_SCRIPT_SHA256 and packet.get('script_sha256')==script_sha256,'source identity')
+ require(packet.get('probe')=='windows-olerun-rejecting-irunnableobject','probe identity')
+ require(packet.get('csharp_source_sha256')=='abde0330c574fc327b8fea535fe4ab95ea68a423b1e7377a15899ac552193323','callback source identity')
+ require(packet.get('process_64bit') is False and packet.get('os_64bit') is True,'process architecture')
+ measurement=packet.get('measurement',{})
+ require(measurement.get('SchemaVersion')==1 and measurement.get('PointerBytes')==4,'x86 schema')
+ execution=packet.get('execution',{})
+ require(execution.get('child_exit_code')==0 and execution.get('ssh_exit_code')==0,'process failure')
+ rows=measurement.get('Measurements',[])
+ controls={'STA-CoInitializeEx':'STA','MTA-CoInitializeEx':'MTA','STA-OleInitialize-twice':'STA'}
+ require(len(rows)==3 and {r.get('Control')for r in rows}==set(controls),'apartment controls')
+ iro=dict(Sequence=0,Method='QueryInterface',Iid='00000126-0000-0000-c000-000000000046',
+          Result='0x80004002',Before=1,After=1,OutputNull=True)
+ for row in rows:
+  require(row.get('Apartment')==controls[row['Control']],'apartment identity')
+  expected_ole=['0x00000000','0x00000001'] if row['Control']=='STA-OleInitialize-twice' else []
+  require(row.get('OleInitializeHresults')==expected_ole,'OleInitialize controls')
+  require(row.get('InitializeFlags')==(2 if row['Apartment']=='STA' else 0),'apartment flags')
+  require(row.get('InitializeHresult') in ('0x00000000','0x00000001'),'COM initialization')
+  require(row.get('Error') is None and row.get('CallbackErrors')==[],'callback error')
+  require(row.get('UnknownQueryHresult')=='0x00000000' and row.get('UnknownIdentityMatches') is True,'IUnknown preflight')
+  require(row.get('RunnableQueryHresult')=='0x80004002' and row.get('RunnableOutputNull') is True,'IRO preflight')
+  preflight=[dict(Sequence=0,Method='QueryInterface',Iid='00000000-0000-0000-c000-000000000046',
+                  Result='0x00000000',Before=1,After=2,OutputNull=False),
+             dict(Sequence=1,Method='Release',Iid=None,Result=None,Before=2,After=1,OutputNull=False),
+             {**iro,'Sequence':2}]
+  require(row.get('PreflightCalls')==preflight,'preflight callbacks')
+  require(row.get('ReferencesBefore')==1 and row.get('ReferencesAfter')==1,'reference effects')
+  require(row.get('OleRunHresult')=='0x00000000' and row.get('OleRunCalls')==[iro],'OleRun callback/result')
+ modules=measurement.get('Modules',[])
+ require(len(modules)==2 and {m.get('Name')for m in modules}=={'combase.dll','ole32.dll'},'DLL inventory')
+ expected={'combase.dll':'3f152587249ff6623eb0023cf52cad64aac02f6d8117d8754349f83768f9a6f8',
+           'ole32.dll':'d178e227ede5073ecfed4528199b03327e1c2edff9ddd09d79d4af821fdde968'}
+ for module in modules:
+  require(module.get('LoadedPeMachine')=='0x014c' and module.get('FilePeMachine')=='0x014c','DLL architecture')
+  parts=tuple(p.casefold()for p in PureWindowsPath(module.get('ResolvedFilePath','')).parts)
+  require(parts==('c:\\','windows','syswow64',module['Name']),'canonical DLL file')
+  require(module.get('Sha256')==expected[module['Name']],'DLL identity')
+ return dict(packet_sha256=OLERUN_PACKET_SHA256,script_sha256=script_sha256,
+             measured_dlls={m['Name']:m['Sha256']for m in modules},hresult=0,
+             coverage=packet['coverage'])
+
+def olerun_measurement():
+ """One immutable measurement loader; public projection removes host metadata."""
+ root=HERE.parent/'fv_cell_attack'
+ original=root/'windows_olerun_result.json'
+ projected=not original.exists()
+ raw=(root/'windows_olerun_functional_projection.json' if projected else original).read_bytes()
+ expected=OLERUN_PROJECTION_SHA256 if projected else OLERUN_PACKET_SHA256
+ if hashlib.sha256(raw).hexdigest()!=expected:
+  raise ValueError('Unsupported OleRun measurement: packet identity')
+ packet=json.loads(raw)
+ if projected and packet.get('projection_of_packet_sha256')!=OLERUN_PACKET_SHA256:
+  raise ValueError('Unsupported OleRun measurement: projection source identity')
+ source_sha=hashlib.sha256((root/'windows_olerun_probe.ps1').read_bytes()).hexdigest()
+ result=validate_olerun_packet(packet,source_sha)
+ if projected:result['projection_sha256']=expected
+ return result
+
+def nonrunnable_drive_olerun(read,pointer):
+ """Measured API return for original Drive's proven rejecting-IRO class."""
+ # Original factory+interface QI executable controls establish this class's
+ # rejection. The original4B4D90 thunk reaches4AF720→55A9B0 and changes no bytes
+ # for IID00000126...0046. The measured x86 API makes one such QI and returns0.
+ if (struct.unpack('<I',read(pointer,4))[0]!=0x7E7EB0 or
+     struct.unpack('<I',read(pointer-4,4))[0]!=0x7E7F7C or
+     struct.unpack('<I',read(pointer+0x10,4))[0]!=1):
+  raise ValueError('Unsupported OleRun input: expected original Drive IUnknown/ref1')
+ return olerun_measurement()['hresult']
 
 class Mission:
+ @staticmethod
+ def import_transport(call):
+  """Checked OS boundaries shared by scoped original lifetime producers."""
+  if call.spec.site in (0x55A965,0x55A987):
+   pointer,=call.arguments
+   value=interlocked_update(call.read,call.write,pointer,1 if call.spec.site==0x55A965 else -1)
+   call.return_to_native(value)
+   return
+  if call.spec.site==0x41C27D:
+   clsid,outer,context,iid,output=call.arguments
+   if call.read(clsid,16)!=call.read(0x7E9A30,16) or (outer,context,iid)!=(0,7,0x817BC0):
+    raise ValueError('Unsupported selected Drive activation inputs')
+   call.forward_to_factory();return
+  if call.spec.site==0x41C28C:
+   pointer,=call.arguments
+   call.return_to_native(nonrunnable_drive_olerun(call.read,pointer));return
+  raise ValueError('Unsupported Mission import transport site')
  def __init__(self,continuation=None):
+  base=_fixture_base()
   self.continuation=continuation
   self.m,self.typ,self.weapon,self.rules,self.inputs=base.prepare();self.u=self.m.u
   self.resident,self.world=base.attach_world(self.m,self.rules)
@@ -30,11 +163,13 @@ class Mission:
   self.resident.observe=resident_observer
   self.u.hook_add(UC_HOOK_CODE,self.observe);self.u.hook_add(UC_HOOK_MEM_INVALID,self.invalid)
  def state(self):
+  base=_fixture_base()
   u=self.u;m=self.m;p=self.src
   return dict(frame=self.frame,mission=base.i32(u,p+0xAC),queued=base.i32(u,p+0xB4),status=base.i32(u,p+0xBC),dispatch=[base.i32(u,p+0xC8),base.i32(u,p+0xD0)],rearm=[base.i32(u,p+0x2EC),base.i32(u,p+0x2F4)],target=hex(m.read32(p+0x2B4)),alive=u.mem_read(p+0x90,1)[0],limbo=u.mem_read(p+0x81,1)[0],marked=u.mem_read(p+0x74,1)[0],health=base.i32(u,p+0x6C),position=base.xyz(u,p+0x9C),global_techno_count=m.read32(0xA8EC88),global_unit_count=m.read32(0x8B4118),random_phase_raw_u16=int.from_bytes(u.mem_read(p+0x3C8,2),'little'),mission_visit_count=m.read32(p+0xC4),primary_facing=[m.read32(p+0x388),m.read32(p+0x38C)],turret_facing=[m.read32(p+0x3A0),m.read32(p+0x3A4)],logic_registered=u.mem_read(p+0x98,1)[0])
  def invalid(self,u,access,address,size,value,data):
   self.events.append(dict(kind='unmapped',access=access,address=hex(address),pc=hex(u.reg_read(UC_X86_REG_EIP))));return False
  def observe(self,u,a,n,d):
+  base=_fixture_base()
   self.trace.append(a);m=self.m;sp=u.reg_read(UC_X86_REG_ESP)
   if a in self.pending:
    row=self.pending.pop(a);row['returned_eax']=u.reg_read(UC_X86_REG_EAX)
@@ -61,17 +196,18 @@ class Mission:
    self.shots.append(dict(frame=self.frame,bullet=hex(b),rearm=[base.i32(u,self.src+0x2EC),base.i32(u,self.src+0x2F4)],position=base.xyz(u,b+0x9C),velocity=base.vec(u,b+0xE8),damage=base.i32(u,b+0x6C),rng_after=base.sr.rng_state(u,self.resident.rngs['scenario'])))
   if a==0x527AF9:
    codepage,flags,source,length,dest,capacity=struct.unpack('<6I',u.mem_read(sp,24));assert (codepage,flags,length)==(0,1,0xffffffff)
-   value=m.string(source);assert value.isascii();raw=(value+'\0').encode('utf-16-le');assert len(raw)//2<=capacity
+   value=m.string(source);raw=ascii_utf16(value,capacity)
    u.mem_write(dest,raw);u.reg_write(UC_X86_REG_EAX,len(raw)//2);u.reg_write(UC_X86_REG_ESP,sp+24);u.reg_write(UC_X86_REG_EIP,0x527AFF);self.events.append(dict(kind='OS_ascii_to_utf16',value=value));return
   if a==0x527B0C:
    source,dest=struct.unpack('<2I',u.mem_read(sp,8));s=[]
    while (v:=struct.unpack('<H',u.mem_read(source+len(s)*2,2))[0]):s.append(chr(v))
-   value=''.join(s);raw=uuid.UUID(value).bytes_le;u.mem_write(dest,raw);u.reg_write(UC_X86_REG_EAX,0);u.reg_write(UC_X86_REG_ESP,sp+8);u.reg_write(UC_X86_REG_EIP,0x527B12);self.events.append(dict(kind='OS_CLSIDFromString',value=value,bytes=raw.hex()));return
+   value=''.join(s);raw=clsid_bytes(value);u.mem_write(dest,raw);u.reg_write(UC_X86_REG_EAX,0);u.reg_write(UC_X86_REG_ESP,sp+8);u.reg_write(UC_X86_REG_EIP,0x527B12);self.events.append(dict(kind='OS_CLSIDFromString',value=value,bytes=raw.hex()));return
   if a in (0x41C27D,0x41C2CB):
    clsid,outer,context,iid,ppv=struct.unpack('<5I',u.mem_read(sp,20));assert bytes(u.mem_read(clsid,16))==bytes(u.mem_read(0x7E9A30,16));assert outer==0 and context==7
    u.mem_write(sp,dwords(a+6,0,outer,iid,ppv));u.reg_write(UC_X86_REG_EIP,0x6C4010);self.events.append(dict(kind='COM_Drive_original_factory'));return
   if a==0x41C28C:
-   self.events.append(dict(kind='OS_OleRun',interface=hex(m.read32(sp))));u.reg_write(UC_X86_REG_EAX,0);u.reg_write(UC_X86_REG_ESP,sp+4);u.reg_write(UC_X86_REG_EIP,a+6);return
+   result=nonrunnable_drive_olerun(u.mem_read,m.read32(sp))
+   self.events.append(dict(kind='OS_OleRun',interface=hex(m.read32(sp)),measurement=olerun_measurement()));u.reg_write(UC_X86_REG_EAX,result);u.reg_write(UC_X86_REG_ESP,sp+4);u.reg_write(UC_X86_REG_EIP,a+6);return
   if a==0x46B072:
    clsid,outer,context,iid,ppv=struct.unpack('<5I',u.mem_read(sp,20));assert (clsid,outer,context,iid)==(0x7E96E0,0,7,0x7F7C90)
    u.mem_write(sp,dwords(0x46B078,0,outer,iid,ppv));u.reg_write(UC_X86_REG_EIP,0x6C5090);self.events.append(dict(kind='COM_Bullet_original_factory'));return
@@ -83,7 +219,7 @@ class Mission:
    self.events.append(dict(kind='setup_wall_clock',phase=self.phase));assert self.phase=='setup';m.ret(0);return
   if a==0x7C978A:self.events.append(dict(kind='CRT_exit_registration',callback=hex(m.read32(sp+4))));m.ret(0);return
   if a in (0x46AFE5,0x46B007,0x55A965,0x55A987):
-   ptr=m.read32(sp);value=(m.read32(ptr)+(1 if a in (0x46AFE5,0x55A965) else -1))&0xffffffff;u.mem_write(ptr,dwords(value));u.reg_write(UC_X86_REG_EAX,value);u.reg_write(UC_X86_REG_ESP,sp+4);u.reg_write(UC_X86_REG_EIP,a+6);return
+   ptr=m.read32(sp);value=interlocked_update(u.mem_read,u.mem_write,ptr,1 if a in (0x46AFE5,0x55A965) else -1);u.reg_write(UC_X86_REG_EAX,value);u.reg_write(UC_X86_REG_ESP,sp+4);u.reg_write(UC_X86_REG_EIP,a+6);return
   if a==0x7CAA5E:
    ptr,length=struct.unpack('<2I',u.mem_read(sp,8));u.mem_read(ptr,length);u.reg_write(UC_X86_REG_EAX,0);u.reg_write(UC_X86_REG_ESP,sp+8);u.reg_write(UC_X86_REG_EIP,0x7CAA64);return
   if a==0x7509E0:
@@ -92,6 +228,7 @@ class Mission:
    self.events.append(dict(kind='sound_boundary',frame=self.frame,name=name,position=base.xyz(u,u.reg_read(UC_X86_REG_EDX))));m.ret(0,4);return
   if a>=0x7E1000 and a!=RET_MAGIC:raise AssertionError(('non-image-code',hex(a)))
  def setup(self,*,placement_observer=None,context=None):
+  base=_fixture_base()
   if context is not None and not isinstance(context,dict):
    raise TypeError('Mission setup diagnostic context must be a JSON object')
   fixture=type(self).__module__+'.'+type(self).__qualname__
@@ -102,7 +239,7 @@ class Mission:
   u.mem_map(0,0x1000);u.mem_write(0,dwords(-1))
   # Actual MissionControl static construction, then the original Rules loop for
   # each physical layer. Source-order caches remain the existing INI boundary.
-  m.invoke(0x4E7CF0,0);mission_rows=[]
+  initialize_mission_controls(m);mission_rows=[]
   for name,path in base.layers():
    if not path.exists():continue
    sections,lines=base.lexical(path.read_bytes(),{'Attack','Guard','Sleep','Move','MTNK'})
@@ -134,7 +271,7 @@ class Mission:
   for registry in (0xA83C98,0x8B4120):u.mem_write(registry,dwords(0x7EB6D4,m.alloc(4096),1024,1,0,10))
   self.countries={}
   for name in sec['Countries'].values():
-   p=m.alloc(0x300);m.invoke(0x5113F0,p,(m.cstring(name),));self.countries[name]=p
+   self.countries[name]=construct_country(m,name)
   for name in sec['Sides']:
    p=m.alloc(0xC0);m.invoke(0x6A4550,p,(m.cstring(name),))
   self.inputs['country_side_lists']=dict(sections=sec,source_lines=lines)
@@ -210,6 +347,7 @@ class Mission:
   u.reg_write(UC_X86_REG_ESP,SP);u.reg_write(UC_X86_REG_EDI,0);run_checked(u,0x55DE73,0x55DE87)
   self.frame=m.read32(0xA8ED84);self.phase='drain';m.invoke(0x725C70,0)
  def run(self):
+  base=_fixture_base()
   collapse=None
   for _ in range(5000):
    self.tick()
@@ -225,6 +363,7 @@ class Mission:
 
 
 def generate(continuation=None):
+ base=_fixture_base()
  q=Mission(continuation);failure=None
  try:q.setup();q.run()
  except Exception as exc:
