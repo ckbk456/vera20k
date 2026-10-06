@@ -168,7 +168,7 @@ manager before Process and loads genuine 768-byte `LIBTEM.PAL`; a supplied RGB56
 Surface does not establish rendering parity. The sole fresh independent critic found two P2 defects: legacy borrowed startup
 adapters and six CLI manifests requiring a private packet. Both are corrected
 through existing owners and protected by failed-first tests. Final checks pass
-102 retail/native tests and 665 portable tests (26 skips) at tool bytes committed
+102 retail/native tests and 664 portable tests (26 skips) at tool bytes committed
 as `c174da17`. Two fresh guarded VMs produce identical complete startup results;
 joined generation/continuation and authentication functions are unchanged. The
 joined receipt remains tied to `450d1587`; source metadata alone is refreshed.
