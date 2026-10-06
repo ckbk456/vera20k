@@ -160,13 +160,19 @@ Clippy completed with the existing 729 warnings. The named release test loaded
 retail assets and passed deterministic populated scenario construction. It is
 headless map-loading evidence; no GUI, rendering or gameplay acceptance follows.
 Those checks ran at base `b43304db`; the Rust source tree remains identical.
-Final tooling validation passed 660 portable tests with 25 explicit skips and
-all 98 focused retail/native/transport/prereader/guard tests. The latter includes
+Final tooling validation passed 664 portable tests with 26 explicit skips and
+all 102 focused retail/native/transport/prereader/guard tests. The latter includes
 all 5,211 physical CSF labels, 14 genuinely missing labels and actual original
 NULL/retained-manager palette controls. The joined run creates the native palette
 manager before Process and loads genuine 768-byte `LIBTEM.PAL`; a supplied RGB565
-Surface does not establish rendering parity. One fresh independent critic and
-PR delivery follow this completed local qualification.
+Surface does not establish rendering parity. The sole fresh independent critic found two P2 defects: legacy borrowed startup
+adapters and six CLI manifests requiring a private packet. Both are corrected
+through existing owners and protected by failed-first tests. Final checks pass
+102 retail/native tests and 664 portable tests (26 skips) at tool bytes committed
+as `c174da17`. Two fresh guarded VMs produce identical complete startup results;
+joined generation/continuation and authentication functions are unchanged. The
+joined receipt remains tied to `450d1587`; source metadata alone is refreshed.
+PR delivery follows these validated fixes.
 
 ## Remaining W02 gates
 
