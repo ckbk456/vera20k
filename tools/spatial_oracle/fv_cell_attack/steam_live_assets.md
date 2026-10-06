@@ -49,6 +49,38 @@ order, absent mounts, first-winner/cache preservation, rebind/index rejection,
 native index2 selection and changed-table rejection. The latter mocks Scenario
 words to test supplier behavior and does not claim native Map execution.
 
+The supplied mounts are followed by original palette-manager theater activation
+`6267A0..626998` (504 bytes, SHA256
+`09d3910fd17c9ecfd5c3fcff5b60840d96e5a7fb92085e0ee131289457a2fcb0`).
+Original `InitTheater` restores its saved theater index into ECX at `534DB0`
+and calls this function at `534DB4`, with no stack arguments. Its existing
+manager branch retains `[AC48F0]` and performs the original index store at
+`6268D6`. Full_Init invokes InitTheater at `68765B`, before the root Rules
+caller at `6876AC`; this continuation calls the original setter on the same
+VM at that prerequisite stage, following selected physical registrations.
+
+The bounded cold seam accepts either a NULL manager or the actual retained
+manager with index `FFFFFFFF`, original 31-bucket hash table and zero native
+entry counts. The NULL branch executes the original allocations in order:
+16-byte manager, two 24-byte vectors, 16-byte hash owner and 748-byte bucket
+allocation (four-byte native count prefix followed by 31 24-byte buckets).
+Original `62687C` calls `4068F0` with constructor `628740..628760` (32 bytes,
+SHA256 `7aa784211eb805c92e724f480144f3031dd17e0e6f3b07544e538c0c55a4d48c`).
+The helper checks those five actual allocation events and constructor-written
+fields; untouched padding is excluded from the native result. The retained
+branch checks manager identity, vector pointers, hash table/buckets and
+allocation cursor remain unchanged. Both branches preserve the Scenario
+counter and three RNG stores while the original code sets the theater index.
+It supplies no index write, vector header, empty bucket or palette result. Warm entries are
+rejected because their original retirement/reload branch is not qualified here.
+The original `PAL\0` string at `836468` is admitted for the subsequent genuine
+`627590` filename formation: `Palette=lib` with native TEMPERATE selects
+`LIBTEM.PAL`. The earlier cold index `-1` returned NULL before any physical file
+request; that branch must not be described as an actually missing stock palette.
+Targeted controls reject absent Scenario owners, warm caches and a mismatched Scenario index
+before native invocation. Actual same-VM setter and palette result evidence is
+recorded by the native qualification owner separately.
+
 The existing `Reader` owns the one guest physical-buffer cache and `5B40B0`
 service. Physical full bytes, lengths, hashes, sources and missing requests are
 recorded; original caller names and image metadata execute. FV body VXL/HVA are
@@ -109,6 +141,62 @@ Unexecuted error/locale/device branches still fail at undeclared imports or
 unowned data; declarations alone do not establish executable closure. The
 retained live qualification report must identify actual executed coverage,
 failures and excluded behavior separately.
+
+The fourth all-family diagnostic reached the first Infantry `E1` after
+Country, SuperWeapon, Anim, Building, Aircraft and Unit bodies, then failed at
+original `523D5D` reading pointer table `8255C8`. Original sequence reader
+`523D00..524097` was already enrolled (SHA256
+`e8560669b1bab1e318c4769272062f92f58331f511f8dd3477876a3983c15119`).
+It sets the table start at `523D3F`, increments by four at `52407A`, compares
+the exclusive end `825670` at `52407D`, and loops at `524086`: exactly 42
+pointers and 168 bytes, SHA256
+`918b9cc9ac6675226a91212def08a8b7378545c4584092d0427e58c9ae162d59`.
+The declaration adds that exact table and the 35 previously unowned pointed
+strings with their terminal NULs. The other seven strings, eight direction
+literals, Sequence key, scan format, sound-key format and delimiters were
+already covered. Alignment padding and neighboring data are excluded.
+
+Physical `E1` selects Image `GI`, whose ART selects `GISequence` with 24 keys.
+Its actual direction tokens include `S` and `E`; no sequence Sounds keys are
+present. Original `523DB0` calls the existing native scanner with
+`%d,%d,%d,%s`. For `s`, original dispatch `7D1B6E..7D1B98` (42 bytes, SHA256
+`699e599f399b03a3ec1993eea358dda97229a1195809c891370a48cf9855e651`)
+selects `7D1C6A`. That path loads the six-byte default scan set at `87C918`
+(`20 09 2D 0D 5D 00`, SHA256
+`c73e01f2eff23813d793ffcb1a7303db935572f1de82bb0f9494bb756a5b5a3e`)
+and calls original `7D75E0` at `7D1C85` to clear 32 bytes of stack storage.
+The complete memset `7D75E0..7D7638` is 88 bytes, SHA256
+`2af9ec6db955aa74b3de79ebe2752b3fa148e02935ac40304eb9ffc13ccf0d2c`;
+it has no callees, imports or external data. Those exact extents are added.
+Existing native string readers, integer scanning, strtok/atoi and sound
+lookup remain the result owners. No field, sequence record or sound index is
+supplied. Unselected hexadecimal/64-bit scanner helpers remain excluded;
+the fresh native control must still establish execution of the added path.
+
+The isolated Building control reached stock `CANEWY04`, whose physical ART
+section declares `Palette=lib`, and stopped at original `628D38` reading the
+undeclared palette hash-bucket virtual slot `7EF778`. The recorded receiver
+vtable was `7EF770`, with native resize arguments `(10,0)` and return address
+`6265CC`, immediately after `6263D0` calls original bucket insertion `628D10`.
+Original bucket constructor `628070` writes this vtable at `6280CC`, starts
+capacity/count at zero and increments capacity by ten. The exact four-byte
+slot payload `B0 8B 62 00` selects original `628BB0`; its SHA256 is
+`e01dae4cd0329fe56c1ab261ace23ced495c825fdf5f4e838cc4691b9f134eba`.
+
+The asset declaration now includes that slot and complete original resize
+`628BB0..628D03` (339 bytes, SHA256
+`edb4d1aeae6ef0f575ad1c1d4868c7708b7ace33beb83af5886f83faaf536dd7`).
+The selected path allocates ten 260-byte key/value entries and calls original
+string constructor `4F4C20..4F4C26` (six bytes, SHA256
+`643a9b227f3b8bc93142e908d080e8b01a97ebcffea9da65e5062be083708e0e`)
+for their initial empty strings. Existing native `4F4CB0` owns string copying;
+the existing allocator/retirement boundaries own storage. No vector state,
+palette result, vtable or loader success is supplied. The zero-capacity resize
+branch's virtual cleanup slot remains outside this observed `(10,0)` control,
+as do unrelated vector virtual slots. The preserved failure report is
+`.local/bullet-live-validation/building-family-control-first-failures/native-failure-e80b91eb61924a72a2433c0014d771bb.json`.
+These additions await the root agent's native rerun; declaration alone is not
+Building reader qualification.
 
 Indexed physical ART image/cameo candidates contain 634 available SHP/VXL/HVA
 payloads totaling 25,762,018 bytes. This is a lexical capacity estimate, not a

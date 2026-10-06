@@ -12,6 +12,11 @@ from tools.native_oracle import NativeExecutionError, RET_MAGIC
 
 PROFILE_NAME='steam-15918130-fv-ordered-live-types-v1'
 LIVE_HEAP_BYTES=0x08000000
+# The frozen stock diagnostic exhausted1200s after166,672,932 instructions,
+# reaching610 Anim and297 Building entries. Preserve that failed receipt;
+# the remaining finite stock loops need a larger budget, never a late restart.
+LIVE_TYPES_INSTRUCTION_LIMIT=500_000_000
+LIVE_TYPES_TIMEOUT_US=3_600_000_000
 BEGIN=0x668EED
 END=0x668EF5
 
@@ -22,7 +27,7 @@ def live_types_profile():
     from tools.spatial_oracle.fv_cell_attack.steam_live_types_scope import (
         LIVE_REGIONS, LIVE_READ_ONLY, LIVE_NATIVE_DATA, LIVE_READERS)
     from tools.spatial_oracle.fv_cell_attack.steam_live_asset_scope import (
-        LIVE_ASSET_REGIONS,READ_ONLY,NATIVE_DATA,FIXTURE_DATA,SINKS,TRANSPORTS)
+        LIVE_ASSET_REGIONS,READ_ONLY,NATIVE_DATA,FIXTURE_DATA,SINKS,TRANSPORTS,ASSET_ENTRIES)
     from tools.spatial_oracle.fv_cell_attack.steam_live_catalog_scope import (
         CATALOG_REGIONS,CATALOG_READ_ONLY,CATALOG_NATIVE_DATA,CATALOG_ENTRIES)
     from tools.spatial_oracle.fv_cell_attack.steam_live_formatter_scope import (
@@ -42,7 +47,7 @@ def live_types_profile():
     heap=((0x24000000,LIVE_HEAP_BYTES),)
     return replace(profile,regions=profile.regions+LIVE_REGIONS+LIVE_ASSET_REGIONS+CATALOG_REGIONS+FORMATTER_REGIONS+LIVE_READER_HELPER_REGIONS,
         entries=profile.entries+((BEGIN,(END,)),)+tuple((row['entry'],(RET_MAGIC,))for row in LIVE_READERS)+
-            tuple((entry,(RET_MAGIC,))for entry in(0x750300,0x403ED0,0x7510D0,0x734E60))+CATALOG_ENTRIES,
+            tuple((entry,(RET_MAGIC,))for entry in(0x750300,0x403ED0,0x7510D0,0x734E60))+CATALOG_ENTRIES+ASSET_ENTRIES,
         reads=profile.reads+LIVE_READ_ONLY+LIVE_NATIVE_DATA+READ_ONLY+NATIVE_DATA+FIXTURE_DATA+CATALOG_READ_ONLY+CATALOG_NATIVE_DATA+FORMATTER_READ_ONLY+FORMATTER_NATIVE_DATA+LIVE_READER_HELPER_READ_ONLY+heap,
         writes=profile.writes+LIVE_NATIVE_DATA+NATIVE_DATA+FIXTURE_DATA+CATALOG_NATIVE_DATA+FORMATTER_NATIVE_DATA+heap,
         fixture_writes=profile.fixture_writes+FIXTURE_DATA+heap,
@@ -98,7 +103,7 @@ def continue_live_types(m,rules,reader_ini,receipt,*,progress=None):
     readers={row['entry']:row for row in LIVE_READERS}
     constructors_by_entry={ctor:family for family,_,ctor,_,_,_,_ in TYPED_MASTER_FAMILIES}
     constructors_by_entry.update({0x771C70:'Weapon',0x46BBC0:'Bullet'})
-    calls=[];constructors=[];mission=[];postpasses=[];rng_calls=[];post_membership={}
+    calls=[];constructors=[];mission=[];postpasses=[];rng_calls=[];post_membership={};family_counts={}
     def observe(uc,pc,size,data):
         entry_sp=uc.reg_read(UC_X86_REG_ESP)
         if pc in readers:
@@ -110,6 +115,11 @@ def continue_live_types(m,rules,reader_ini,receipt,*,progress=None):
             calls.append(dict(family=row['family'],entry=pc,caller=m.read32(entry_sp),
                 pointer=pointer,ini=m.read32(entry_sp+4),name=m.string(pointer+0x24),
                 counter=m.read32(scene+0x214),registry_count=count,registry_indices=indices))
+            family_counts[row['family']]=family_counts.get(row['family'],0)+1
+            observed_count=family_counts[row['family']]
+            if progress and observed_count%50==0:
+                progress('Observed original '+row['family']+' primary entry '+str(observed_count)+
+                    ' '+calls[-1]['name']+'; total entries '+str(len(calls)))
         for meta in LIVE_READERS:
             if pc==meta['caller']:
                 call=next((row for row in reversed(calls)if row['entry']==meta['entry']and'registry_count_after_return'not in row),None)
@@ -133,7 +143,7 @@ def continue_live_types(m,rules,reader_ini,receipt,*,progress=None):
     watched=set(readers)|set(constructors_by_entry)|{row['caller']for row in LIVE_READERS}|{0x5B3760,0x7729F0,0x465CB0,0x65C780}
     hooks=[m.u.hook_add(UC_HOOK_CODE,observe,begin=pc,end=pc)for pc in sorted(watched)]
     try:
-        m.run_native(BEGIN,END,count=200_000_000,timeout_us=1_200_000_000,
+        m.run_native(BEGIN,END,count=LIVE_TYPES_INSTRUCTION_LIMIT,timeout_us=LIVE_TYPES_TIMEOUT_US,
             required_addresses=(0x679A10,0x5B3760),context=dict(case='retained-original-live-type-pass',
                 rules_ini=reader_ini,art_ini=0x887180,cache_rebuilt=False))
         after=registry_snapshot(m)
@@ -199,7 +209,9 @@ def metadata():
         assumptions=['One fresh original-order selected CRT VM; original Scenario and retained Rules/ART objects.',
             'Physical unique lexical Rules/ART receivers; complete resident type loop rather than selected FV body.',
             'Physical selected dragon-cadence.map supplies a distinct Map-only cache; original theater lookup/store executes before retained Process, without map Rules layering or whole Full_Init execution.',
+            'Supplied authenticated InitTheater archive order precedes original6267A0 cold palette-manager activation on the retained owner; warm palette reload is not qualified.',
             'Explicit128MiB bounded heap for resident native parsers and immutable physical assets; historical32MiB profiles unchanged.',
+            'Finite stock reader budget500M instructions/3600s follows the preserved166.7M-instruction1200s diagnostic timeout; execution and permissions remain unchanged.',
             'Full physical decoded CSF cache is supplied before native type readers; original lookups execute.',
             'Original disabled-output sound factory and full SoundList execute before entering retained Process.',
             'Declarations alone establish no numeric, gameplay or complete Windows startup parity.'],

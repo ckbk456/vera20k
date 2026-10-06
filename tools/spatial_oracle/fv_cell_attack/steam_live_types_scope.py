@@ -80,9 +80,9 @@ LIVE_REGIONS = (
     (0x474F50, 0x474F99, "0a995d4c078d52bc6692ae6366ec6d69273adc66d1ecffe00aaee0c4b97dd2ce"),
     # EVA name lookup used by original Building CaptureEvaEvent.
     (0x474FA0, 0x474FE9, "5d3f9db53b578569e1f18ca8977f8636da1de914aadc3ebea1c22f311a844213"),
-    # AI trigger condition name lookup.
+    # AbstractType name/value lookup used by Building Factory.
     (0x474FF0, 0x475028, "677db1e8b38fef59b7fcfa75b15aeb555096caaed305448491be9b515dda2adf"),
-    # Building name lookup.
+    # BuildCat original name/value lookup.
     (0x475060, 0x475098, "5e116a3d245fbf73b0a008fa5e67a55505c03acef2fa5a6b0231336f77853584"),
     # House bitset native token order.
     (0x4750D0, 0x475143, "380881a230e1c557543c288e79fa79c1df7abdb27e92d4ae3233b458ecfb1bf2"),
@@ -142,15 +142,15 @@ LIVE_REGIONS = (
     (0x466000, 0x466080, "958b955d323b9a3e13eb3d1abfff7fff4fcd803bbe22bae8b93c929dedf56c16"),
     # Anim find-or-create.
     (0x428F70, 0x428FF0, "35ea2ab4da4d1ef60985c757f11c05ba3d2e25a316f979898c7e89e2f428da5e"),
-    # AI trigger enum formatter.
+    # AbstractType enum formatter.
     (0x40DCB0, 0x40DCD4, "d5fb11f66187527728fd823638a4744d9319850da8dd8bb143c04a83f3387afa"),
-    # AI trigger enum parser.
+    # AbstractType enum parser.
     (0x40DCE0, 0x40DD19, "a4528583a5800b5acfc266ca8c0520d9170ef9f25d660894a0b1e37b179f03c4"),
     # Aircraft name find existing registry.
     (0x41CAA0, 0x41CAE1, "fb46943f493298276b90a5fe3cde04d62f1ee35eba1d5fb538b8338b7f74ca9f"),
-    # Building enum formatter.
+    # BuildCat enum formatter.
     (0x45DD20, 0x45DD44, "62a850a2c2ad1129ba2aaf10514acab6e62635f62ca60d6dd1533443ff3b1b62"),
-    # Building enum parser.
+    # BuildCat enum parser.
     (0x45DD50, 0x45DD89, "36b54cd3072daec80d4feb743e39bbc69ad4b0f9543defc97f1145173aac659b"),
     # Category enum formatter.
     (0x473960, 0x473973, "da075a82376572b5345f7d79110503ead2f28c07ae4fac2bbde702edbd1eb9af"),
@@ -292,7 +292,7 @@ LIVE_READ_ONLY = (
     (0x816E5C, 5),  # Move
     (0x816E64, 7),  # Attack
     (0x816E6C, 6),  # Sleep
-    (0x816EE0, 592),  # AI trigger74 name/value records
+    (0x816EE0, 592),  # AbstractType74 name/value records
     (0x817130, 8),  # Unknown
     (0x817134, 4),  # own
     (0x817138, 10),  # DiskLaser
@@ -439,13 +439,13 @@ LIVE_READ_ONLY = (
     (0x818644, 6),  # Layer
     (0x81864C, 11),  # NewTheater
     (0x818660, 7),  # Shadow
-    (0x819288, 48),  # Building six name/value records
+    (0x819288, 48),  # BuildCat six name/value records
     (0x819368, 7),  # Combat
     (0x819370, 15),  # Infrastructure
     (0x819380, 9),  # Resource
     (0x81938C, 6),  # Power
     (0x819394, 5),  # Tech
-    (0x81939C, 9),  # DontCare
+    (0x81939C, 12),  # DontCare BuildCat default; original strncpy NUL padding DWORD
     (0x819490, 14),  # DeployingAnim
     (0x8194AC, 5),  # .VXL
     (0x8194B4, 16),  # DockingOffset%d
@@ -959,7 +959,7 @@ LIVE_READ_ONLY = (
     (0x81DB30, 10),  # special_1
     (0x81DB3C, 9),  # concrete
     (0x81DB48, 6),  # steel
-    (0x81DB50, 5),  # wood
+    (0x81DB50, 8),  # wood Armor default; original strncpy includes three compiler padding bytes
     (0x81DB58, 6),  # heavy
     (0x81DB60, 7),  # medium
     (0x81DB68, 6),  # light
@@ -1061,6 +1061,7 @@ LIVE_READ_ONLY = (
     (0x832BE4, 13),  # AmbientSound
     (0x832BF4, 11),  # CrushSound
     (0x832C00, 11),  # AlphaImage
+    (0x836EE0, 20),  # ParticleSystem BehavesLike; original five-pointer loop644423..64445C
     (0x836EF4, 8),  # Railgun
     (0x836EFC, 6),  # Spark
     (0x836F04, 5),  # Fire
@@ -1474,7 +1475,7 @@ LIVE_READ_ONLY = (
     (0x846498, 9),  # STRONGER
     (0x8464A4, 7),  # FASTER
     (0x847C38, 7),  # Verses
-    (0x847C40, 66),  # 100%%,100%%,100%%,100%%,100%%,100%%,100%%,100%%,100%%,100%%,100%%
+    (0x847C40, 68),  # Verses default; original strncpy DWORD includes two compiler padding bytes
     (0x847C84, 9),  # ShakeYhi
     (0x847C90, 9),  # ShakeYlo
     (0x847C9C, 9),  # ShakeXhi

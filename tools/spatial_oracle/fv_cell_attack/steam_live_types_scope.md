@@ -68,6 +68,7 @@ label corrections preserve every enrolled address, extent and code hash.
 
 | Native reader | Actual key and caller | Existing table and original bound |
 | --- | --- | --- |
+| `474FF0`, formatter `40DCB0`, parser `40DCE0` | Building `460529`, key `8173F0` (`Factory`) | `816EE0:592`, seventy-four eight-byte AbstractType name/value records; formatter `40DCBF` compares its value pointer with `817134` |
 | `474940` | Techno `714120`, key `843E04` (`PipScale`) | `81B9B0:40`, five eight-byte name/value records; `474983` compares ESI with `81B9D8`, `474989` repeats below it |
 | `4749E0`, formatter `473960`, parser `473980` | Techno `71316C`, key `844194` (`Category`) | `81B7C8:88`, eleven pairs of alternate names; `4739B5` compares ESI with `81B820`, `4739BB` repeats below it |
 | `474DA0` | Building `461237` and `46124E`, ART key `81A734` (`Foundation`) | `81B9D8:176`, twenty-two eight-byte name/value records; `474DE6` compares ESI with `81BA88`, `474DEC` repeats below it |
@@ -87,6 +88,15 @@ Air default. Techno constructor `710CFA` stores minus one at Category
 native sentinel. No other default-string extents are enlarged by these
 label corrections. These tables are independent of the actual thirty-two
 MissionControl objects read by `5B3760`.
+
+Factory reads native Building `+EB8`, initialized from zeroed EBX at
+constructor `45DEB6`. Reader `46051A` loads that default and `460529`
+invokes `474FF0`, whose formatter `40DCB0` matches original AbstractType
+value zero at `816EE4` and returns the first record's `<none>` name
+`817474`. Its inherited eight-byte source extent already includes the
+aligned terminating DWORD. This is an AbstractType lookup; the table also
+contains Unit, Aircraft and other native class names, independently of
+AI trigger definitions. The corrected labels do not alter these grants.
 
 Object `5F92D0` reads `Armor` through `4753F0`: `5F94B3` loads the native
 default from Object `+9C`, `5F94BC` pushes the `Armor` key at `81D9D4`,
@@ -179,6 +189,86 @@ The last three bytes are original zero padding after the NUL; the adjacent
 `%d` literal beginning at `817F6C` remains outside this extent. This fixes
 the existing literal owner using the actual stock GAAIRC failure, with no
 replacement copying or default value supplied by the host.
+
+Building's `BuildCat` wrapper `475060` reaches original formatter `45DD20`
+and parser `45DD50`, using six name/value records at `819288:48`:
+`DontCare=0`, `Tech=1`, `Power=3`, `Resource=2`, `Infrastructure=4`,
+`Combat=5`. Constructor `45DDC7` (`899e080e0000`) initializes native
+`+E08` from zeroed EBX. Reader `45FE78` loads that default; `45FE84`
+pushes `81AEE4` (`BuildCat`), and `45FE8C` calls `475060`. Formatter
+`45DD27` compares the supplied default with each stored value, stepping
+eight bytes to its bound at `45DD2F` (`CMP EAX,8192BC`); a match at
+`45DD3C` loads the name at `819288 + index*8`. The zero default thus
+selects `81939C` (`DontCare`). Physical GACNST has no BuildCat key,
+selecting ReadString's original default-copy branch, as the preserved
+joined fourth-run failure demonstrates: the stack source is `81939C`,
+native return addresses are `528BD5` and `475088`, and `7C9266` reads
+the terminating DWORD at `8193A4`. The literal's existing extent is now
+`81939C:12`, original bytes `446f6e744361726500000000`, SHA-256
+`d01073d509830f158b5f35983e9ac831abcfe4050b15c826a1049f987482108a`.
+Only its three original padding bytes after NUL are added; neighboring
+data beginning at `8193A8` remains outside this extent. The other five
+BuildCat string extents retain their existing byte bounds, since the
+selected cold constructor default is zero. Their ordinary name comparison
+uses original byte-reading `7C8D20`, not this default-copy source.
+
+The static default-source audit found no further precise padding grants
+needed for the cold Aircraft, Unit and Infantry primary readers. Aircraft
+`41CC20` has one direct ReadString call with existing empty source `889F64`.
+Infantry `5240A0` has six such direct calls; its Pip/OccupyPip wrappers use
+the constructor-selected defaults documented above. Unit `747620`'s
+direct AltImage reader at `747B88` uses a native stack buffer, populated
+by the original member-name copy, rather than an immutable default literal.
+Its SpeedType wrapper `476FC0` uses existing formatter `48E030` and table
+`81DA58:32`. When native `+67C` is minus one, original `7476DE..7476EB`
+derives one or two from the native `+D28` byte before `747700` calls the
+wrapper. Both selected names, Track `81DBCC` and Wheel `81DBC4`, already
+have eight-byte declarations including their terminating DWORDs. Unit
+constructor `7470D7` sets EDI to minus one and `7470EB` stores it at
+MovementRestrictedTo `+DFC`. Reader `747843` calls existing `4754B0`,
+whose formatter `48DFD0` sends that sentinel to the covered `817474`
+fallback. Its twelve-pointer land table `81DA28:48` and the shared
+thirteen-pointer MovementZone table `81BA88:52` have inherited source
+extents covering the actual terminating DWORDs. The shared Techno,
+Object and Abstract default paths are the same original owners already
+reviewed for Building. This is static source/extent evidence, not a claim
+that every family, branch or default has executed in the joined VM.
+
+The direct stock Warhead control reached the original `EMPuls` default
+`Verses` source. Original `75DDD9` pushes `847C40`, `75DDDE` pushes
+the `Verses` key, and `75DDE6` calls ReadString `528A10` with a native
+128-byte stack destination. Its default-copy branch reaches `7C9266`,
+which reads the terminating DWORD at `847C80`. The eleven-value source
+contains 65 text bytes, one NUL and two original zero padding bytes;
+the precise extent is `847C40:68`, ending before `ShakeYhi` at `847C84`.
+Its SHA-256 is
+`a971287cf23d4be4032f66b4ba205c2c94ffdaab6c90b47d1812af9391106f12`.
+The preserved rejecting control selected this actual source in the original
+reader; the two added bytes grant no adjacent data or substituted result.
+
+Terrain constructor `71DBB6` selects Armor index six at `+9C`. The inherited
+Object reader `5F94B3..5F94C8` passes that actual member to `4753F0`;
+its `475404` table lookup selects `wood` at `81DB50`. Physical `BOXES01`
+has no Armor key. The preserved direct control therefore reaches the
+original default-copy DWORD at `81DB54`. Its exact source extent is now
+`81DB50:8`, bytes `776f6f6400000000`, SHA-256
+`e4963003da3a4662c5d435b27737cfff8fcd2c860d99ff2dd4707da1a73edd08`.
+Only three original zero padding bytes are added; the next `heavy` literal
+at `81DB58` remains outside this grant. Direct ReadString calls in the
+remaining Smudge/Overlay/Particle/ParticleSystem/VoxelAnim bodies select
+existing empty, null or native stack/member defaults. Their inherited
+Object and reviewed formatter wrappers retain the existing owners and
+precise source extents; no unrelated Armor names are padded by this fix.
+
+ParticleSystem's original BehavesLike loop `644423..64445C` starts its
+pointer at `836EE0`, adds four at `644450` and compares the end-exclusive
+bound `836EF4` at `644453`. Its five pointers select Smoke, Gas, Fire,
+Spark and Railgun, whose exact NUL strings were already declared. The
+table's precise extent is `836EE0:20`, SHA-256
+`9813eb36d32041c11068fbdcbe62e086d9f0208908c7234a42105ad154b9da3e`.
+Physical GasCloudSys selects Gas; the preserved direct control stopped
+at `644433` reading the first actual pointer before this table grant.
+No neighboring table or fixture write is added.
 
 ## Bullet initialization and allocation
 

@@ -9,7 +9,8 @@ from unittest.mock import Mock,patch
 
 from tools.sidebar_oracle.stock import mix, mix_hash, mix_index
 from tools.spatial_oracle.fv_cell_attack.steam_live_assets import (
-    PhysicalAssets, ReadOnlyFiles, Span, initialize_live_theater_assets)
+    PhysicalAssets, ReadOnlyFiles, Span, initialize_live_theater_assets,
+    _activate_live_palette_theater)
 from tools.storage_oracle.keyboard_bindings import parse_csf
 from tools.rules_oracle.bridge_anim_inputs import Reader
 
@@ -90,6 +91,34 @@ class ImmutableSupplierTests(unittest.TestCase):
             self.assertEqual(assets.archives,[])
             owner.image.verify_code.assert_not_called()
 
+    def test_palette_activation_requires_scenario_and_rejects_warm_prior_before_native_entry(self):
+        owner=Mock();owner.read32.return_value=0
+        with self.assertRaisesRegex(ValueError,'Native Scenario theater'):
+            _activate_live_palette_theater(owner,0)
+        owner.invoke.assert_not_called()
+        owner.read32.return_value=0x24001000
+        owner.u.mem_read.return_value=struct.pack('<4I',0,0x24001100,0x24001200,0x24001300)
+        with self.assertRaisesRegex(ValueError,'Original cold palette manager'):
+            _activate_live_palette_theater(owner,0)
+        owner.invoke.assert_not_called()
+
+    def test_palette_activation_preserves_warm_entries_and_checks_scenario_index(self):
+        owner=Mock();manager=0x24001000;table=0x24001300;buckets=0x24001400;scene=0x24002000
+        state={manager:struct.pack('<4I',0xFFFFFFFF,0x24001100,0x24001200,table),
+               table:struct.pack('<4I',buckets,0x626660,31,10),buckets:bytes(31*24)}
+        occupied=bytearray(state[buckets]);struct.pack_into('<I',occupied,16,1)
+        state[buckets]=bytes(occupied)
+        owner.u.mem_read.side_effect=lambda address,size:state[address][:size]
+        owner.read32.side_effect=lambda address:{0xAC48F0:manager,0xA8B230:scene,scene+0x1258:1}[address]
+        with self.assertRaisesRegex(ValueError,'Warm palette entries'):
+            _activate_live_palette_theater(owner,0)
+        self.assertEqual(struct.unpack_from('<I',state[buckets],16)[0],1)
+        owner.invoke.assert_not_called()
+        state[buckets]=bytes(31*24)
+        with self.assertRaisesRegex(ValueError,'Native Scenario theater'):
+            _activate_live_palette_theater(owner,0)
+        owner.invoke.assert_not_called()
+
     @staticmethod
     def lexical_owner():
         owner=Reader.__new__(Reader);owner.u=object();owner.image=Mock()
@@ -166,6 +195,95 @@ class ImmutableSupplierTests(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get('VERA20K_GAMEMD_EXE'),'Requires explicit authenticated Steam install')
 class PhysicalRetailSupplierTests(unittest.TestCase):
+    @unittest.skipUnless(os.environ.get('VERA20K_FV_MOVEMENT_ASSETS'),
+                         'Requires explicit physical Rules/Map inputs')
+    def test_native_palette_activation_creates_or_retains_manager_and_reads_real_palette(self):
+        from dataclasses import replace
+        from tools.native_oracle import configured_gamemd,RET_MAGIC
+        from tools.spatial_oracle.fv_cell_attack.steam_live_types import live_types_profile,LIVE_HEAP_BYTES
+        from tools.spatial_oracle.fv_cell_attack.steam_movement_profile import (
+            constructor_inputs,NATIVE_SCENARIO_BYTES)
+        from tools.spatial_oracle.anytown_damage.navigation_inputs import Inputs
+        from tools.projectile_oracle.bridge_render_inputs_palette import initialize,initialize_named_colors,PALETTE_ASSETS
+        from tools.rules_oracle.bridge_anim_inputs import physical_sections
+        from tools.rules_oracle.weapon_speed_order import construct_rules
+        root=Path(os.environ['VERA20K_FV_MOVEMENT_ASSETS'])
+        colors=physical_sections((root/'RULESMD.INI').read_bytes(),names=('Colors',))['Colors']
+        self.assertTrue(colors,'Retained control requires an actual physical Colors entry')
+        name,value=next(iter(colors.items()))
+        # A single unchanged source entry exercises the original Colors owner;
+        # this is a source-subset control, not full retail Colors chronology.
+        profile=live_types_profile()
+        # Original626966 proves ECX=manager, one name argument, native627590.
+        # Only this additional invocation entry changes; code/data grants do not.
+        profile=replace(profile,entries=profile.entries+((0x627590,(RET_MAGIC,)),))
+        with tempfile.TemporaryDirectory(prefix='vera-native-palette-')as directory:
+            layer=Path(directory)/'colors-subset.ini'
+            layer.write_text('[Colors]\n'+name+'='+value+'\n',encoding='ascii')
+            for retained in (False,True):
+                with self.subTest(retained_manager=retained):
+                    owner,_,_=constructor_inputs(profile=profile,heap_bytes=LIVE_HEAP_BYTES,
+                        initial_counter=None,scenario_bytes=NATIVE_SCENARIO_BYTES,native_scenario=True,
+                        construct_selected_type=False,initialize_options=True,initialize_physical=True,
+                        ordered_cold_startup=True)
+                    assets=PhysicalAssets(configured_gamemd().parent)
+                    assets.attach(owner);ReadOnlyFiles(assets).attach(owner)
+                    rules=construct_rules(owner,pointer=owner.alloc(0x18C0))
+                    # Existing initializer accepts physical files. Stage the
+                    # unchanged bytes from this VM's locked supplier, so the
+                    # test needs no preexisting private extraction directory.
+                    for palette_name in PALETTE_ASSETS:
+                        blob,_=assets.read(palette_name)
+                        self.assertIsNotNone(blob)
+                        (Path(directory)/palette_name).write_bytes(blob)
+                    initialize(owner,surface_service='rgb565-plain-cpu',
+                               palette_root=Path(directory),inputs_only=True)
+                    scene=owner.read32(0xA8B230);counter=owner.read32(scene+0x214)
+                    rng={address:bytes(owner.u.mem_read(address,0x3F4))
+                         for address in (0x886B88,scene+0x218,0xABE890)}
+                    native_colors=initialize_named_colors(owner,rules,(layer,)if retained else ())
+                    manager_before=owner.read32(0xAC48F0)
+                    snapshots={}
+                    if retained:
+                        self.assertTrue(manager_before)
+                        self.assertEqual(owner.read32(manager_before),0xFFFFFFFF)
+                        # Original Colors may also construct a companion;
+                        # preserve every actual record without supplying its count.
+                        self.assertIn(name,[color['name']for color in native_colors['colors']])
+                        snapshots[manager_before+4]=bytes(owner.u.mem_read(manager_before+4,12))
+                        for offset in (4,8):
+                            pointer=owner.read32(manager_before+offset)
+                            snapshots[pointer]=bytes(owner.u.mem_read(pointer,24))
+                        for color in native_colors['colors']:
+                            snapshots[color['pointer']]=bytes(owner.u.mem_read(color['pointer'],0x33C))
+                    else:self.assertEqual(manager_before,0)
+                    binding=Inputs.read_map_theater(owner,root/'dragon-cadence.map',
+                                                   ini_pointer=owner.alloc(0x58))
+                    self.assertEqual(binding['value'],0)
+                    mark=len(owner.allocation_events)
+                    registration=initialize_live_theater_assets(owner,assets)
+                    activation=registration['palette_activation'];manager=owner.read32(0xAC48F0)
+                    self.assertEqual((activation['manager'],owner.read32(manager)),(manager,0))
+                    self.assertEqual(activation['native_created'],not retained)
+                    self.assertEqual(activation['bucket_entry_counts'],[0]*31)
+                    self.assertEqual(activation['native_allocation_sizes'],[]if retained else [16,24,24,16,748])
+                    self.assertEqual(len(owner.allocation_events)-mark,0 if retained else 5)
+                    if retained:
+                        self.assertEqual(manager,manager_before)
+                        for address,blob in snapshots.items():
+                            self.assertEqual(bytes(owner.u.mem_read(address,len(blob))),blob)
+                    request_mark=len(assets.requests)
+                    pointer=owner.invoke(0x627590,manager,(owner.cstring('lib'),))
+                    self.assertTrue(0x24000000<=pointer<owner.heap_end)
+                    requests=[row for row in assets.requests[request_mark:]if row['name']=='LIBTEM.PAL']
+                    self.assertTrue(requests,'Original palette lookup must request the actual physical file')
+                    self.assertTrue(all(not row['missing']and row['bytes']==768 and
+                        row['sha256']=='79e668c9bd08bc5eed811df19de2af418cf8b434b97abf1fe2d65809321507e0'
+                        for row in requests))
+                    self.assertEqual(owner.read32(scene+0x214),counter)
+                    for address,blob in rng.items():
+                        self.assertEqual(bytes(owner.u.mem_read(address,len(blob))),blob)
+
     def test_theater_helper_authenticates_table_and_uses_existing_scenario_field(self):
         from tools.native_oracle import configured_gamemd,file_span
         from tools.spatial_oracle.fv_cell_attack.steam_bullet_startup_scope import STEAM_NATIVE_SHA256
@@ -177,7 +295,9 @@ class PhysicalRetailSupplierTests(unittest.TestCase):
         owner.u.mem_read.return_value=table
         owner.read32.side_effect=lambda address:{0xA8B230:0x24001000,0x24002258:2}[address]
         # Mocked Scenario words check the supplier protocol, not native execution.
-        receipt=initialize_live_theater_assets(owner,assets)
+        with patch('tools.spatial_oracle.fv_cell_attack.steam_live_assets._activate_live_palette_theater',
+                   return_value=dict(boundary='Mocked protocol control; native activation not executed')):
+            receipt=initialize_live_theater_assets(owner,assets)
         self.assertEqual((receipt['native_index'],receipt['name']),(2,'URBAN'))
         self.assertEqual(receipt['archive_order'],['URBAN.MIX','URB.MIX','ISOURBMD.MIX','ISOURB.MIX'])
         owner.u.mem_read.return_value=table[:-1]+bytes([table[-1]^1])

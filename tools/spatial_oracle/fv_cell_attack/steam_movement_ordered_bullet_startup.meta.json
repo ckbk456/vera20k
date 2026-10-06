@@ -6823,7 +6823,7 @@
   "scope": "Original selected cold CRT plus Bullet index1184 before Scenario",
   "source_normalized_lf_sha256": {
     "tools/input_oracle/fast_scroll.py": "02a2d87b37eff71df850fc70a6c31ec0a2f7f658e8aee8d616ab27b67b908e9f",
-    "tools/native_oracle.py": "bbb46b4c6ed5d8e8bc49c821432b7c7c48037f08ec8943bc1d07a12861f73dfd",
+    "tools/native_oracle.py": "4b42417b5104145250f5b6321e4cb3e9ced560d7528d406334e1d9c2dc343a45",
     "tools/rules_oracle/bridge_anim_inputs.py": "40c597dcc13599ee3a74b4232264937f86161588450fd3366bd431e30240815c",
     "tools/rules_oracle/bridge_anim_lists.py": "960eda2fe04bd9edbb250cc9e9374d417b2c051848a6fd0eb701a230cc9c4394",
     "tools/spatial_oracle/anytown_damage/mission.py": "8a1030ae74eeb0a64740a856058b116a27edcd58b49915cede3dea821a23d6ca",

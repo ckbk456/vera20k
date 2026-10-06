@@ -7,7 +7,11 @@ No runtime discovery, fixture instruction patch, donor VM or automatic enrollmen
 Executable qualification is reported separately in steam_live_assets.md.
 """
 
-from tools.native_oracle import ImportTransport, EbpImportTransport
+from tools.native_oracle import ImportTransport, EbpImportTransport, RET_MAGIC
+
+# Original InitTheater534DB4 calls this void native setter with ECX=index,
+# no stack arguments. Original code creates a NULL cold manager or retains it.
+ASSET_ENTRIES=((0x6267A0,(RET_MAGIC,)),)
 
 LIVE_ASSET_REGIONS = (
     # Actual physical VXL755E83 -> original4068F0 -> descriptor identity leaf.
@@ -99,6 +103,9 @@ LIVE_ASSET_REGIONS = (
     (0x49EB20, 0x49EB46, "f26d5ad5016911e9e8163dda6581e871aa8f94e75e09d2fd64ca9407bd4ef804"),
     (0x4A38D0, 0x4A3967, "34786c968966d108490c7e1b87c7566dd4341638471560513f9e4313afd5bfb3"),
     (0x4B9BD0, 0x4B9BDD, "28489a212ebd6a69b9357c5263a64591ff1b0b271af58a9b29ad1aa9037bf5da"),
+    # CANEWY04 Palette=lib: native628D38 bucket +8 growth628BB0 constructs
+    # each original260B key/value entry through this original string leaf.
+    (0x4F4C20, 0x4F4C26, "643a9b227f3b8bc93142e908d080e8b01a97ebcffea9da65e5062be083708e0e"),
     (0x4F4C30, 0x4F4C67, "8d468805ac160302f001363bd641b8557f6ece02ad18967a1270e5c972b2e1b1"),
     (0x4F4C70, 0x4F4C9C, "317971ffb33841c394b7a4be12b4b4fd0a8355e372ee112f17aae53b8eb373f6"),
     (0x4F4CA0, 0x4F4CAA, "a01d5489d374625f52e18f8b80b0d11feebe3d4db44a884395ba2dab9af4a089"),
@@ -128,6 +135,7 @@ LIVE_ASSET_REGIONS = (
     (0x5F9710, 0x5F9715, "9b7fd6edce795ed8d5c7727262a63c84b4dac769e96dac4d744726f0c0892356"),
     (0x6263D0, 0x62665A, "b23055d2aae8a1d8d224e7139f971790bb941a2a7a26fa1b0730431fd5270314"),
     (0x626660, 0x626688, "e3f4222ab51830f4074a6802f25daec54512ed13726e3acda400cef4c4e5ddb3"),
+    (0x6267A0, 0x626998, "09d3910fd17c9ecfd5c3fcff5b60840d96e5a7fb92085e0ee131289457a2fcb0"),
     (0x626DA0, 0x626FF0, "a33fb7b3ac1a7e04455f6ca60f7c1195bfbc319bbea911ed8fcae0cc1e5a9e73"),
     (0x627590, 0x6278BF, "c3bf736cb1c84e4eca196ea6246d660ae1270473043d7bfdb155bd435ae3ad7e"),
     (0x627D80, 0x627DAA, "e806d3305ee2206f471da849152962c18451bc27d0337b750ba35ce891e430bc"),
@@ -146,6 +154,9 @@ LIVE_ASSET_REGIONS = (
     (0x628470, 0x628493, "d9496d98ee42fe9906a9000c0744c4317f9c4f91ff945188a7878246f1cc3812"),
     (0x6284A0, 0x628598, "53b0d789515a8dfb421696f11e43c059fc081ad94986df4437814fff6bf5fe0c"),
     (0x6285A0, 0x6285E3, "45bc6250d25bbd41b600b7683601435b1a6764f7f02700bab1acf5d7860ee81a"),
+    # Original62687C ->4068F0 constructs all31 newly allocated hash buckets.
+    (0x628740, 0x628760, "7aa784211eb805c92e724f480144f3031dd17e0e6f3b07544e538c0c55a4d48c"),
+    (0x628BB0, 0x628D03, "edb4d1aeae6ef0f575ad1c1d4868c7708b7ace33beb83af5886f83faaf536dd7"),
     (0x628D10, 0x628D7B, "37567c2fb399b95da5fc39e130a375f68feb5dfec8f60785de20c5a35fa175e3"),
     (0x628DD0, 0x628DEF, "bd9254b64c1d910db825346386afdc5bb4e7954f17a6d2f8d8cd7b165dd1cecf"),
     (0x65CA00, 0x65CA67, "973f8bec61639284ed958ee0839d3f62d11e729d66ad68929da4dce166371b49"),
@@ -206,6 +217,8 @@ LIVE_ASSET_REGIONS = (
     (0x7D1298, 0x7D12E6, "72c2abcbb32653abc316097236069810739401f9b331af33e8af0bf4b731573c"),
     (0x7D12E6, 0x7D1311, "b67fe6e7812efed1741593bed7ebbacf75b01ba12349fbdd095a0116a7792075"),
     (0x7D16A0, 0x7D170D, "6e91f1e09ce5f93953c65b946b716a1fb5382a2ed630b6548bfc1658e715e635"),
+    # Original Infantry sequence sscanf %s:7D1C85 clears its32-byte stack scan set.
+    (0x7D75E0, 0x7D7638, "2af9ec6db955aa74b3de79ebe2752b3fa148e02935ac40304eb9ffc13ccf0d2c"),
     (0x7D21BE, 0x7D2233, "52acdfbe8265197e12df326eec0e6428759998aaf55fc5351f9a450352075e14"),
     (0x7D28CE, 0x7D28EB, "89e6a81ead2a6091e82f3f82ffbc01a47dd2ee656694e3e8b2b234e11c5d4d5a"),
     (0x7D4C00, 0x7D4CE0, "1983be947d7c0e54d60eb69cb4a53a60bdda9a2e1f5aa53979a2328e6e0be248"),
@@ -216,6 +229,9 @@ LIVE_ASSET_REGIONS = (
 )
 
 READ_ONLY = (
+    #62764A loads [836464] ->836468;627653/62766A read/copy PAL+NULL
+    # after the original6267A0 cache-theater activation, never an invented file.
+    (0x836468, 4),
     # Original ReadString/strncpy7C91D0 reads aligned final DWORD containing
     # physical default NORMAL+NULL and its one original file padding byte.
     (0x8161D4, 8),
@@ -289,6 +305,9 @@ READ_ONLY = (
     (0x7EF710, 4),
     (0x7EF718, 4),
     (0x7EF750, 24),
+    # Actual628070-created hash bucket:628D38 dispatches +8 with observed
+    # capacity10/null external storage. Original payload is628BB0.
+    (0x7EF778, 4),
     (0x7EF790, 24),
     (0x7EF7B0, 24),
     (0x7EF7F0, 24),
@@ -336,7 +355,46 @@ READ_ONLY = (
     (0x81C1D0, 4),
     (0x824238, 5),
     (0x824314, 5),
+    # Original523D3F/52407A/52407D:42 pointers, stride4, exclusive end825670.
+    (0x8255C8, 168),
     (0x825670, 15),
+    # Only previously unowned pointed strings, including each terminal NUL.
+    # Guard/Fly/Hover/FireProne/FireUp/SecondaryFire are already declared by types.
+    (0x825690, 6),  # Carry
+    (0x825698, 7),  # Shovel
+    (0x8256A0, 6),  # Panic
+    (0x8256A8, 15),  # AirDeathFinish
+    (0x8256B8, 16),  # AirDeathFalling
+    (0x8256C8, 14),  # AirDeathStart
+    (0x8256D8, 9),  # Paradrop
+    (0x8256E4, 6),  # Cheer
+    (0x8256EC, 9),  # Undeploy
+    (0x8256F8, 13),  # DeployedIdle
+    (0x825708, 13),  # DeployedFire
+    (0x825718, 9),  # Deployed
+    (0x825724, 7),  # Deploy
+    (0x82572C, 8),  # FireFly
+    (0x825734, 7),  # Tumble
+    (0x82573C, 10),  # WetAttack
+    (0x825748, 8),  # WetDie2
+    (0x825750, 8),  # WetDie1
+    (0x825758, 9),  # WetIdle2
+    (0x825764, 9),  # WetIdle1
+    (0x825770, 5),  # Swim
+    (0x825778, 6),  # Tread
+    (0x825780, 5),  # Die5
+    (0x825788, 5),  # Die4
+    (0x825790, 5),  # Die3
+    (0x825798, 5),  # Die2
+    (0x8257A0, 5),  # Die1
+    (0x8257A8, 6),  # Idle2
+    (0x8257B0, 6),  # Idle1
+    (0x8257C4, 3),  # Up
+    (0x8257C8, 6),  # Crawl
+    (0x8257D0, 5),  # Down
+    (0x8257E0, 5),  # Walk
+    (0x8257E8, 6),  # Prone
+    (0x8257F0, 6),  # Ready
     (0x8258AC, 4),
     (0x8258B0, 9),
     (0x8258BC, 3),
@@ -388,6 +446,8 @@ READ_ONLY = (
     (0x87C2A0, 4),
     (0x87C2A4, 4),
     (0x87C2A8, 4),
+    # Original scanf %s default scan-set, selected by7D1C74: space/tab-CR/].
+    (0x87C918, 6),
     (0x87CC38, 1),
     (0x87E180, 12),
     (0x87E1B8, 120),

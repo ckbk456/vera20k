@@ -556,6 +556,7 @@ class ScopedExecutionTests(unittest.TestCase):
 
     def test_omitted_or_wrong_image_handle_cannot_run_scoped_machine(self):
         with machine(b'\x90') as (uc, image):
+            image._original_bytes(CODE, 1)
             with self.assertRaisesRegex(oracle.OracleError, 'matching image handle'):
                 oracle.run_checked(uc, CODE, CODE + 1)
             with self.assertRaisesRegex(oracle.OracleError, 'matching image handle'):
@@ -570,6 +571,8 @@ class ScopedExecutionTests(unittest.TestCase):
 
     def test_instruction_straddling_region_end_is_rejected(self):
         with machine(b'\xb8\x2a\0\0\0', region_bytes=3) as (uc, image):
+            # Cached authentic bytes do not grant execution across a region end.
+            image._original_bytes(CODE, 5)
             self.rejected(uc, image, 'undeclared_instruction')
             self.assertEqual(uc.reg_read(UC_X86_REG_EAX), 0)
 
@@ -648,6 +651,7 @@ class ScopedExecutionTests(unittest.TestCase):
     def test_sink_cannot_patch_next_native_instruction_during_run(self):
         code = b'\xe8' + struct.pack('<i', SINK - (CODE + 5)) + b'\x90'
         with machine(code, sinks=((SINK, 0),)) as (uc, image):
+            self.assertEqual(image._original_bytes(CODE + 5, 1), b'\x90')
             def callback(machine):
                 sp = machine.reg_read(UC_X86_REG_ESP)
                 target = struct.unpack('<I', machine.mem_read(sp, 4))[0]
@@ -655,6 +659,26 @@ class ScopedExecutionTests(unittest.TestCase):
                 machine.reg_write(UC_X86_REG_ESP, sp + 4)
                 machine.reg_write(UC_X86_REG_EIP, target)
             self.rejected(uc, image, 'native_code_changed', sinks={SINK: callback})
+
+    def test_original_byte_cache_retains_file_span_rejections(self):
+        with machine(b'\x90') as (_, image):
+            with patch.object(oracle, 'file_span', wraps=oracle.file_span) as extract:
+                self.assertEqual(image._original_bytes(CODE, 1), b'\x90')
+                self.assertEqual(image._original_bytes(CODE, 1), b'\x90')
+                self.assertEqual(extract.call_count, 1)
+                for _ in range(2):
+                    with self.assertRaisesRegex(oracle.OracleError, 'file-backed section'):
+                        image._original_bytes(CODE + 1, 1)
+                self.assertEqual(extract.call_count, 3)
+                self.assertNotIn((CODE + 1, 1), image._original_byte_cache)
+
+    def test_original_byte_cache_is_owned_by_each_image_and_machine(self):
+        with machine(b'\x90') as (_, first), machine(b'\x91') as (_, second):
+            self.assertIsNot(first._original_byte_cache, second._original_byte_cache)
+            self.assertEqual(first._original_bytes(CODE, 1), b'\x90')
+            self.assertEqual(second._original_byte_cache, {})
+            self.assertEqual(second._original_bytes(CODE, 1), b'\x91')
+            self.assertEqual(first._original_bytes(CODE, 1), b'\x90')
 
     def test_import_transport_is_guarded_before_original_call_and_not_coverage(self):
         code=b'\xff\x15'+struct.pack('<I',DATA)+b'\x40'
@@ -685,6 +709,7 @@ class ScopedExecutionTests(unittest.TestCase):
         code=b'\xff\x15'+struct.pack('<I',DATA)+b'\x90'
         spec=oracle.ImportTransport(CODE,DATA,4)
         with machine(code,reads=((DATA,4),),transports=(spec,))as(uc,image):
+            image._original_bytes(DATA, 4)
             image.write(DATA,b'\x22'*4)
             self.rejected(uc,image,'transport_iat_changed',transports={CODE:lambda call:call.return_to_native(0)})
         for changed in ('none','pc','sp'):

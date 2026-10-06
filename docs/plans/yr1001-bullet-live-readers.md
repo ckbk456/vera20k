@@ -58,6 +58,20 @@ Original `Full_Init` binds the incoming map's `[Map]/Theater` at
 The live owner reuses that native reader on a separate 58-byte Map-only cache,
 then retains its original Scenario store. The physical map is source-bound;
 ART and root Rules cache identities, ID counter and RNG remain intact.
+The existing physical asset owner supplies the authenticated theater archive
+registration order, then executes original palette-manager activation `6267A0`
+on the retained cold manager. Its original store replaces index `-1` with the
+same native theater selection before Process. Existing named-color vectors,
+31 empty hash buckets and allocations remain unchanged. With a null manager,
+the same original function constructs the manager, two vectors, hash table and
+31 empty buckets through exactly five native allocations. Both branches retain
+the ID counter and all three RNG stores; warm-entry reload is rejected. No host
+index write or palette result substitution is allowed.
+The native null/retained-manager controls both request genuine `LIBTEM.PAL`
+bytes (768 bytes, SHA-256
+`79e668c9bd08bc5eed811df19de2af418cf8b434b97abf1fe2d65809321507e0`)
+and return a nonnull palette pointer in the owned native heap. Supplied RGB565
+Surface properties remain an input boundary; render parity remains open.
 Original later map Rules processing is outside this early binding. The supplied
 boundary does not claim that the complete `Init_Theater` or `Full_Init` executed.
 
@@ -66,7 +80,7 @@ The stock GAAIRC/AMRADR `NumberOfDocks=4` path executes native vector resize
 slots. Both complete primary-body controls grew the constructor's capacity1
 to4 with native allocation. Armor's actual eleven-row pointer table is retained
 in full. Native DWORD string copying admits only the precisely observed aligned
-`None`/`yellow` default extents. Helper declarations and enum labels follow
+`None`/`yellow`/`DontCare` default extents. Helper declarations and enum labels follow
 original constructor/caller/loop evidence; these controls certify closure under
 stated cold priors, with joined qualification reported separately.
 
@@ -77,10 +91,17 @@ existing CSF parser; original native string lookup executes. Windows device
 startup, archive traversal and original CSF parsing remain supplied boundaries.
 
 The guard owner now indexes exact read/write/code ranges without coalescing
-adjacent grants. Repeated lexical CRC results are cached only within the same
+adjacent grants. It caches expected instruction/IAT bytes only within each
+immutable file image, using the existing file-span parser on misses. Every
+instruction still checks current mapped bytes and exact authorization; cache-hit
+tamper and image/VM isolation controls retain those boundaries. Repeated lexical CRC results are cached only within the same
 immutable image and machine, after an actual native call. Synthetic rejection
 controls cover incorrect IAT/registers, ABI/stack misuse, straddling grants and
 image changes; they are guard tests, not game parity.
+The live dispatch has a finite 500-million-instruction/3,600-second bound,
+selected after preserving a 1,200-second timeout at 166.7 million instructions
+and Building entry 297. An observer reports every 50 actual primary entries
+with their family and native name; it does not alter VM state or loop control.
 
 The measured rejecting-IRO OleRun boundary is shared through the existing
 Mission owner. Its public projection retains actual x86 callbacks, result,

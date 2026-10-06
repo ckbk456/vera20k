@@ -332,6 +332,19 @@ class ScopedImage:
     @cached_property
     def _write_index(self):return _RangeIndex.build(self.profile.writes)
 
+    @cached_property
+    def _original_byte_cache(self):
+        # Derived only from this immutable file identity, never mapped guest
+        # bytes. Authorization and current mapped bytes remain checked on every
+        # instruction, including cache hits. Each image owns its own cache.
+        return {}
+
+    def _original_bytes(self, address: int, size: int) -> bytes:
+        key = (address, size)
+        if key not in self._original_byte_cache:
+            self._original_byte_cache[key] = file_span(self.data, address, size)[1]
+        return self._original_byte_cache[key]
+
     def write(self, address: int, blob: bytes) -> None:
         self._check_code_write(address, len(blob))
         if not _within(address, len(blob), self.profile.fixture_writes):
@@ -591,7 +604,7 @@ def run_checked(uc: Uc, begin: int, end: int | tuple[int, ...], *,
             elif not image._instruction_index.within(address,size):
                 reject(address, size, "undeclared_instruction", "Instruction outside qualified closure or straddles its boundary")
                 return
-            elif bytes(uc.mem_read(address, size)) != file_span(image.data, address, size)[1]:
+            elif bytes(uc.mem_read(address, size)) != image._original_bytes(address, size):
                 reject(address, size, "native_code_changed", "Mapped instruction differs from immutable original bytes")
                 return
         if address in allowed_transports:
@@ -599,12 +612,12 @@ def run_checked(uc: Uc, begin: int, end: int | tuple[int, ...], *,
             callback=(transports or {}).get(address)
             if callback is None:
                 reject(address,size,'missing_transport','Declared import transport has no callback');return
-            if bytes(uc.mem_read(spec.iat,4))!=file_span(image.data,spec.iat,4)[1]:
+            if bytes(uc.mem_read(spec.iat,4))!=image._original_bytes(spec.iat,4):
                 reject(spec.iat,4,'transport_iat_changed','Original IAT slot changed');return
             if register_import:=_register_import(spec):
                 from unicorn.x86_const import UC_X86_REG_EBP,UC_X86_REG_EDI
                 register,_=register_import
-                target=struct.unpack('<I',file_span(image.data,spec.iat,4)[1])[0]
+                target=struct.unpack('<I',image._original_bytes(spec.iat,4))[0]
                 if uc.reg_read(UC_X86_REG_EBP if register=='EBP'else UC_X86_REG_EDI)!=target:
                     reject(address,size,'transport_register_target','CALL '+register+' target differs from original declared IAT payload');return
             sp=uc.reg_read(UC_X86_REG_ESP)

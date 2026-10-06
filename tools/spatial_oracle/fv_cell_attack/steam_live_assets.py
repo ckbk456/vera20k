@@ -18,6 +18,7 @@ THEATER_TABLE_BYTES=6*THEATER_RECORD_BYTES
 THEATER_TABLE_SHA256='2881748ca63cb213fff046915e5a0e994ffc76b8135822a9b984da56ff7b6a93'
 THEATER_INIT_BEGIN,THEATER_INIT_END=0x5349C0,0x534DD2
 THEATER_INIT_SHA256='68de0c2b9de7bab294a8d5e2c533b81b570f201479aa08c50efefbd73d558d91'
+PALETTE_THEATER_ENTRY=0x6267A0
 
 
 def filename(value):
@@ -217,7 +218,82 @@ def initialize_live_theater_assets(owner,assets):
     if not scene:raise ValueError('Native Scenario owner required before theater registration')
     index=owner.read32(scene+0x1258)
     if not 0<=index<6:raise ValueError('Native Map/Theater prerequisite required before archive registration')
-    return assets.register_theater(index,table[index*THEATER_RECORD_BYTES:(index+1)*THEATER_RECORD_BYTES])
+    registration=assets.register_theater(index,table[index*THEATER_RECORD_BYTES:(index+1)*THEATER_RECORD_BYTES])
+    if 'palette_activation'not in registration:
+        registration['palette_activation']=_activate_live_palette_theater(owner,index)
+    elif (owner.read32(0xAC48F0)!=registration['palette_activation']['manager']or
+          owner.read32(registration['palette_activation']['manager'])!=index):
+        raise ValueError('Retained native palette theater changed after activation')
+    return registration
+
+
+def _activate_live_palette_theater(owner,index):
+    """Execute the original InitTheater cold constructor/setter in this VM.
+
+    Existing warm entries need original palette retirement/reload machinery;
+    this before-Process seam never resets or supplies those entries instead.
+    """
+    manager=owner.read32(0xAC48F0)
+    retained=bool(manager);manager_before=b''
+    if retained:
+        manager_before=bytes(owner.u.mem_read(manager,16))
+        prior,names,colors,table=struct.unpack('<4I',manager_before)
+        if prior!=0xFFFFFFFF or not names or not colors or not table:
+            raise ValueError('Original cold palette manager required before live theater activation')
+        hash_before=bytes(owner.u.mem_read(table,16))
+        buckets,_,count,_=struct.unpack('<4I',hash_before)
+        if not buckets or count!=31:
+            raise ValueError('Original palette hash-bucket owner required before theater activation')
+        buckets_before=bytes(owner.u.mem_read(buckets,count*24))
+        counts=[struct.unpack_from('<I',buckets_before,j*24+16)[0]for j in range(count)]
+        if any(counts):
+            raise ValueError('Warm palette entries require original reload qualification before theater activation')
+    scene=owner.read32(0xA8B230)
+    if not scene or owner.read32(scene+0x1258)!=index:
+        raise ValueError('Native Scenario theater must own palette activation index')
+    counter=owner.read32(scene+0x214)
+    rngs=(0x886B88,scene+0x218,0xABE890)
+    rng_before=[bytes(owner.u.mem_read(address,0x3F4))for address in rngs]
+    cursor=owner.cursor;allocations=len(owner.allocation_events)
+    owner.invoke(PALETTE_THEATER_ENTRY,index,())
+    produced=owner.read32(0xAC48F0)
+    if not produced or (retained and produced!=manager):
+        raise ValueError('Original palette activation did not preserve/create its native manager')
+    manager=produced
+    manager_after=bytes(owner.u.mem_read(manager,16))
+    if (struct.unpack_from('<I',manager_after)[0]!=index or owner.read32(scene+0x214)!=counter or
+        any(bytes(owner.u.mem_read(address,0x3F4))!=blob for address,blob in zip(rngs,rng_before))):
+        raise ValueError('Original cold palette activation changed native index/counter/RNG authority')
+    events=owner.allocation_events[allocations:]
+    if retained:
+        if (manager_after[4:]!=manager_before[4:]or bytes(owner.u.mem_read(table,16))!=hash_before or
+            bytes(owner.u.mem_read(buckets,count*24))!=buckets_before or owner.cursor!=cursor or events):
+            raise ValueError('Original cold palette activation changed retained owner/cache authority')
+    else:
+        _,names,colors,table=struct.unpack('<4I',manager_after)
+        if not names or not colors or not table:
+            raise ValueError('Original palette creation did not construct all native owners')
+        buckets,hasher,count,growth=struct.unpack('<4I',bytes(owner.u.mem_read(table,16)))
+        expected=((manager,16),(names,24),(colors,24),(table,16),(buckets-4,748))
+        observed=tuple((row['pointer'],row['size'])for row in events)
+        if (not buckets or (hasher,count,growth)!=(0x626660,31,10)or observed!=expected or
+            len(set(pointer for pointer,_ in expected))!=5 or owner.read32(buckets-4)!=31):
+            raise ValueError('Original palette creation allocation/hash ownership changed')
+        # Compare only fields written by the actual constructors; padding is not a native result.
+        vectors=[(names,0x7E5BC4),(colors,0x7EF750)]+[(buckets+j*24,0x7EF770)for j in range(count)]
+        for pointer,vtable in vectors:
+            blob=bytes(owner.u.mem_read(pointer,24))
+            if (struct.unpack_from('<3I',blob)!=(vtable,0,0)or blob[12:14]!=b'\x01\x00'or
+                struct.unpack_from('<2I',blob,16)!=(0,10)):
+                raise ValueError('Original palette creation vector/bucket constructor result changed')
+        counts=[owner.read32(buckets+j*24+16)for j in range(count)]
+    return dict(entry=PALETTE_THEATER_ENTRY,original_caller=0x534DB4,native_index=index,
+        manager=manager,before_hex=manager_before.hex(),after_hex=manager_after.hex(),
+        hash_table=table,bucket_count=count,bucket_entry_counts=counts,
+        native_created=not retained,retained_named_color_vectors=retained,
+        retained_hash_buckets=retained,retained_counter_rng=True,
+        native_allocations=len(events),native_allocation_sizes=[row['size']for row in events],
+        boundary='Original cold palette-manager constructor/theater setter only; warm-entry reload, native whole InitTheater and renderer/device startup are excluded')
 
 
 class ReadOnlyFiles:
