@@ -73,6 +73,20 @@ class SteamCliMeasurementManifestTests(unittest.TestCase):
 
 class OleRunMeasurementGuardTests(unittest.TestCase):
     """Receipt admission/negative controls; no extra OS model or emulation."""
+    def test_windows_checkout_preserves_exact_authenticated_evidence_bytes(self):
+        import subprocess
+        from tools.spatial_oracle.anytown_damage.mission import OLERUN_SCRIPT_SHA256, OLERUN_PROJECTION_SHA256
+        root = Path(__file__).resolve().parents[2]
+        prefix = 'tools/spatial_oracle/fv_cell_attack/'
+        for leaf, expected in (('windows_olerun_probe.ps1', OLERUN_SCRIPT_SHA256),
+                               ('windows_olerun_functional_projection.json', OLERUN_PROJECTION_SHA256)):
+            with self.subTest(source=leaf):
+                # Exercise Git's actual checkout filter with Windows conversion
+                # enabled, rather than supplying normalized measurement bytes.
+                raw = subprocess.check_output(['git', '-c', 'core.autocrlf=true', 'cat-file',
+                    '--filters', '--path='+prefix+leaf, 'HEAD:'+prefix+leaf], cwd=root)
+                self.assertEqual(hashlib.sha256(raw).hexdigest(), expected)
+
     def packet(self):
         import json
         return json.loads(Path('tools/spatial_oracle/fv_cell_attack/windows_olerun_functional_projection.json').read_text())
