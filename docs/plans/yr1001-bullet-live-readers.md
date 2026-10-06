@@ -144,13 +144,29 @@ artifact/source hashes.
 The standalone native controls establish complete SoundList loading (819 source
 entries, 818 unique native records), all 470 EVA records and lookups, and actual
 FV VXL/HVA parsing with genuine missing-barrel handling. These controls do not
-certify the joined live type pass. Final joined qualification and command
-results are recorded in the validation receipt before publication.
+certify the joined live type pass. The final joined run on implementation
+`450d1587` passed actual `668EED -> 679A10 -> 668EF5` in 2,558.770 seconds,
+with all 2,463 frozen producers unchanged and four outputs bound to one raw
+execution receipt. It observed 1,976 primary entries across 16 families, 32
+Missions, 606 original postpasses and 265 constructors. All 15 live boundary
+checks passed; the counter advanced from 1,001,704 to 1,001,969, while all three
+RNG stores remained unchanged with no observed draw. Original loops may append
+types after an earlier family finishes, so primary counts and final registry
+membership are reported separately. The sanitized validation receipt records
+these facts, final command results and preserved failed diagnostics.
 
 Local retail Rust validation passed 9,589 tests, with 231 explicitly ignored.
 Clippy completed with the existing 729 warnings. The named release test loaded
 retail assets and passed deterministic populated scenario construction. It is
 headless map-loading evidence; no GUI, rendering or gameplay acceptance follows.
+Those checks ran at base `b43304db`; the Rust source tree remains identical.
+Final tooling validation passed 660 portable tests with 25 explicit skips and
+all 98 focused retail/native/transport/prereader/guard tests. The latter includes
+all 5,211 physical CSF labels, 14 genuinely missing labels and actual original
+NULL/retained-manager palette controls. The joined run creates the native palette
+manager before Process and loads genuine 768-byte `LIBTEM.PAL`; a supplied RGB565
+Surface does not establish rendering parity. One fresh independent critic and
+PR delivery follow this completed local qualification.
 
 ## Remaining W02 gates
 

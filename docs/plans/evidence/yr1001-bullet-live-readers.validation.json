@@ -1,15 +1,15 @@
 {
   "schema": "yr1001-bullet-live-readers-validation-v1",
-  "recorded_utc": "2026-10-06T19:21:10.964516+00:00",
+  "recorded_utc": "2026-10-06T23:26:13.472902+00:00",
   "base_sha": "b43304db864b49979e2246317ebfd16a496ade49",
-  "implementation_sha": "cb01146ae864c2713f1498072980c95797f7d085",
-  "status": "awaiting_joined_native_qualification_and_fresh_critic",
+  "implementation_sha": "450d1587d3ad242585ec3edd81f17d6f52182a6e",
+  "status": "qualified_native_prerequisite_pending_fresh_critic_and_delivery",
   "native_sha256": "3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600",
   "source_sha256": {
     "tools/_cargo_cache.py": "4495ca93688794cb4cc32f06995b9f1fd9dd91271cb5358c8fde8f88e4af3c1a",
     "tools/input_oracle/fast_scroll.py": "02a2d87b37eff71df850fc70a6c31ec0a2f7f658e8aee8d616ab27b67b908e9f",
     "tools/native_inspect.py": "ef7ff6551c943a79a02939462d6da9bb1ff9d2e46afe6142251a94e1447824a6",
-    "tools/native_oracle.py": "bbb46b4c6ed5d8e8bc49c821432b7c7c48037f08ec8943bc1d07a12861f73dfd",
+    "tools/native_oracle.py": "4b42417b5104145250f5b6321e4cb3e9ced560d7528d406334e1d9c2dc343a45",
     "tools/projectile_oracle/bridge_render_inputs_palette.py": "94b2d81d145533d67994b725c314f80ba1d105f73b99250a5a93e8049e37dd2a",
     "tools/projectile_oracle/bridge_render_inputs_selection.py": "93973b90c5355ce6ca955fd942eeb9e8d5a6bfceb995acf1d50807259464997f",
     "tools/projectile_oracle/flat_art.py": "d7bec7ed89075bfd9f50138b54fa0bdc95599083b997c2b031f596851029be29",
@@ -30,13 +30,13 @@
     "tools/spatial_oracle/building_body_rules.py": "a88f3b58b55d7587b79221eb94f99782328a2a2d38c404e28009caea30d01d55",
     "tools/spatial_oracle/fv_cell_attack/retained_startup_run.py": "82525e998c2ac26ee91d5f2e4bfb75a8802d2158eeb43cab7920d65ad2a54ca2",
     "tools/spatial_oracle/fv_cell_attack/steam_bullet_startup_scope.py": "90905930e14bfea96ee3a42b5edf5c7f4dbb6ba8f40cdfe874db6a0e8c0b34ea",
-    "tools/spatial_oracle/fv_cell_attack/steam_live_asset_scope.py": "82185427a06561026e9e7f89b0e808be16d98be8a2e37debd7054dc0b188b99c",
-    "tools/spatial_oracle/fv_cell_attack/steam_live_assets.py": "d2d50ce23c5e73097b1f45b69d3092b40116067201f8d26a31b20f777c5d1d28",
+    "tools/spatial_oracle/fv_cell_attack/steam_live_asset_scope.py": "25221eae7cbf5262e7791ef35866d7d70f3706ef26e1b0e20ab9b8683f748b66",
+    "tools/spatial_oracle/fv_cell_attack/steam_live_assets.py": "f1be0fc7dea828a3618302388c509de0302c8a8b7c38287ea4f248990850658f",
     "tools/spatial_oracle/fv_cell_attack/steam_live_catalog_scope.py": "04777a88415b026d641478a1702c69dee37a0e2b0538599a75da5f24e4408d4e",
     "tools/spatial_oracle/fv_cell_attack/steam_live_formatter_scope.py": "39fc0156c79b35e02ef3ec62842b20d9c003c1b8fba5cc34c15504bb852089da",
     "tools/spatial_oracle/fv_cell_attack/steam_live_reader_helpers_scope.py": "36470947d34caec83e388fab6025da55412260351bb0bc20f3cb3654d1b01bf3",
-    "tools/spatial_oracle/fv_cell_attack/steam_live_types.py": "f2ef2dfde6582320a068c8c1a097fdbf52539ae0929c3ab7b900554e1be6a5d0",
-    "tools/spatial_oracle/fv_cell_attack/steam_live_types_scope.py": "c5316d73531cd001e7886cd76904f86ea6eba83e8e50b8b03730fee7f76497a0",
+    "tools/spatial_oracle/fv_cell_attack/steam_live_types.py": "f0e2d35772c31548a6e2b503838e795d2ae5e90f4380d2172d2b268a75b5f3bc",
+    "tools/spatial_oracle/fv_cell_attack/steam_live_types_scope.py": "0b7012aa9bc80bf5407ebb4f0685260770c165d702876b640a896bdea222c17b",
     "tools/spatial_oracle/fv_cell_attack/steam_movement_profile.py": "4dc93c2dd50c6c5a14dff067fa0837b5a4777be45c705428dfc729fa71a0cb1c",
     "tools/spatial_oracle/fv_cell_attack/steam_physical_navigation_profile.py": "631f114dd66cd3ee607c6aacaf3c7bcc317951c92c6892cb6e3833b5b4862a41",
     "tools/spatial_oracle/fv_cell_attack/steam_rules_general_scope.py": "803d1d374f4468cbdb94b1faa5ea7ee0dd2a78c6ced7966d4767311bd1b00546",
@@ -62,8 +62,8 @@
     "tools/tests/test_live_type_transports.py": "9df92feaa82e7224d2ee9b0a393b2bb37799ab75f8347cf48ab425a3354e026d",
     "tools/tests/test_native_ebp_transport.py": "54e1d5c8d45d5433d4ad578256d8fb5c96bbfc237a20d6348622912ea79e5c96",
     "tools/tests/test_native_range_index.py": "9231502a5591d519c48916bc5e929660da313a6c58dfb76ca338f8bb0ced4a25",
-    "tools/tests/test_native_scope.py": "cda2fd91af1ced8b19a84f0f1ff209c19d63fa50dc81630386ffe30b19e50fd7",
-    "tools/tests/test_steam_live_assets.py": "766462ae393c5ad729cf0d1af7f8d6011d3652355429b4742f2c3571a0b7a937",
+    "tools/tests/test_native_scope.py": "5825cf3a3021190c608781f4c06cd2ceae4cb190482558a2e5e5fe135fe27186",
+    "tools/tests/test_steam_live_assets.py": "eba50eaa24f8f9c0221e1aa17d43da6fa65515cb60602d976423d1e06ea378e2",
     "tools/voxel_oracle/recoil.py": "4e469402429c27e7ef341d36c1d311a3cfe2d8bc53a1d46bec8f887ba62b1de3"
   },
   "checks": [
@@ -72,63 +72,75 @@
       "exit_code": 0,
       "result": "9589 passed; 0 failed; 231 ignored",
       "log": ".local/bullet-live-validation/rust-retail-lib.log",
-      "log_sha256": "ff2945ed7b2d92f4df018ead09a53efe945414092880959a2a6ad88bf4e124bc"
+      "log_sha256": "ff2945ed7b2d92f4df018ead09a53efe945414092880959a2a6ad88bf4e124bc",
+      "execution_git_head": "b43304db864b49979e2246317ebfd16a496ade49",
+      "rust_src_tree": "f62d4f9f6b90496ab675303a6c2c278a22de0fc5",
+      "rust_sources_unchanged_since_check": true
     },
     {
       "command": "VERA20K_REQUIRE_RETAIL_INI=1 VERA20K_REQUIRE_RETAIL_ASSETS=1 python -m tools.cargo_run -- clippy -p vera20k --lib",
       "exit_code": 0,
       "result": "exit 0; existing 729 warnings",
       "log": ".local/bullet-live-validation/rust-clippy-lib.log",
-      "log_sha256": "7a2fd6d06fe9dfadea0b1510c52ce61743ab0a9e93539011966132222b1f3066"
+      "log_sha256": "7a2fd6d06fe9dfadea0b1510c52ce61743ab0a9e93539011966132222b1f3066",
+      "execution_git_head": "b43304db864b49979e2246317ebfd16a496ade49",
+      "rust_src_tree": "f62d4f9f6b90496ab675303a6c2c278a22de0fc5",
+      "rust_sources_unchanged_since_check": true
     },
     {
       "command": "VERA20K_REQUIRE_RETAIL_INI=1 VERA20K_REQUIRE_RETAIL_ASSETS=1 python -m tools.cargo_run -- test --release -p vera20k --lib headless_scenario::retail_construction_tests::retail_headless_funnel_construction_is_deterministic_and_populated -- --ignored --exact",
       "exit_code": 0,
       "result": "1 passed; 0 failed; retail deterministic populated scenario construction",
       "log": ".local/bullet-live-validation/release-retail-map-corrected.log",
-      "log_sha256": "dd245b7b0b64af56c69f0e985e7c8b403139f9dcd376b75019e8a483ea21e205"
+      "log_sha256": "dd245b7b0b64af56c69f0e985e7c8b403139f9dcd376b75019e8a483ea21e205",
+      "execution_git_head": "b43304db864b49979e2246317ebfd16a496ade49",
+      "rust_src_tree": "f62d4f9f6b90496ab675303a6c2c278a22de0fc5",
+      "rust_sources_unchanged_since_check": true
+    },
+    {
+      "command": "VERA20K_TEST_RETAIL=1 python -m unittest tools.tests.test_steam_live_assets tools.tests.test_fv_bullet_cold_startup tools.tests.test_fv_live_types tools.tests.test_fv_rules_prereaders tools.tests.test_native_scope tools.tests.test_native_ebp_transport tools.tests.test_native_range_index tools.tests.test_live_type_transports",
+      "exit_code": 0,
+      "result": "98 passed; 93.802 seconds; authenticated native/transport/prereader/guard and palette controls",
+      "log": ".local/bullet-live-validation/native-qualification-final-second.log",
+      "log_sha256": "e62fefe4687d67fc8d6351f5282726a7890bc90d047b1c7f3d73a917e1342c3e",
+      "execution_git_head": "ad5dbb84d4956739a6ced463ee16ca2c3401df8b",
+      "validated_tools_source_commit": "450d1587d3ad242585ec3edd81f17d6f52182a6e"
     },
     {
       "command": "env -u VERA20K_GAMEMD_EXE python -m tools.run_tests",
       "exit_code": 0,
-      "result": "655 tests; zero failures; 24 explicit native/device/environment skips",
-      "log": ".local/bullet-live-validation/python-docks-final.log",
-      "log_sha256": "b0c5f0dfeb949568c8567bc61a2ef5b2a142b3abee47f1e84b250c8ebe5a2fa3"
-    },
-    {
-      "command": "python -m unittest tools.tests.test_steam_live_assets tools.tests.test_fv_bullet_cold_startup tools.tests.test_fv_live_types tools.tests.test_native_ebp_transport tools.tests.test_native_range_index tools.tests.test_live_type_transports",
-      "exit_code": 0,
-      "result": "38 passed; all 5211 physical CSF labels and extras, 14 genuinely missing UIName labels, native Map/Theater binding, authenticated theater registration guards, bounded occupancy keys and EBP/EDI transports",
-      "log": ".local/bullet-live-validation/native-theater-final.log",
-      "log_sha256": "f500320ddbbcfdd9aea48117ffe59717ec5217e88071699e0fa604c73086123b"
+      "result": "660 tests; zero failures; 25 explicit skips; 24.208 seconds",
+      "log": ".local/bullet-live-validation/python-qualification-final.log",
+      "log_sha256": "86e77e8b973c7faaaf14a054bc6f3eb6e3bb7f346a01cff2eba8903c8f982de8",
+      "execution_git_head": "ad5dbb84d4956739a6ced463ee16ca2c3401df8b",
+      "validated_tools_source_commit": "450d1587d3ad242585ec3edd81f17d6f52182a6e"
     },
     {
       "command": "python -m tools.spatial_oracle.fv_cell_attack.steam_bullet_startup_scope --check",
       "exit_code": 0,
-      "result": "native golden and source metadata reproduced",
-      "log": ".local/bullet-live-validation/bullet-docks-check.log",
-      "log_sha256": "107c199cb4af21716c1420266e8be78508bc0ac19900d4c8e864fce14ca294ad"
+      "result": "native golden payload unchanged; current source metadata reproduced",
+      "log": ".local/bullet-live-validation/bullet-qualification-final-check.log",
+      "log_sha256": "107c199cb4af21716c1420266e8be78508bc0ac19900d4c8e864fce14ca294ad",
+      "execution_git_head": "ad5dbb84d4956739a6ced463ee16ca2c3401df8b",
+      "validated_tools_source_commit": "450d1587d3ad242585ec3edd81f17d6f52182a6e"
     },
     {
       "command": "python tools/skill_sync.py --check",
       "exit_code": 0,
-      "result": "passed",
-      "log": ".local/bullet-live-validation/skill-sync.log",
-      "log_sha256": "75262509650ce729d238e21d471f799bdd0ba9bb5f853986b74d5de69cd5e4a4"
+      "result": "skill mirrors match; zero updates",
+      "log": ".local/bullet-live-validation/skill-qualification-final.log",
+      "log_sha256": "75262509650ce729d238e21d471f799bdd0ba9bb5f853986b74d5de69cd5e4a4",
+      "execution_git_head": "ad5dbb84d4956739a6ced463ee16ca2c3401df8b",
+      "validated_tools_source_commit": "450d1587d3ad242585ec3edd81f17d6f52182a6e"
     },
     {
       "command": "python tools/sim_field_ratchet.py --base delivery/main",
       "exit_code": 0,
-      "result": "2513 fields unchanged",
-      "log": ".local/bullet-live-validation/sim-field-ratchet.log",
-      "log_sha256": "57616c1e6459abe184b4e8ab4cbd069250f98419960d053ac68a591e08ef9189"
-    },
-    {
-      "command": "python -m unittest tools.tests.test_fv_live_types tools.tests.test_live_type_transports",
-      "exit_code": 0,
-      "result": "5 passed after dock/Armor/default-copy declaration corrections",
-      "log": ".local/bullet-live-validation/native-docks-focused-final.log",
-      "log_sha256": "8caa25309877bc432d1ff142dc6cb8f4fc99a5d37418a162df4c25ebddb9fb00"
+      "result": "2513 fields unchanged at base b43304db",
+      "log": ".local/bullet-live-validation/ratchet-qualification-final.log",
+      "log_sha256": "57616c1e6459abe184b4e8ab4cbd069250f98419960d053ac68a591e08ef9189",
+      "execution_git_head": "ad5dbb84d4956739a6ced463ee16ca2c3401df8b",
+      "validated_tools_source_commit": "450d1587d3ad242585ec3edd81f17d6f52182a6e"
     }
   ],
   "standalone_native_controls": [
@@ -361,6 +373,26 @@
       "run_name": "ordered-live-types-publication-third-vm",
       "status": "owned_cancellation_before_source_edits",
       "finding": "Confirmed stock Building NumberOfDocks4 requires original resize/clear vector closure before any successful joined qualification."
+    },
+    {
+      "status": "failed_closed_no_successful_corpus",
+      "run_name": "ordered-live-types-publication-fourth-vm",
+      "source_head": "ad5dbb84d",
+      "freeze_sha256": "d4e6e20a5510dde3b45a611dfd1c0783c7e6758861f6423e9975094c9fab2816",
+      "outputs_local_only": true,
+      "exit_code": 1,
+      "producer_unchanged": true,
+      "producer_count": 2463,
+      "elapsed_seconds": 1236.1499541939702,
+      "log_sha256": "e86310933141d3839ff3d90a7d4fb61642b120e2c0abee8a5251678cb632d136",
+      "finding": "Original native DWORD copying of default BuildCat DontCare requires compiler padding; original GACNST body stopped at8193A4",
+      "observed_reader_counts": {
+        "Country": 14,
+        "SuperWeapon": 12,
+        "Anim": 610,
+        "Building": 3
+      },
+      "worktree": "publication"
     }
   ],
   "corrected_prerequisites": [
@@ -373,11 +405,197 @@
     "Supplied theater archive registration follows authenticated InitTheater5349C0 call order and original six-record table, selected by the same VM native theater result. Original archive construction, full InitTheater and unloads are not executed.",
     "Original stock NumberOfDocks4 resizing uses verified465E70/465F50 and exact7E4640/7E4644 virtual slots; actual GAAIRC and AMRADR bodies grow capacity1 to4 with native allocations.",
     "Armor parser772A50 scans11 pointer rows through7E523C; corrected existing table7E5210 to44 bytes and actual original string extents. Misleading Pip/Foundation/Layer/Category/PipScale/Action labels were corrected from original callers and loop bounds.",
-    "Original DWORD strncpy reads aligned None and yellow terminators. Precisely covered8-byte compiler-padded literals follow proven VHPScan/Pip cold defaults, including stock DNOA/DNOB; unrelated defaults remain excluded."
+    "Original DWORD strncpy reads aligned None and yellow terminators. Precisely covered8-byte compiler-padded literals follow proven VHPScan/Pip cold defaults, including stock DNOA/DNOB; unrelated defaults remain excluded.",
+    "Original6267A0 palette theater activation executes before retained Rules Process, using native Scenario theater0; original628740 constructor creates NULL manager with five owned allocations16/24/24/16/748 and31 empty buckets. Genuine retained native Colors manager is separately tested without replacing its records or index. Warm reload remains fail closed.",
+    "Infantry original42-row sequence table8255C8,35 exact missing literals and confirmed %s scan-set/memset dependencies are authenticated. Only selected physical sequence/scanner paths are qualified.",
+    "Original aligned default Verses847C40:68 and wood Armor81DB50:8, plus ParticleSystem BehavesLike836EE0:20, use exact inspected literal/table extents and source hashes.",
+    "Per-image immutable original-byte cache delegates misses to existing file_span. Fresh mapped code/IAT comparison and current authorization remain mandatory every instruction; cache-hit tamper and image/VM isolation controls pass."
   ],
   "joined_native": {
-    "status": "not_yet_started_corrected_final_candidate",
-    "outputs_local_only": true
+    "status": "passed_bounded_native_prerequisite",
+    "run_name": "ordered-live-types-publication-fifth-vm",
+    "command": "python -m tools.spatial_oracle.fv_cell_attack.retained_startup_run --scope live-types --run-name ordered-live-types-publication-fifth-vm --execute",
+    "source_head": "450d1587d3ad242585ec3edd81f17d6f52182a6e",
+    "freeze_sha256": "daa6a22fb679dcc1c1e188c5617c51de09a02e20c825463adbdb950f3c98134c",
+    "outputs_local_only": true,
+    "exit_code": 0,
+    "producer_unchanged": true,
+    "producer_count": 2463,
+    "elapsed_seconds": 2558.7701105589513,
+    "log_sha256": "9e39d4dbfd55210e303b66db62fca94f9d6f3c3a13b84a0b3df9a4685327b11c",
+    "result": {
+      "path": ".local/fv-movement-validation/ordered-live-types-publication-fifth-vm/result.json",
+      "sha256": "e394fa87d4fbd94533d1ba3525148ed619c734daf9702a719a7a0e271e6fae78",
+      "bytes": 1863
+    },
+    "outputs": [
+      {
+        "path": ".local/fv-movement-validation/ordered-live-types-publication-fifth-vm/full.json",
+        "bytes": 85332251,
+        "sha256": "bf317e820c397cca6d871ca6e07675309f1696f5cba8bb6f52905fd1075088c9"
+      },
+      {
+        "path": ".local/fv-movement-validation/ordered-live-types-publication-fifth-vm/full.meta.json",
+        "bytes": 389465,
+        "sha256": "5aa91008290bf519b8821328319eea03ddd125706c528f597b2b7158b7e8e4da"
+      },
+      {
+        "path": ".local/fv-movement-validation/ordered-live-types-publication-fifth-vm/full_reader.json",
+        "bytes": 87984,
+        "sha256": "af5f1daef7d7bca01f82d9dd30b00508eb6d9914c01b307638bb01b63e616bf4"
+      },
+      {
+        "path": ".local/fv-movement-validation/ordered-live-types-publication-fifth-vm/full_reader.meta.json",
+        "bytes": 389465,
+        "sha256": "ee90515b682c99b1ea6016c856bcc31f600318ad207bc129b7695d57055194fd"
+      }
+    ],
+    "raw_execution": {
+      "path": ".local/fv-movement-validation/ordered-live-types-publication-fifth-vm/executions/retained-dialog-execution-91edfbbc676b4e19b8b45360d8a09842.json",
+      "sha256": "c4a5cf879ea92da79d284c78f2fe042f2591cb15eea52b30865f9647ec93ba6d",
+      "bytes": 86907349
+    },
+    "raw_receipt_sha256": "b2dcef9cc0dd07416f340a2afe808613c6f8d1127d905ed24be043ed6ce2df2a",
+    "semantic_payload_sha256": "9375ef513deb56e23dad9d672a2dde57e197b85875b294d433e430a223f56560",
+    "output_binding_valid": true,
+    "profile_name": "steam-15918130-fv-ordered-live-types-v1",
+    "profile_code_regions": 1057,
+    "native_begin": 6721261,
+    "native_end": 6721269,
+    "primary_entries": 1976,
+    "primary_reader_counts": {
+      "Country": 14,
+      "SuperWeapon": 12,
+      "Anim": 610,
+      "Building": 402,
+      "Aircraft": 12,
+      "Unit": 82,
+      "Infantry": 65,
+      "Weapon": 204,
+      "Bullet": 39,
+      "Warhead": 116,
+      "Terrain": 78,
+      "Smudge": 46,
+      "Overlay": 250,
+      "Particle": 22,
+      "ParticleSystem": 14,
+      "VoxelAnim": 10
+    },
+    "registry_counts_before": {
+      "Country": 14,
+      "Side": 5,
+      "Overlay": 250,
+      "SuperWeapon": 12,
+      "Warhead": 105,
+      "Smudge": 46,
+      "Terrain": 78,
+      "Building": 402,
+      "Unit": 82,
+      "Aircraft": 12,
+      "Infantry": 65,
+      "Anim": 609,
+      "VoxelAnim": 10,
+      "Particle": 22,
+      "ParticleSystem": 13,
+      "Weapon": 1,
+      "Bullet": 0
+    },
+    "registry_counts_after": {
+      "Country": 14,
+      "Side": 5,
+      "Overlay": 250,
+      "SuperWeapon": 12,
+      "Warhead": 117,
+      "Smudge": 46,
+      "Terrain": 78,
+      "Building": 402,
+      "Unit": 82,
+      "Aircraft": 12,
+      "Infantry": 65,
+      "Anim": 619,
+      "VoxelAnim": 10,
+      "Particle": 22,
+      "ParticleSystem": 14,
+      "Weapon": 204,
+      "Bullet": 39
+    },
+    "checks": {
+      "original_stack": true,
+      "remaining_frame": true,
+      "scene_rules_surface": true,
+      "lexical_bytes": true,
+      "separate_receivers": true,
+      "reader_order": true,
+      "original_member_order": true,
+      "active_loop_coverage": true,
+      "original_reader_calls": true,
+      "original_postpasses": true,
+      "mission_order": true,
+      "mission_receivers": true,
+      "constructor_ids": true,
+      "counter_chronology": true,
+      "native_allocation_extents": true
+    },
+    "prereader_checks": {
+      "reader_order": true,
+      "original_receivers": true,
+      "original_returns": true,
+      "original_stack": true,
+      "remaining_frame": true,
+      "scene_rules_surface": true,
+      "lexical_bytes": true,
+      "separate_art": true,
+      "rng": true,
+      "constructor_ids": true,
+      "counter_chronology": true,
+      "native_allocation_extents": true
+    },
+    "missions": 32,
+    "postpasses": 606,
+    "native_constructors": 265,
+    "constructor_counts": {
+      "Weapon": 203,
+      "Anim": 10,
+      "ParticleSystem": 1,
+      "Bullet": 39,
+      "Warhead": 12
+    },
+    "counter_before": 1001704,
+    "counter_after": 1001969,
+    "rng_unchanged": true,
+    "observed_rng_calls": 0,
+    "asset_requests": 3508,
+    "native_allocations": 11861,
+    "native_palette_activation": {
+      "entry": 6449056,
+      "original_caller": 5459380,
+      "native_index": 0,
+      "native_created": true,
+      "native_allocations": 5,
+      "native_allocation_sizes": [
+        16,
+        24,
+        24,
+        16,
+        748
+      ],
+      "cold_bucket_count": 31,
+      "cold_bucket_counts_all_zero": true,
+      "retained_counter_rng": true
+    },
+    "physical_library_palette_requests": [
+      {
+        "name": "LIBTEM.PAL",
+        "bytes": 768,
+        "sha256": "79e668c9bd08bc5eed811df19de2af418cf8b434b97abf1fe2d65809321507e0"
+      }
+    ],
+    "source_catalog_counts": {
+      "csf": 5211,
+      "sound": 818,
+      "eva": 470
+    },
+    "qualification": "Original retained 668EED→679A10→668EF5 executes all16 primary family loops, native dynamic membership/constructors, postpasses and32 Missions. Later constructors may append members after an earlier family loop; final registry counts are distinct from actual original primary counts. Supplied lexical/physical IO, decoded CSF, null audio and Surface/clock/heap priors remain explicit. No whole Windows startup or Rust numeric/rendering/gameplay parity claim."
   },
   "anim_body_controls": [
     {
@@ -412,5 +630,133 @@
     "log": ".local/bullet-live-validation/building-docks-control-fourth.log",
     "log_sha256": "e3ff73e33e0fe50142fdf1f28fb97e7c746bb940753c01cae6330e224f30f8ba",
     "qualification": "Original complete primary Building bodies on a fresh native selected startup with physical selected Rules/ART, physical CSF/theater assets, cold empty Sound/EVA/namedColors and omitted other family masters. Diagnostic closure control, not joined retail parity."
-  }
+  },
+  "preserved_setup_failures": [
+    {
+      "log": ".local/bullet-live-validation/native-qualification-final.log",
+      "log_sha256": "5aaecee707d147bf100fefd7c98c3539eb25b1e51f2fdafe20289a2bab3319cf",
+      "exit_code": 1,
+      "finding": "Two existing retained-caller tests stopped before initialization because the required extracted-palette override was omitted; corrected setup retry passed all98"
+    }
+  ],
+  "additional_closure_controls": [
+    {
+      "log": {
+        "path": ".local/bullet-live-validation/building-family-control-second.log",
+        "sha256": "6aee2e59d7b58ec6819684b9072a34686b23ca7bc57c1c1057d3e7efe2252ae1",
+        "bytes": 14719
+      },
+      "status": "passed",
+      "source_entries": 403,
+      "unique_primary_returns": 402,
+      "elapsed_seconds": 1109.183423,
+      "priors": "Original constructors and primary bodies, full physical Rules/ART, cold Sound/EVA/namedColors, omitted other-family masters; isolated diagnostic, not joined parity."
+    },
+    {
+      "log": {
+        "path": ".local/bullet-live-validation/building-real-palette-control-second.log",
+        "sha256": "c1843e3d2cfa19bfd740b12246f226f758b1d7b4edc4a8110747835fb0404e4c",
+        "bytes": 3127
+      },
+      "status": "passed",
+      "elapsed_seconds": 3.655098,
+      "qualification": "Original CANEWY04 Palette=lib resolves actual768-byte LIBTEM.PAL and nonNULL native type palette pointer; supplied RGB565 Surface does not establish rendering parity."
+    },
+    {
+      "log": {
+        "path": ".local/bullet-live-validation/remaining-primary-body-fourth.log",
+        "sha256": "cbfcc67bd7b7b65c316fbf95e5e7bbe24333f76b0537bbd5c8db49085357e692",
+        "bytes": 2717
+      },
+      "status": "passed",
+      "elapsed_seconds": 205.463813971,
+      "primary_returns": {
+        "ParticleSystem": 13,
+        "VoxelAnim": 10
+      },
+      "new_native_constructors": 1,
+      "priors": "All physical native master constructors, full Colors, original Map/theater activation and five prereaders; earlier primary bodies/postpasses omitted, cold Sound/EVA. Final isolated counter/cache/frame checks pass; not joined parity."
+    }
+  ],
+  "preserved_partial_family_diagnostics": [
+    {
+      "log": {
+        "path": ".local/bullet-live-validation/remaining-family-control-third.log",
+        "sha256": "4e7ecf0e25c0551bc73d3cd49ce334b9efb2b5962cb2974316b96937d3f3b53c",
+        "bytes": 4299
+      },
+      "status": "native_finite_timeout_no_successful_corpus",
+      "instruction_count": 166672932,
+      "timeout_seconds": 1200,
+      "completed": {
+        "Country": 14,
+        "SuperWeapon": 12,
+        "Anim": 610
+      },
+      "last_family": "Building",
+      "last_entry": 297
+    },
+    {
+      "log": {
+        "path": ".local/bullet-live-validation/remaining-family-control-fourth.log",
+        "sha256": "4c01872a7a07228332e519df2527d1e185cbe0fc672ab79a0518d60b499fce78",
+        "bytes": 5963
+      },
+      "status": "failed_closed_no_successful_corpus",
+      "failure_id": "52cf870397074562af6600493871fada",
+      "completed": {
+        "Country": 14,
+        "SuperWeapon": 12,
+        "Anim": 610,
+        "Building": 402,
+        "Aircraft": 12,
+        "Unit": 82
+      },
+      "finding": "First Infantry sequence table8255C8 was outside declared scope; precise table/literals and confirmed scanner helper added after original exit."
+    },
+    {
+      "log": {
+        "path": ".local/bullet-live-validation/remaining-primary-body-first.log",
+        "sha256": "ac314e81efd3b1bcec0b114da69cd0662055d5ba2a9d7d7ebe108bbd9b2dd9ab",
+        "bytes": 14514
+      },
+      "status": "partial_returns_only_no_successful_corpus",
+      "failure_id": "369e47f5b5fa4c9380f394a8b439e309",
+      "completed": {
+        "Infantry": 65,
+        "Weapon": 79,
+        "Bullet": 17
+      },
+      "finding": "Warhead original aligned DWORD default Verses copy needed precisely proven two-byte padding."
+    },
+    {
+      "log": {
+        "path": ".local/bullet-live-validation/remaining-primary-body-second.log",
+        "sha256": "03b1f098eb4d750af2102918751233965bc561cdcc37f0345f32c4b32809e02f",
+        "bytes": 10837
+      },
+      "status": "partial_returns_only_no_successful_corpus",
+      "failure_id": "34ee76fd1cc249c9a347eb0daadf6793",
+      "completed": {
+        "Warhead": 105
+      },
+      "finding": "Terrain original wood Armor default needed precisely proven three-byte compiler padding."
+    },
+    {
+      "log": {
+        "path": ".local/bullet-live-validation/remaining-primary-body-third.log",
+        "sha256": "31ba994f7593e9591db1f9821cc70ef1fc7ef4f5d0ebd044c4a0cbf4651c04fa",
+        "bytes": 30367
+      },
+      "status": "partial_returns_only_no_successful_corpus",
+      "failure_id": "261073acf1b544eebd006ec07fe2966a",
+      "completed": {
+        "Terrain": 78,
+        "Smudge": 46,
+        "Overlay": 250,
+        "Particle": 22
+      },
+      "finding": "ParticleSystem original five-pointer BehavesLike table836EE0 needed its exact20-byte extent."
+    }
+  ]
 }

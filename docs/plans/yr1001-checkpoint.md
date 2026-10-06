@@ -26,18 +26,26 @@ included in this delivery candidate. No Rust source changes are included.
 [Ordered startup and live readers](yr1001-bullet-live-readers.md) records the
 original Bullet/Sound/EVA CRT order, single retained native VM, physical supplier
 boundaries and reproduction commands. Standalone full Sound/EVA and FV VXL/HVA
-controls passed. Joined native qualification, final receipt, single fresh critic
-and PR/merge must be reconciled against actual completion before delivery is
-reported. Partial native observations do not establish a successful live pass.
-All 611 stock Anim bodies passed the isolated native control with physical theater
-archives. The corrected original Map/Theater prerequisite and Terrain dispatch
-are included; 38 final native/transport checks passed. The next whole joined run
-uses these complete declarations from fresh VM creation.
+controls passed. The final source-frozen joined run at implementation `450d1587`
+completed actual `668EED -> 679A10 -> 668EF5` in 2,558.770 seconds. All 2,463
+producers were unchanged; four outputs bind to one raw execution receipt.
+It observed 1,976 primary entries across 16 families, 32 Missions, 606 native
+postpasses and 265 constructors, with all 15 boundary checks true and all three
+RNG stores unchanged. Final membership can include types constructed after an
+earlier family loop; original primary counts and final registry counts are
+recorded separately in the sanitized validation receipt.
+All 611 isolated Anim bodies and all 402 unique Building bodies also passed
+under their stated diagnostic priors. The native palette activation executes
+before Process; actual library palette bytes are loaded through the shared
+physical owner. One fresh critic and authorized PR/merge remain to be completed.
 
 Retail Rust lib: 9,589 passed, zero failed, 231 ignored. Clippy completed with
 729 existing warnings. Named release retail scenario/map construction passed.
-Portable Python: 655 tests, zero failures, 24 explicit native/device/environment
-skips. Build retirement continues to fail closed when idle state is unavailable;
+These Rust checks ran at the delivery base; the Rust source tree is unchanged.
+Final portable Python: 660 tests, zero failures, 25 explicit skips. The final
+retail native/transport/prereader/guard suite passed all 98 checks. A missing
+palette override in an earlier test setup is preserved separately from the
+successful retry. Build retirement continues to fail closed when idle state is unavailable;
 its real disposable-process test skips only after that preflight cannot prove
 an inspectable host. Synthetic busy/unknown controls remain active.
 
