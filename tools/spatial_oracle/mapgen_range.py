@@ -7,6 +7,7 @@ and alternate ambient control words are explicit adversarial inputs, not claims
 that an active retail seed or Windows callback necessarily produces them.
 """
 from pathlib import Path
+from functools import partial
 import struct
 
 from unicorn import Uc, UC_ARCH_X86, UC_MODE_32, UC_HOOK_CODE, UC_HOOK_MEM_WRITE
@@ -68,28 +69,34 @@ class Machine:
         u.hook_add(UC_HOOK_MEM_WRITE, self.write)
 
     def fixture_write(self, address, blob):
-        if self.image is None:
+        image = getattr(self, 'image', None)
+        if image is None:
             self.u.mem_write(address, blob)
         else:
-            self.image.write(address, blob)
+            image.write(address, blob)
 
     def run_native(self, begin, end, **kwargs):
-        return run_checked(self.u, begin, end, image=self.image, **kwargs)
+        return run_checked(self.u, begin, end, image=getattr(self, 'image', None), **kwargs)
 
     def startup(self):
         u = self.u
+        # Existing Repair and A* fixtures borrow this method on their own VM.
+        # Retain their adapters when present; missing adapters use this owner,
+        # including its actual scoped image rather than an unguarded runner.
+        fixture_write = getattr(self, 'fixture_write', partial(Machine.fixture_write, self))
+        run_native = getattr(self, 'run_native', partial(Machine.run_native, self))
         image_cached_fpcw = read32(u, CACHED_CW)
         # CPU-reset-style control is the only supplied startup FPCW. Execute
         # actual CRT precision tail, excluding the preceding OS feature probe.
         u.reg_write(UC_X86_REG_FPCW, 0x037F)
         u.reg_write(UC_X86_REG_ESP, SP)
-        self.fixture_write(SP, dw(RET_MAGIC))
-        self.run_native(0x7C8F55, RET_MAGIC, count=10000,
+        fixture_write(SP, dw(RET_MAGIC))
+        run_native(0x7C8F55, RET_MAGIC, count=10000,
                     required_addresses=(0x7CEAAF, 0x7CBF49, 0x7CBF14, 0x7CBF41))
         crt = u.reg_read(UC_X86_REG_FPCW)
-        self.fixture_write(CACHED_CW, dw(0))  # prove the original cache writer executes
+        fixture_write(CACHED_CW, dw(0))  # prove the original cache writer executes
         u.reg_write(UC_X86_REG_ESP, SP)
-        self.run_native(0x6BBFB7, 0x6BBFCE, count=10000,
+        run_native(0x6BBFB7, 0x6BBFCE, count=10000,
                     required_addresses=(0x7CBF49, 0x7C5EE4, 0x7C5EF9))
         return dict(image_cached_fpcw=image_cached_fpcw, supplied_initial_fpcw=0x037F, after_crt_fpcw=crt,
                     after_winmain_fpcw=u.reg_read(UC_X86_REG_FPCW),

@@ -3162,8 +3162,12 @@ if __name__ == '__main__':
                          'tools/projectile_oracle/bridge_render_inputs_selection.py',
                          'tools/rules_oracle/theater_general_reader.py']
     if name in ('country_modifiers','house_rules','instance_com','weapon_keys','instance_tail','instance_tokens'):
+        from tools.spatial_oracle.anytown_damage.mission import olerun_measurement
+        measurement = olerun_measurement()
+        measurement_leaf = ('windows_olerun_functional_projection.json'
+                            if 'projection_sha256' in measurement else 'windows_olerun_result.json')
         source_names += ['tools/spatial_oracle/fv_cell_attack/windows_olerun_probe.ps1',
-                         'tools/spatial_oracle/fv_cell_attack/windows_olerun_result.json']
+                         'tools/spatial_oracle/fv_cell_attack/' + measurement_leaf]
     source_paths={name:repo/name for name in source_names}
     if name in ('palette_inputs','named_colors','typed_master'):
         from tools.projectile_oracle.bridge_render_inputs_palette import PALETTE_ASSETS

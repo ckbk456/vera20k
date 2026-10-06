@@ -24,6 +24,24 @@ class LiveAdmissionTests(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get('VERA20K_GAMEMD_EXE'), 'Requires authenticated native executable')
 class NativeLiveCallerControls(unittest.TestCase):
+    def test_borrowed_startup_matches_existing_scoped_owner_on_fresh_vms(self):
+        from types import SimpleNamespace
+        from unicorn import Uc, UC_ARCH_X86, UC_MODE_32
+        from tools import native_oracle as oracle
+        from tools.spatial_oracle import mapgen_range
+        observed = []
+        for borrowed in (False, True):
+            u = Uc(UC_ARCH_X86, UC_MODE_32)
+            image = oracle.load_image(u, profile=live.live_types_profile())
+            u.mem_map(oracle.STACK_BASE, oracle.STACK_SIZE)
+            u.mem_map(oracle.RET_MAGIC, 0x1000)
+            receiver = (SimpleNamespace(u=u, image=image) if borrowed
+                        else mapgen_range.Machine.__new__(mapgen_range.Machine))
+            receiver.u, receiver.image = u, image
+            observed.append(mapgen_range.Machine.startup(receiver))
+            image.verify_code()
+        self.assertEqual(observed[0], observed[1])
+
     def test_absent_type_sections_reach_original_caller_and_all_missions(self):
         # FV exists in the original master registry, but no live Rules/ART
         # section exists. This executes genuine absent-reader returns and

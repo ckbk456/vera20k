@@ -17,6 +17,60 @@ from tools.input_oracle import fast_scroll
 from tools.tests.pe_fixture import pe_image
 
 
+class BorrowedStartupContractTests(unittest.TestCase):
+    """Existing duck-typed callers must retain the shared startup adapter API."""
+    def control(self, with_fixture_writer):
+        from types import SimpleNamespace
+        from tools.spatial_oracle import mapgen_range as owner
+        u = Uc(UC_ARCH_X86, UC_MODE_32)
+        u.mem_map(oracle.STACK_BASE, oracle.STACK_SIZE)
+        u.mem_map(owner.CACHED_CW & ~0xfff, 0x1000)
+        u.mem_write(owner.CACHED_CW, struct.pack('<I', 0x27f))
+        receiver = SimpleNamespace(u=u)
+        if with_fixture_writer:
+            # OriginalRim/Repair already supplies this adapter, but no runner.
+            receiver.fixture_write = u.mem_write
+        with patch.object(owner, 'run_checked') as runner:
+            result = owner.Machine.startup(receiver)
+        self.assertEqual(result['image_cached_fpcw'], 0x27f)
+        self.assertEqual(result['cached_fpcw'], 0)
+        self.assertEqual([call.args for call in runner.call_args_list],
+                         [(u, 0x7C8F55, oracle.RET_MAGIC), (u, 0x6BBFB7, 0x6BBFCE)])
+        self.assertTrue(all(call.kwargs['image'] is None for call in runner.call_args_list))
+        self.assertTrue(all(call.kwargs['count'] == 10000 for call in runner.call_args_list))
+
+    def test_existing_astar_namespace_without_new_adapters(self):
+        self.control(False)
+
+    def test_existing_repair_receiver_without_runner(self):
+        self.control(True)
+
+
+class SteamCliMeasurementManifestTests(unittest.TestCase):
+    def test_six_modes_bind_the_shared_authenticated_measurement_source(self):
+        import runpy
+        import sys
+        from tools.spatial_oracle.anytown_damage.mission import olerun_measurement
+        measurement = olerun_measurement()
+        leaf = ('windows_olerun_functional_projection.json'
+                if 'projection_sha256' in measurement else 'windows_olerun_result.json')
+        script = Path('tools/spatial_oracle/fv_cell_attack/steam_movement_profile.py')
+        for mode in ('country-modifiers', 'house-rules', 'instance-com',
+                     'weapon-keys', 'instance-tail', 'instance-tokens'):
+            with self.subTest(mode=mode):
+                captured = []
+                def inspect_sources(*args, source_paths, **kwargs):
+                    # Exercise finish_vectors' real manifest-read precondition,
+                    # without running a native generator or supplying outcomes.
+                    for path in source_paths.values():
+                        path.read_bytes()
+                    captured.extend(path.name for path in source_paths.values())
+                with patch.object(oracle, 'finish_vectors', side_effect=inspect_sources), \
+                     patch.object(sys, 'argv', [str(script), '--'+mode+'-only', '--output', 'unused-control.json']):
+                    runpy.run_path(str(script), run_name='__main__')
+                self.assertIn(leaf, captured)
+
+
 class OleRunMeasurementGuardTests(unittest.TestCase):
     """Receipt admission/negative controls; no extra OS model or emulation."""
     def packet(self):
