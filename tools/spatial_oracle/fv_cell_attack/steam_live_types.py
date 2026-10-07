@@ -83,7 +83,8 @@ def continue_live_types(m,rules,reader_ini,receipt,*,progress=None):
         UC_X86_REG_ESP,UC_X86_REG_ECX)
     from tools.spatial_oracle.fv_cell_attack.steam_movement_profile import TYPED_MASTER_FAMILIES
     from tools.spatial_oracle.fv_cell_attack.steam_live_types_scope import LIVE_READERS
-    if m.image is None or m.image.profile.name!=PROFILE_NAME:
+    from tools.spatial_oracle.fv_cell_attack.steam_rules_process_tail import PROFILE_NAME as TAIL_PROFILE_NAME
+    if m.image is None or m.image.profile.name not in (PROFILE_NAME,TAIL_PROFILE_NAME):
         raise ValueError('Live types require their complete profile at fresh VM creation')
     if 'retained_live_types'in receipt:raise ValueError('Live types cannot restart a retained caller')
     prior=receipt.get('retained_prereaders')
@@ -220,7 +221,7 @@ def metadata():
             'No Windows audio devices or waveform output; original null-index factory and definition/sample-skip branches execute.'])
 
 
-def main():
+def main(*,rules_process_tail=False):
     import os,sys
     from functools import partial
     from tools.native_oracle import finish_vectors
@@ -240,15 +241,19 @@ def main():
         ('physical_art_root','ARTMD.INI'),('physical_map_theater','dragon-cadence.map'))})
     paths.update({'physical_'+name:color_palette_root()/name for name in PALETTE_ASSETS})
     captured={}
+    selected_metadata=metadata
+    if rules_process_tail:
+        from tools.spatial_oracle.fv_cell_attack.steam_rules_process_tail import metadata as selected_metadata
     generator=partial(generate_typed_master,retained_startup=True,retained_dialog=True,
         ordered_cold_startup=True,retained_prereaders=True,retained_live_types=True,
+        retained_rules_process_tail=rules_process_tail,
         execution_source_paths=paths,reference_capture=captured,
         progress=lambda stage:print('NATIVE STAGE',stage,flush=True))
     default=root/'.local/fv-movement-validation/live-types/full.json'
-    finish_vectors(generator,default,provenance=metadata,argv=argv,source_paths=paths,description=__doc__)
+    finish_vectors(generator,default,provenance=selected_metadata,argv=argv,source_paths=paths,description=__doc__)
     companion_argv,companion_path=retained_dialog_companion_argv(argv,default)
     finish_vectors(partial(retained_dialog_reader_vectors,captured['reader'],source_paths=paths),
-        companion_path,provenance=metadata,argv=companion_argv,source_paths=paths)
+        companion_path,provenance=selected_metadata,argv=companion_argv,source_paths=paths)
 
 
 if __name__=='__main__':main()

@@ -18,7 +18,9 @@ HEAP=0x24000000
 KEYS={'MetallicDebris':(0x83CEF0,0x66DA90,0x66DB93,0x13C), 'BridgeExplosions':(0x83CEDC,0x66DB93,0x66DC96,0x158)}
 class Lists:
  def __init__(self,*,profile=None,heap_bytes=0x400000,native_registry_startup=False):
-  live_heap=profile is not None and profile.name=='steam-15918130-fv-ordered-live-types-v1' and heap_bytes==0x08000000
+  live_heap=profile is not None and profile.name in (
+   'steam-15918130-fv-ordered-live-types-v1',
+   'steam-15918130-fv-ordered-rules-process-tail-v1') and heap_bytes==0x08000000
   if (not live_heap and not 0x20000<=heap_bytes<=0x2000000)or heap_bytes%0x1000:
    raise ValueError('Reader heap requires historical128KiB..32MiB or the exact128MiB live asset profile')
   self.f=Fixture(profile=profile);self.u=self.f.u;self.image=self.f.image

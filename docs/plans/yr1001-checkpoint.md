@@ -1,27 +1,53 @@
 # Vanilla 1.001 — current agentic checkpoint
 
-Updated 2026-10-06. Reconcile Git, PRs and owned commands before continuation.
+Updated 2026-10-07. Reconcile Git, PRs and owned commands before continuation.
 
 ## Authority and delivery
 
-The user explicitly authorized implementation, PR and merge of correctly ordered
-Bullet initialization and live type/asset readers into `ckbk456/vera20k` through
+The user explicitly authorized implementing, filing a PR and merging the next
+W02 dependency into `ckbk456/vera20k` through
 `delivery`. Preserve upstream `origin`, licensed assets and held W02 work. Agents
 own checks/native evidence; humans own hands-on gameplay acceptance. Whole Stage 2
 and W02 remain open.
 
-PRs #1/#3/#4/#5/#6/#7/#8 are merged. The fresh delivery base is
-`b43304db864b49979e2246317ebfd16a496ade49` (PR #8). Primary main is clean at that
+PRs #1/#3/#4/#5/#6/#7/#8/#10 are merged. The fresh delivery base is
+`b65a8eb97867838d32b9a9d1a878a12ac56f79c1` (PR #10). Primary main is clean at that
 base. No direct main commits, held movement publication or deployment is authorized
 by this bounded checkpoint.
 
 ## Current owned chain
 
-Branch `feature/yr1001-bullet-live-readers` is isolated from the held
+Branch `feature/yr1001-rules-process-tail` is isolated from the held
 `feature/yr1001-fv-move-stop-resume` branch. The latter's committed checkpoint is
 `1a7e36aed2ccefda927a7765edee0666bfacdacd`; its local work and native outputs are
 preserved. Only the native tooling owners and required shared dependencies are
 included in this delivery candidate. No Rust source changes are included.
+
+[Retained Process return](yr1001-rules-process-tail.md) completes the original
+root caller through actual `668FA2` RET4 on one fresh VM. Tiberium CRT index
+3220 executes before Scenario; the shared owner retains full original readers,
+physical catalogs/Colors/assets/primary membership and caller chronology.
+Source-frozen implementation `a92d0f701` passed in 2,609.295 seconds with all
+2,468 producers unchanged and four outputs bound to one raw receipt. It
+observed the full 1,976-entry live pass, then twelve tail calls, 118 Warhead
+rereads, four Tiberium constructors/readers and six ID-bearing constructors.
+All 18 tail checks are true, including native opcode, return sentinel,
+stack consumption and saved registers. All three RNG stores remain unchanged
+with zero observed draws. Only cold mode zero and the stock absent command-bar
+section return are qualified; accepted Session settings remain excluded.
+
+The 24 affected native checks, 97 shared guard/supplier checks, portable
+669 tests / 28 explicit skips, skills and unchanged field ratchet pass.
+Historical Bullet payload is unchanged; source metadata is refreshed. The
+first physical Combat scope failure and corrected cold-primary/cold-catalog
+diagnostics remain preserved, separate from final joined qualification.
+The sole fresh independent read-only critic reviewed snapshot `003131a5` and
+found no confirmed actionable defects in the qualified path; its hashed outcome
+and boundaries are in the sanitized receipt. Tests-only follow-up `e7f7fdab2`
+closes the two noted negative-regression gaps before Process; 26 affected checks
+and 671 portable tests / 30 skips pass, with native paths unchanged.
+[PR #11](https://github.com/ckbk456/vera20k/pull/11) is ready; final-head seven
+checks and actual merge remain pending.
 
 [Ordered startup and live readers](yr1001-bullet-live-readers.md) records the
 original Bullet/Sound/EVA CRT order, single retained native VM, physical supplier
@@ -37,7 +63,7 @@ recorded separately in the sanitized validation receipt.
 All 611 isolated Anim bodies and all 402 unique Building bodies also passed
 under their stated diagnostic priors. The native palette activation executes
 before Process; actual library palette bytes are loaded through the shared
-physical owner. The sole fresh read-only critic found two P2 compatibility/reproducibility defects. Both are fixed and validated at `c174da17`; PR #10 is ready; corrected exact-head CI and authorized auto-merge remain pending.
+physical owner. The sole fresh read-only critic found two P2 compatibility/reproducibility defects. Both are fixed and validated at `c174da17`; PR #10 merged at `b65a8eb9` after all seven required checks passed at exact head `c01c4dde`; primary main fast-forwarded cleanly. The delivered chain and its earlier receipts are preserved.
 
 Retail Rust lib: 9,589 passed, zero failed, 231 ignored. Clippy completed with
 729 existing warnings. Named release retail scenario/map construction passed.
@@ -49,7 +75,7 @@ successful retry. Build retirement continues to fail closed when idle state is u
 its real disposable-process test skips only after that preflight cannot prove
 an inspectable host. Synthetic busy/unknown controls remain active.
 
-The original caller after `668EF5`, accepted Session settings, House/map placement,
+Later Rules layers, accepted Session settings, House/map placement,
 native paid FV Move/Stop/resume and hands-on acceptance remain required W02 gates.
 Windows capture access is separate. No evidence of these gates follows from a
 native reader declaration or an asset request.
