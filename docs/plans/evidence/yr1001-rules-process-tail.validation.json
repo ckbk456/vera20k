@@ -1,9 +1,9 @@
 {
   "schema": "yr1001-rules-process-tail-validation-v1",
-  "recorded_utc": "2026-10-07T06:59:33.287594+00:00",
+  "recorded_utc": "2026-10-07T07:10:49.720202+00:00",
   "base_sha": "b65a8eb97867838d32b9a9d1a878a12ac56f79c1",
   "implementation_sha": "a92d0f70192df5f8ad81cf9e220ff56812f2f3f9",
-  "status": "qualified_native_prerequisite_pending_single_critic_and_delivery",
+  "status": "qualified_native_prerequisite_single_critic_complete_pending_delivery",
   "native_sha256": "3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600",
   "scope": "Original retained root Rules.Process through stock mode-zero absent-command-bar RET4; no Rust/gameplay change",
   "checks": [
@@ -593,7 +593,18 @@
     "integration": "None; instruction/ABI cautions and later House/AI/RNG leads only"
   },
   "critic": {
-    "status": "Pending one fresh independent read-only critic after final implementation/validation"
+    "status": "Complete: no confirmed actionable defects within the authorized stock cold-mode-zero, absent-command-bar path",
+    "snapshot_sha": "003131a540f07317f071ba393b7c2aeb0287f8ef",
+    "mechanism": "One fresh ephemeral Codex CLI session with read-only sandbox; no project code/tests/builds or mutations executed",
+    "report_sha256": "98723b66b2d53d23a3a5e91732bc8d10a532b15495ce06090567eda5d85afa5e",
+    "events_sha256": "c3023065dc882ddabd9ad69ef6f8e6cf57a9ca17b353b62385a1610a2092ea2d",
+    "prompt_sha256": "b43fad83d8dc76741f2c7b85294d3b42b413de808dbd2a7dd83556d5e13918b7",
+    "coverage": "Original native bytes, all 24 added code spans and 279 data spans; retained caller/RET4/stack/registers; constructor and Warhead/Tiberium chronology; all 2468 frozen inputs, output/raw/canonical bindings and validation provenance",
+    "limits": [
+      "Unchanged RNG and zero observed draws qualify only this saved execution.",
+      "Dedicated populated-section regression covers AdvancedCommandBar; nonzero mode and MultiplayerAdvancedCommandBar rejection are guarded but lack separate negative regressions.",
+      "Supplied IO/heap/CRT/audio/surface priors and later Rules/Session/House/gameplay/human gates remain explicit."
+    ]
   },
   "boundaries": [
     "Supplied lexical/CSF/physical archive/file IO, bounded heap/CRT/TLS, clock/RGB565 Surface and null audio output remain explicit; no full Windows startup/device/render parity.",

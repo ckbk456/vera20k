@@ -41,7 +41,10 @@ The 24 affected native checks, 97 shared guard/supplier checks, portable
 Historical Bullet payload is unchanged; source metadata is refreshed. The
 first physical Combat scope failure and corrected cold-primary/cold-catalog
 diagnostics remain preserved, separate from final joined qualification.
-One fresh independent read-only critic and PR/merge delivery remain pending.
+The sole fresh independent read-only critic reviewed snapshot `003131a5` and
+found no confirmed actionable defects in the qualified path; its hashed outcome
+and regression coverage limits are in the sanitized receipt. PR/merge delivery
+and seven exact-head checks remain pending.
 
 [Ordered startup and live readers](yr1001-bullet-live-readers.md) records the
 original Bullet/Sound/EVA CRT order, single retained native VM, physical supplier

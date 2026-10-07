@@ -74,7 +74,13 @@ Both passes leave all three RNG stores unchanged with zero observed draws.
 The [sanitized receipt](evidence/yr1001-rules-process-tail.validation.json)
 binds exact artifacts, native/source identity, source-frozen outputs and
 validation provenance. Full retail corpora and raw execution receipts stay
-ignored and local. One fresh independent critic and delivery remain pending.
+ignored and local. The sole fresh independent read-only critic reviewed snapshot
+`003131a5` and found no confirmed actionable defects in the qualified path. It
+independently checked the original byte spans, caller ABI, frozen inputs and
+output/raw bindings. No project code, tests or builds ran during review. The
+populated-section regression covers AdvancedCommandBar; nonzero mode and
+MultiplayerAdvancedCommandBar rejection lack separate negative regressions.
+PR/merge delivery and seven exact-head required checks remain pending.
 
 Run the source-frozen joined route from the repository environment:
 
@@ -113,5 +119,5 @@ after the earlier upstream checkpoint. No upstream change is imported here.
   boundaries. Its thirteen AI value lists, IQ gate and House/type prerequisites
   remain outside this root Process-tail tooling chain; no change is imported.
 
-Delivery requires final validation, one fresh independent read-only critic,
+Local validation and the sole independent review are complete. Delivery requires
 the authorized PR/merge and seven required checks at its exact published head.
