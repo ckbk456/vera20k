@@ -77,10 +77,14 @@ validation provenance. Full retail corpora and raw execution receipts stay
 ignored and local. The sole fresh independent read-only critic reviewed snapshot
 `003131a5` and found no confirmed actionable defects in the qualified path. It
 independently checked the original byte spans, caller ABI, frozen inputs and
-output/raw bindings. No project code, tests or builds ran during review. The
-populated-section regression covers AdvancedCommandBar; nonzero mode and
-MultiplayerAdvancedCommandBar rejection lack separate negative regressions.
-PR/merge delivery and seven exact-head required checks remain pending.
+output/raw bindings. No project code, tests or builds ran during review. The review noted two negative-regression gaps. Tests-only follow-up
+`e7f7fdab2` now proves nonzero mode and both populated command-bar sections
+are rejected before native `668BF0` entry, preserving the unsupported input.
+The affected suite passes 26 checks; portable validation passes 671 tests with
+30 explicit skips. Native/runtime producer paths remain byte-identical to
+`a92d0f701`; original joined provenance is retained without a repeat review.
+[PR #11](https://github.com/ckbk456/vera20k/pull/11) is ready; final-head required
+checks and actual merge remain pending.
 
 Run the source-frozen joined route from the repository environment:
 

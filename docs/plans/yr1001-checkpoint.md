@@ -43,8 +43,11 @@ first physical Combat scope failure and corrected cold-primary/cold-catalog
 diagnostics remain preserved, separate from final joined qualification.
 The sole fresh independent read-only critic reviewed snapshot `003131a5` and
 found no confirmed actionable defects in the qualified path; its hashed outcome
-and regression coverage limits are in the sanitized receipt. PR/merge delivery
-and seven exact-head checks remain pending.
+and boundaries are in the sanitized receipt. Tests-only follow-up `e7f7fdab2`
+closes the two noted negative-regression gaps before Process; 26 affected checks
+and 671 portable tests / 30 skips pass, with native paths unchanged.
+[PR #11](https://github.com/ckbk456/vera20k/pull/11) is ready; final-head seven
+checks and actual merge remain pending.
 
 [Ordered startup and live readers](yr1001-bullet-live-readers.md) records the
 original Bullet/Sound/EVA CRT order, single retained native VM, physical supplier

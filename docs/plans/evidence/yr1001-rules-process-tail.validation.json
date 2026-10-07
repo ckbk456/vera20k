@@ -1,6 +1,6 @@
 {
   "schema": "yr1001-rules-process-tail-validation-v1",
-  "recorded_utc": "2026-10-07T07:10:49.720202+00:00",
+  "recorded_utc": "2026-10-07T07:14:16.606554+00:00",
   "base_sha": "b65a8eb97867838d32b9a9d1a878a12ac56f79c1",
   "implementation_sha": "a92d0f70192df5f8ad81cf9e220ff56812f2f3f9",
   "status": "qualified_native_prerequisite_single_critic_complete_pending_delivery",
@@ -66,6 +66,26 @@
       "execution_git_head": "b65a8eb97867838d32b9a9d1a878a12ac56f79c1",
       "validated_source_commit": "a92d0f70192df5f8ad81cf9e220ff56812f2f3f9",
       "note": "Ran on final producer bytes before implementation commit; no claim of execution at final documentation HEAD."
+    },
+    {
+      "command": "python -m unittest tools.tests.test_fv_rules_process_tail tools.tests.test_fv_live_types tools.tests.test_fv_rules_prereaders tools.tests.test_fv_ordered_cold_startup tools.tests.test_fv_bullet_cold_startup -v",
+      "exit_code": 0,
+      "result": "26 passed in22.183s",
+      "log": ".local/rules-process-tail-validation/focused-tail-review-gaps.log",
+      "log_sha256": "fc1cd31933b3f1ccd70487868ce39584d2037a43b0630c0863e13458a6e85e28",
+      "execution_git_head": "7908c928c4ee3ccf0a7b1382609be605653ef5a8",
+      "validated_source_commit": "e7f7fdab2dea8f05c193b28bea0cd5f912bb1bfd",
+      "note": "Ran on the final tests-only follow-up before commit; native implementation remains exactly a92d0f701."
+    },
+    {
+      "command": "env -u VERA20K_GAMEMD_EXE python -m tools.run_tests",
+      "exit_code": 0,
+      "result": "671 tests; zero failures;30 explicit skips;23.484s",
+      "log": ".local/rules-process-tail-validation/python-portable-review-gaps.log",
+      "log_sha256": "f48d47d3bd08923eabd857bd5195c5f050addfdae18f6fa625f1a567861d1f17",
+      "execution_git_head": "7908c928c4ee3ccf0a7b1382609be605653ef5a8",
+      "validated_source_commit": "e7f7fdab2dea8f05c193b28bea0cd5f912bb1bfd",
+      "note": "Ran on the final tests-only follow-up before commit; native implementation remains exactly a92d0f701."
     }
   ],
   "joined": {
@@ -532,7 +552,8 @@
         "scenario": "bb47a3aaad942e89d8b7113f7b0d582763081b72a7ea45a1a93ac88715821a49",
         "mapgen": "dca67435629d486cac458300c323b247b68ed22541e3169dbaa0ec0412d595e6"
       }
-    }
+    },
+    "post_execution_changes": "Only documentation and tests-only e7f7fdab2 changed after execution. All executed native/runtime implementation paths remain byte-identical to a92d0f701; the original freeze/raw source identity is retained, not rebound to the later test source."
   },
   "diagnostic_controls": [
     {
@@ -602,14 +623,24 @@
     "coverage": "Original native bytes, all 24 added code spans and 279 data spans; retained caller/RET4/stack/registers; constructor and Warhead/Tiberium chronology; all 2468 frozen inputs, output/raw/canonical bindings and validation provenance",
     "limits": [
       "Unchanged RNG and zero observed draws qualify only this saved execution.",
-      "Dedicated populated-section regression covers AdvancedCommandBar; nonzero mode and MultiplayerAdvancedCommandBar rejection are guarded but lack separate negative regressions.",
+      "The critic identified missing dedicated negative regressions for nonzero mode and MultiplayerAdvancedCommandBar. Both are now covered by tests-only follow-up e7f7fdab2; all three guard controls observe zero native668BF0 entries and preserve the unsupported incoming mode.",
       "Supplied IO/heap/CRT/audio/surface priors and later Rules/Session/House/gameplay/human gates remain explicit."
-    ]
+    ],
+    "post_review_disposition": "No confirmed implementation defect. Authorized coverage follow-up adds real fresh-VM guard regressions only; 26 affected checks and 671 portable tests pass. The original review report is preserved; no second review was requested."
   },
   "boundaries": [
     "Supplied lexical/CSF/physical archive/file IO, bounded heap/CRT/TLS, clock/RGB565 Surface and null audio output remain explicit; no full Windows startup/device/render parity.",
     "Only unchanged cold mode0 and absent stock command-bar sections qualified; present/other modes rejected, accepted Session excluded.",
     "Later Rules layers, accepted Session, House/map placement, paid FV Move/Stop/resume, rendering/numeric gameplay parity and human/device acceptance remain open.",
     "Full retail/raw execution corpus and host/session metadata remain ignored/local; previous receipts/held dirty W02 are preserved."
-  ]
+  ],
+  "test_followup_sha": "e7f7fdab2dea8f05c193b28bea0cd5f912bb1bfd",
+  "delivery": {
+    "pr_url": "https://github.com/ckbk456/vera20k/pull/11",
+    "status": "Open ready PR; final-head required CI and actual merge pending",
+    "initial_published_head": "7908c928c4ee3ccf0a7b1382609be605653ef5a8",
+    "initial_ci_watcher": "Stopped after disabling auto-merge for the tests-only follow-up; original log preserved",
+    "target": "ckbk456/vera20k:main",
+    "merge_effect": "Source only; no deployment or gameplay/human acceptance"
+  }
 }
