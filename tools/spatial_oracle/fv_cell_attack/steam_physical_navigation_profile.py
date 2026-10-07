@@ -135,6 +135,33 @@ PHYSICAL_INPUT_READ_ONLY=(
     (0x83B42C,24),(0x83C8CC,24),(0x83D4B4,12),(0x8448EC,8),
     (0x721CF8,24),
 )
+
+# Full Rules tail adds only the gaps in the existing Tiberium owner. Its live
+# parent already inherits PHYSICAL_INPUT_REGIONS/DATA/READ_ONLY: cold721640,
+# ctor7216C0, selected Value/Image bodies, B0F4E8 and the six-way Image table
+# remain those original declarations. Existing physical profiles below do not
+# consume these additions. See steam_physical_navigation_profile.md for proof.
+RULES_TIBERIUM_REGIONS=(
+    (0x721A50,0x721AFA,'6d5183de7c54f6fa6e02fe89cf79ac94d71273293c2a4752a0fa55bbef1a3d89'),
+    (0x721B12,0x721C3F,'ef88c42a22de53b33367befac15aef8a5b75d4715578cb1d3b1ed73fd3cf14a4'),
+    (0x721C7B,0x721C88,'b5902c20b349b25dffece689edb470d48874cc646a13a51544b8e5189312120d'),
+    (0x721CDC,0x721CF6,'794eca6091bac2c13e01601d445e019bf1e65b9810ef4940e6753298c5d5997b'),
+    (0x721D10,0x721DBA,'89cd46d5fad87ef8006dea6e40fe7db90da2c52e63299b5eaa589843ff0e71ef'),
+)
+RULES_TIBERIUM_READ_ONLY=(
+    (0x7F578C,4),  # Actual721D9F primaryVT7F5728+64 ->721A50 ReadINI.
+    (0x8448E4,7),  # Debris
+    (0x8448F4,17),  # GrowthPercentage
+    (0x844908,7),  # Growth
+    (0x844910,17),  # SpreadPercentage
+    (0x844924,7),  # Spread
+    (0x84492C,10),  # Tiberiums
+)
+# Registry, Abstract vector, root globals and native heap belong to the live
+# parent. No fixture registry/header/index or new mutable BSS is introduced.
+RULES_TIBERIUM_NATIVE_DATA=()
+RULES_TIBERIUM_ENTRIES=((0x721A50,(RET_MAGIC,)),(0x721D10,(RET_MAGIC,)))
+
 STEAM_PHYSICAL_INPUTS_PROFILE=ExecutionProfile(
     name='steam-15918130-fv-physical-inputs-v1',native_sha256=PARENT.native_sha256,
     regions=STEAM_PHYSICAL_THEATER_PROPERTIES_PROFILE.regions+PHYSICAL_INPUT_REGIONS,

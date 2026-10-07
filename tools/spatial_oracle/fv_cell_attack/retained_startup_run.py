@@ -20,6 +20,7 @@ import time
 ROOT=Path(__file__).resolve().parents[3]
 MODULE='tools.spatial_oracle.fv_cell_attack.steam_movement_profile'
 LIVE_MODULE='tools.spatial_oracle.fv_cell_attack.steam_live_types'
+TAIL_MODULE='tools.spatial_oracle.fv_cell_attack.steam_rules_process_tail'
 
 def digest(path):
     with path.open('rb')as source:return hashlib.file_digest(source,'sha256').hexdigest()
@@ -45,7 +46,7 @@ def live_equivalent():
         if not directory.name.isdigit():continue
         try:
             parts=(directory/'cmdline').read_bytes().split(b'\0')
-            if (MODULE.encode()in parts or LIVE_MODULE.encode()in parts or any(part.endswith(b'steam_movement_profile.py')for part in parts))and Path(os.readlink(directory/'cwd')).resolve()==ROOT:
+            if (MODULE.encode()in parts or LIVE_MODULE.encode()in parts or TAIL_MODULE.encode()in parts or any(part.endswith(b'steam_movement_profile.py')for part in parts))and Path(os.readlink(directory/'cwd')).resolve()==ROOT:
                 matches.append(int(directory.name))
         except OSError:continue
     return matches
@@ -53,7 +54,7 @@ def live_equivalent():
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--run-name',required=True)
-    parser.add_argument('--scope',choices=('prereaders','live-types'),default='prereaders')
+    parser.add_argument('--scope',choices=('prereaders','live-types','rules-tail'),default='prereaders')
     operation=parser.add_mutually_exclusive_group(required=True)
     operation.add_argument('--prepare-only',action='store_true')
     operation.add_argument('--execute',action='store_true')
@@ -64,12 +65,12 @@ def main():
     os.chdir(ROOT)
     folder=ROOT/'.local/fv-movement-validation'/args.run_name
     target=ROOT/'tools/spatial_oracle/fv_cell_attack'/('steam_movement_'+args.run_name.replace('-','_')+'.json')
-    if args.scope=='live-types':target=folder/'full.json'
+    if args.scope in ('live-types','rules-tail'):target=folder/'full.json'
     outputs=(target,target.with_suffix('.meta.json'),target.with_name(target.stem+'_reader.json'),target.with_name(target.stem+'_reader.meta.json'))
     if folder.exists()or any(path.exists()for path in outputs):raise ValueError('Owned run/output already exists; preserve it and inspect before a new run')
     if matches:=live_equivalent():raise ValueError('Equivalent native process exists: '+str(matches))
     command=([sys.executable,'-m',MODULE,'--retained-prereaders-only']if args.scope=='prereaders'else
-        [sys.executable,'-m',LIVE_MODULE])+['--write','--output',str(target)]
+        [sys.executable,'-m',LIVE_MODULE if args.scope=='live-types'else TAIL_MODULE])+['--write','--output',str(target)]
     # Reuse the earlier explicit producer/observer inventory, while freezing
     # current identities and all current tools. The historical freeze stays
     # immutable; it supplies paths, never source identities or native results.
@@ -85,7 +86,7 @@ def main():
         paths.update(path for path in Path(os.environ['VERA20K_FV_MOVEMENT_ASSETS']).iterdir()if path.is_file())
     paths.update(path for path in(ROOT/'tools').rglob('*')if path.is_file()and '__pycache__'not in path.parts)
     paths.update((Path(os.environ['VERA20K_GAMEMD_EXE']),ROOT/'tools/tests/test_fv_rules_prereaders.py'))
-    if args.scope=='live-types':
+    if args.scope in ('live-types','rules-tail'):
         paths.update(path for path in Path(os.environ['VERA20K_GAMEMD_EXE']).parent.iterdir()if path.is_file())
         from tools.projectile_oracle.bridge_render_inputs_palette import PALETTE_ASSETS
         from tools.spatial_oracle.fv_cell_attack.steam_movement_profile import color_palette_root
@@ -103,9 +104,11 @@ def main():
         producer_sha256=before,environment={key:environment[key]for key in('VERA20K_GAMEMD_EXE','VERA20K_FV_MOVEMENT_ASSETS',
             'VERA20K_NATIVE_EXECUTION_DIR','VERA20K_NATIVE_FAILURE_DIR','PYTHONDONTWRITEBYTECODE')},
         outputs=[str(path)for path in outputs],profile=('steam-15918130-fv-ordered-rules-prereaders-v1'if args.scope=='prereaders'else
-            'steam-15918130-fv-ordered-live-types-v1'),
+            'steam-15918130-fv-ordered-live-types-v1'if args.scope=='live-types'else
+            'steam-15918130-fv-ordered-rules-process-tail-v1'),
         scope=('Selected ordered cold CRT and retained original Process prefix through668EED; no gameplay parity'if args.scope=='prereaders'else
-            'Selected ordered Bullet/Sound cold CRT and original retained live type pass to668EF5; supplied physical IO/CSF/device priors; no gameplay parity')))
+            'Selected ordered Bullet/Sound cold CRT and original retained live type pass to668EF5; supplied physical IO/CSF/device priors; no gameplay parity'if args.scope=='live-types'else
+            'Selected ordered CRT including Tiberium before Scenario and original retained root Rules.Process through actual RET4; supplied IO/device priors, stock absent command-bar; no Session/House/gameplay parity')))
     started=time.monotonic();child=None;interrupted=None
     def signal_handler(number,frame):raise KeyboardInterrupt('Owned runner signal '+str(number))
     signal.signal(signal.SIGTERM,signal_handler)

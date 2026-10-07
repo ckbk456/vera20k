@@ -1720,7 +1720,7 @@ def cache_receiver_metadata():
         substitutions=['Existing scoped INI lexical cache/allocator/CRT transports.'],
         entry_points={'read_int':0x5276D0,'read_string':0x528A10})
 
-def typed_master_inputs(root,*,native_state=None,profile=None,heap_bytes=None,retained_startup=False,retained_dialog=False,ordered_cold_startup=False,retained_prereaders=False,retained_live_types=False,live_assets=None,progress=None):
+def typed_master_inputs(root,*,native_state=None,profile=None,heap_bytes=None,retained_startup=False,retained_dialog=False,ordered_cold_startup=False,retained_prereaders=False,retained_live_types=False,retained_rules_process_tail=False,live_assets=None,progress=None):
     """Original master discovery on the existing VM, ending before JumpjetControls.
 
     The fresh control is a bounded constructor milestone, not cold startup or
@@ -1744,6 +1744,8 @@ def typed_master_inputs(root,*,native_state=None,profile=None,heap_bytes=None,re
         raise ValueError('Rules prereaders require ordered cold startup and the retained Dialog owner')
     if retained_live_types and not(retained_startup and retained_dialog and ordered_cold_startup and retained_prereaders):
         raise ValueError('Live types require fresh ordered startup and the complete retained prereaders')
+    if retained_rules_process_tail and not retained_live_types:
+        raise ValueError('Rules Process tail requires the complete retained live-type route')
     if live_assets is not None and not retained_live_types:
         raise ValueError('Live assets require the fresh live type owner')
     if retained_startup:
@@ -1753,6 +1755,9 @@ def typed_master_inputs(root,*,native_state=None,profile=None,heap_bytes=None,re
             from tools.spatial_oracle.fv_cell_attack.steam_live_types import live_types_profile,LIVE_HEAP_BYTES
         profile=(live_types_profile()if retained_live_types else rules_prereader_profile()if retained_prereaders else ordered_startup_profile(retained_dialog=retained_dialog)if ordered_cold_startup else
             retained_startup_profile(retained_dialog=retained_dialog));heap_bytes=LIVE_HEAP_BYTES if retained_live_types else 0x2000000
+        if retained_rules_process_tail:
+            from tools.spatial_oracle.fv_cell_attack.steam_rules_process_tail import rules_process_tail_profile
+            profile=rules_process_tail_profile()
     dialog_constructor=None
     if native_state is None:
         m,selected,setup=constructor_inputs(profile=STEAM_TYPED_MASTER_PROFILE if profile is None else profile,
@@ -1802,6 +1807,11 @@ def typed_master_inputs(root,*,native_state=None,profile=None,heap_bytes=None,re
         'SmudgeTypes','TerrainTypes','BuildingTypes','VehicleTypes','AircraftTypes','InfantryTypes',
         'Animations','VoxelAnims','Particles','ParticleSystems')
     sections=physical_sections(raw,names=None if retained_startup else names)
+    if retained_rules_process_tail:
+        if m.read32(0xA8B238)!=0:
+            raise ValueError('Rules Process tail requires the unchanged cold mode-zero prior')
+        if any(name in sections for name in ('AdvancedCommandBar','MultiplayerAdvancedCommandBar')):
+            raise ValueError('Populated command-bar sections are outside the qualified Rules tail scope')
     reader_ini=INI;cache_preparation=None
     if retained_dialog:
         # Original52CDF1 requests58 for the root CCINI object; actual668A24
@@ -2141,6 +2151,10 @@ def typed_master_inputs(root,*,native_state=None,profile=None,heap_bytes=None,re
         if progress:progress('Retained prereaders reached668EED; original live type pass starting')
         continue_live_types(m,rules,reader_ini,receipt,progress=progress)
         if progress:progress('Original live type pass reached668EF5')
+    if retained_rules_process_tail:
+        from tools.spatial_oracle.fv_cell_attack.steam_rules_process_tail import continue_rules_process_tail
+        continue_rules_process_tail(m,rules,reader_ini,receipt,progress=progress)
+        if progress:progress('Original root Rules.Process returned through RET4')
     return m,selected,rules,receipt
 
 def rules_prereader_profile():
@@ -2166,7 +2180,8 @@ def continue_rules_prereaders(m,rules,reader_ini,receipt):
     from unicorn.x86_const import UC_X86_REG_EIP,UC_X86_REG_ESP,UC_X86_REG_EDI,UC_X86_REG_ESI,UC_X86_REG_ECX
     from tools.native_oracle import NativeExecutionError
     from tools.spatial_oracle.fv_cell_attack.steam_rules_prereader_scope import READER_ENTRIES,PREREADER_NATIVE_DATA
-    if m.image is None or m.image.profile.name not in (rules_prereader_profile().name,'steam-15918130-fv-ordered-live-types-v1'):
+    from tools.spatial_oracle.fv_cell_attack.steam_rules_process_tail import PROFILE_NAME as TAIL_PROFILE_NAME
+    if m.image is None or m.image.profile.name not in (rules_prereader_profile().name,'steam-15918130-fv-ordered-live-types-v1',TAIL_PROFILE_NAME):
         raise ValueError('Rules prereaders require their complete profile at VM creation')
     if 'retained_prereaders' in receipt:
         raise ValueError('Rules prereaders cannot restart their retained native caller')
@@ -2333,7 +2348,7 @@ def retain_dialog_execution(receipt,reference,*,native_identity,source_identity,
     print('RAW EXECUTION '+str(path)+' SHA256 '+hashlib.sha256(path.read_bytes()).hexdigest(),flush=True)
     return path
 
-def generate_typed_master(*,retained_startup=False,retained_dialog=False,ordered_cold_startup=False,retained_prereaders=False,retained_live_types=False,execution_source_paths=None,reference_capture=None,progress=None):
+def generate_typed_master(*,retained_startup=False,retained_dialog=False,ordered_cold_startup=False,retained_prereaders=False,retained_live_types=False,retained_rules_process_tail=False,execution_source_paths=None,reference_capture=None,progress=None):
     import os
     from pathlib import Path
     from tools.native_oracle import source_identity
@@ -2341,7 +2356,7 @@ def generate_typed_master(*,retained_startup=False,retained_dialog=False,ordered
         raise ValueError('Retained dialog generation requires its producer source paths')
     sources=source_identity(execution_source_paths)
     m,_,_,receipt=typed_master_inputs(Path(os.environ['VERA20K_FV_MOVEMENT_ASSETS']),
-        retained_startup=retained_startup,retained_dialog=retained_dialog,ordered_cold_startup=ordered_cold_startup,retained_prereaders=retained_prereaders,retained_live_types=retained_live_types,progress=progress)
+        retained_startup=retained_startup,retained_dialog=retained_dialog,ordered_cold_startup=ordered_cold_startup,retained_prereaders=retained_prereaders,retained_live_types=retained_live_types,retained_rules_process_tail=retained_rules_process_tail,progress=progress)
     if not retained_dialog:return receipt
     reference=retained_dialog_reference(receipt)
     import unicorn
@@ -2533,9 +2548,11 @@ def initialize_ordered_cold_crt(m):
     from tools.spatial_oracle.locomotor_force_track import initialize_drive_crt
     from tools.spatial_oracle.fv_cell_attack.steam_bullet_startup_scope import (
         BULLET_COLD_PROFILE_NAME, BULLET_COLD_REGION, BULLET_COLD_ENTRY, BULLET_REGISTRY)
+    from tools.spatial_oracle.fv_cell_attack.steam_rules_process_tail import (
+        PROFILE_NAME as TAIL_PROFILE_NAME,TIBERIUM_COLD_ENTRY,TIBERIUM_REGISTRY)
     if m.image is None or m.image.profile.name not in (
             ordered_startup_profile().name,'steam-15918130-fv-ordered-rules-prereaders-v1',
-            BULLET_COLD_PROFILE_NAME, 'steam-15918130-fv-ordered-live-types-v1'):
+            BULLET_COLD_PROFILE_NAME, 'steam-15918130-fv-ordered-live-types-v1',TAIL_PROFILE_NAME):
         raise ValueError('Ordered cold CRT requires its explicitly enrolled fresh profile')
     if m.read32(0xA8B230) or getattr(m,'ordered_cold_startup',None) is not None:
         raise ValueError('Ordered cold CRT cannot restart a published or initialized VM')
@@ -2547,11 +2564,11 @@ def initialize_ordered_cold_crt(m):
     registries={entry:(family,registry)for family,_,_,_,entry,registry,_ in TYPED_MASTER_FAMILIES}
     registries.update({0x40FB30:('Weapon',0x887568),0x4E7A60:('registry1193',0xA8EB00),
         0x4E7B60:('registry1195',0xA8E968),0x5F6FF0:('Object',0xAC1418),0x725350:('Abstract',0xB0F670)})
-    if m.image.profile.name in (BULLET_COLD_PROFILE_NAME, 'steam-15918130-fv-ordered-live-types-v1'):
+    if m.image.profile.name in (BULLET_COLD_PROFILE_NAME, 'steam-15918130-fv-ordered-live-types-v1',TAIL_PROFILE_NAME):
         if BULLET_COLD_REGION not in m.image.profile.regions:
             raise ValueError('Bullet cold startup requires its reviewed original callback')
         registries[BULLET_COLD_ENTRY]=('Bullet',BULLET_REGISTRY)
-    if m.image.profile.name=='steam-15918130-fv-ordered-live-types-v1':
+    if m.image.profile.name in ('steam-15918130-fv-ordered-live-types-v1',TAIL_PROFILE_NAME):
         from tools.spatial_oracle.fv_cell_attack.steam_live_asset_scope import LIVE_ASSET_REGIONS
         sound=(0x750300,0x75033D,'78eebb165ea5f07dfb5e455ec5fd9c2ae13d0b98e1ddac128b4f2ad9821d5c16')
         if sound not in LIVE_ASSET_REGIONS or sound not in m.image.profile.regions:
@@ -2563,6 +2580,12 @@ def initialize_ordered_cold_crt(m):
         if eva not in m.image.profile.regions:
             raise ValueError('Live assets require reviewed original EVA registry CRT')
         registries[EVA_COLD_ENTRY]=('EVA',EVA_REGISTRY)
+    if m.image.profile.name==TAIL_PROFILE_NAME:
+        from tools.spatial_oracle.fv_cell_attack.steam_physical_navigation_profile import PHYSICAL_INPUT_REGIONS
+        tiberium=next(row for row in PHYSICAL_INPUT_REGIONS if row[0]==TIBERIUM_COLD_ENTRY)
+        if tiberium not in m.image.profile.regions:
+            raise ValueError('Rules tail requires the existing original Tiberium CRT declaration')
+        registries[TIBERIUM_COLD_ENTRY]=('Tiberium',TIBERIUM_REGISTRY)
     if any(any(m.u.mem_read(address,24))for _,address in registries.values()) or any(m.u.mem_read(0xA8E3A8,0x400)):
         raise ValueError('Ordered cold CRT requires pristine selected registries and MissionControls')
     callbacks=struct.unpack('<3945I',table)
