@@ -48,7 +48,8 @@ class HierarchyRepair(ConnectivityRepair):
    coord=self.coord(u.reg_read(UC_X86_REG_ECX));assert 114<=coord[0]<=116 and 58<=coord[1]<=60,('uncovered Recalc receiver',coord)
   super().observe(u,address,size,data)
  def graph_snapshot(self):
-  u=self.uc;plane=bytes(u.mem_read(PLANE,self.side*self.side*10));graphs=[]
+  u=self.uc;pointer=u32(u,MAP+0x70) if getattr(self,'owner',None) is not None else PLANE
+  plane=bytes(u.mem_read(pointer,self.side*self.side*10));graphs=[]
   for level in range(3):
    count=u32(u,MAP+0x74+level*4);header=MAP+0x8C+level*24;assert count==u32(u,header+16)<=u32(u,header+8)
    p=u32(u,header+4);records=[]

@@ -139,13 +139,31 @@ class Machine(Reader):
         self.phase = phase
         self.reads, self.events, self.writes = [], [], []
 
-    def type_state(self):
-        return dict(turrets=list(struct.unpack('<18i', self.u.mem_read(TYPE+0x814, 72))),
-                    charge_raw_dword=self.read32(TYPE+0x810),
-                    is_charge_turret=bool(self.u.mem_read(TYPE+0x810, 1)[0]),
-                    turret_count=signed(self.read32(TYPE+0x808)),
-                    weapon_count=signed(self.read32(TYPE+0x80C)),
-                    ifv_mode=signed(self.read32(TYPE+0x688)))
+    def type_state(self, pointer=TYPE):
+        return dict(turrets=list(struct.unpack('<18i', self.u.mem_read(pointer+0x814, 72))),
+                    charge_raw_dword=self.read32(pointer+0x810),
+                    is_charge_turret=bool(self.u.mem_read(pointer+0x810, 1)[0]),
+                    turret_count=signed(self.read32(pointer+0x808)),
+                    weapon_count=signed(self.read32(pointer+0x80C)),
+                    ifv_mode=signed(self.read32(pointer+0x688)))
+
+    def read_admitted_type_blocks(self, pointer=TYPE):
+        """Shared reader owner, after original section admission.
+
+        Joined lifetimes reuse this on their existing Reader/VM and actual
+        constructed type. Its original caller-frame seams stay explicit;
+        admission and physical layer scheduling remain with the caller.
+        """
+        u=self.u
+        for begin,end,registers in (
+            (0x71284A,0x712898,((UC_X86_REG_EBP,pointer),(UC_X86_REG_ESI,INI),(UC_X86_REG_EBX,pointer+0x24))),
+            (0x714780,0x71479A,((UC_X86_REG_EBP,pointer),(UC_X86_REG_EDI,INI),(UC_X86_REG_EBX,pointer+0x24))),
+            (0x747BBD,0x747E90,((UC_X86_REG_ESI,pointer),(UC_X86_REG_EBX,INI),(UC_X86_REG_EBP,pointer+0x24),(UC_X86_REG_EAX,0))),
+        ):
+            u.reg_write(UC_X86_REG_ESP,SP)
+            for register,value in registers:u.reg_write(register,value)
+            self.run_native(begin,end)
+        assert u.reg_read(UC_X86_REG_ESP)==SP
 
     def object_state(self):
         return dict(turret=signed(self.read32(ACTOR+0x124)),
@@ -161,13 +179,7 @@ class Machine(Reader):
                           required_addresses=(0x526810,))
         admitted = end == 0x410A8C
         if admitted:
-            self.regs(esp=SP, ebp=TYPE, esi=INI, ebx=TYPE+0x24)
-            run_checked(self.u, 0x71284A, 0x712898)
-            self.regs(esp=SP, ebp=TYPE, edi=INI, ebx=TYPE+0x24)
-            run_checked(self.u, 0x714780, 0x71479A)
-            self.regs(esp=SP, esi=TYPE, ebx=INI, ebp=TYPE+0x24, eax=0)
-            run_checked(self.u, 0x747BBD, 0x747E90)
-            assert self.u.reg_read(UC_X86_REG_ESP) == SP
+            self.read_admitted_type_blocks()
         assert self.code_before == [bytes(self.u.mem_read(a,b-a)) for a,b in SPANS]
         return dict(name=label, sections=sections, admitted=admitted, before=before,
                     after=self.type_state(), reads=self.reads.copy(),

@@ -60,14 +60,18 @@ def bits_hex(value):
 
 
 class Reader(Fixture):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *, profile=None):
+        super().__init__(profile=profile)
         self.crc = {}
-        # Write the stub before RET_MAGIC's page is first used as a stop address.
-        self.u.mem_write(RET_MAGIC, b'\xdd\x1d' + struct.pack('<I', ST0_SLOT))
-        self.write(SP, RET_MAGIC + 0x80)
+        # Historical full corpus observes ST0 with its external FSTP stub.
+        # Scoped execution stops at nonexecuting RET_MAGIC and observes the
+        # original ReadDouble FSTP storage at528588; no new code is supplied.
+        if self.image is None:
+            self.u.mem_write(RET_MAGIC, b'\xdd\x1d' + struct.pack('<I', ST0_SLOT))
+        self.write(SP, RET_MAGIC if self.image is not None else RET_MAGIC + 0x80)
         self.u.reg_write(UC_X86_REG_ESP, SP)
-        run_checked(self.u, 0x7C8F5E, RET_MAGIC + 0x80)
+        self.run_native(0x7C8F5E, RET_MAGIC if self.image is not None else RET_MAGIC + 0x80)
+        self.native_result = None
         self.events = []
         self.u.hook_add(UC_HOOK_CODE, self.observe)
 
@@ -76,17 +80,19 @@ class Reader(Fixture):
             self.events.append(('scan', uc.reg_read(UC_X86_REG_EAX)))
         elif address == 0x52857A:
             self.events.append(('percent',))
+        elif address == 0x528588:
+            sp = uc.reg_read(UC_X86_REG_ESP)
+            self.native_result = struct.unpack('<Q', uc.mem_read(sp + 0x28, 8))[0]
         elif address in FLDCW_SITES:
             self.events.append(('fldcw', address))
 
     def supply(self, key_name, raw):
         u = self.u
         if key_name not in self.crc:
-            name = key_name.encode()
-            self.crc[key_name] = call(0x4A1DE0, ecx=SCRATCH, stack_args=[SCRATCH + 0x100, len(name)],
-                                      writes={SCRATCH: bytes(16), SCRATCH + 0x100: name})['eax']
-        u.mem_write(KEY, key_name.encode() + b'\0')
-        u.mem_write(INI, bytes(0x40))
+            from tools.projectile_oracle.flat_art import crc
+            self.crc[key_name] = crc(key_name, profile=self.image.profile if self.image is not None else None)
+        self.fixture_write(KEY, key_name.encode() + b'\0')
+        self.fixture_write(INI, bytes(0x40))
         self.write(INI + 4, TYPE + 0x1F8)
         self.write(INI + 8, SECTION)
         self.write(SECTION + 0x2C, INDEX)
@@ -96,21 +102,26 @@ class Reader(Fixture):
         self.write(INDEX, self.crc[key_name])
         self.write(INDEX + 4, ENTRY)
         self.write(ENTRY + 0x10, RAW)
-        u.mem_write(RAW, raw.encode('ascii') + b'\0')
+        self.fixture_write(RAW, raw.encode('ascii') + b'\0')
 
     def read(self, raw, fpcw=GAME_FPCW, key_name='ProneDamage'):
         """ReadDouble(section, key, 1.0) on a present value; returns the ST0 bits."""
         u = self.u
         self.supply(key_name, raw)
-        u.mem_write(SP, struct.pack('<IIIQ', RET_MAGIC, TYPE + 0x1F8, KEY, 0x3FF0000000000000))
-        u.mem_write(ST0_SLOT, bytes(8))
+        self.fixture_write(SP, struct.pack('<IIIQ', RET_MAGIC, TYPE + 0x1F8, KEY, 0x3FF0000000000000))
+        if self.image is None:
+            u.mem_write(ST0_SLOT, bytes(8))
         u.reg_write(UC_X86_REG_ESP, SP)
         u.reg_write(UC_X86_REG_ECX, INI)
         u.reg_write(UC_X86_REG_FPCW, fpcw)
         self.events = []
-        run_checked(u, 0x5283D0, RET_MAGIC + 6, count=200_000,
-                    required_addresses=(0x528558, RET_MAGIC))
-        result = struct.unpack('<Q', u.mem_read(ST0_SLOT, 8))[0]
+        self.native_result = None
+        self.run_native(0x5283D0, RET_MAGIC if self.image is not None else RET_MAGIC + 6,
+                        count=200_000, required_addresses=(0x528558, 0x528588))
+        result = (self.native_result if self.image is not None
+                  else struct.unpack('<Q', u.mem_read(ST0_SLOT, 8))[0])
+        assert result is not None, 'Original ReadDouble did not produce its returned storage'
+
         assert u.reg_read(UC_X86_REG_FPCW) == fpcw, (raw, hex(u.reg_read(UC_X86_REG_FPCW)))
         assert not any(event[0] == 'fldcw' for event in self.events), (raw, self.events)
         assert self.events[0] == ('scan', 1), (raw, self.events)

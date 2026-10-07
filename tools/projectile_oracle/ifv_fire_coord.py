@@ -20,10 +20,30 @@ from tools.spatial_oracle.building_body_rules import RULES,SP,dwords
 # WeaponCount/TurretCount and the other keys the FV fixture needs).
 TYPE_SLICES=((0x71284a,0x712a8f),(0x71338b,0x7133c8),(0x7147b4,0x7147ce),(0x714a49,0x714a63),(0x714016,0x714030))
 
-def read_type_rules(u,typ):
- for begin,end in TYPE_SLICES:
+def read_admitted_weapon_rules(m,typ,*,ini=RULES,begin=0x71284a):
+ """Original selected TechnoType weapon reader on an existing admitted VM.
+
+ The default starts with native counts and charge-turret reads. Joined callers
+ that already read those fields may start at712898, retaining the constructor
+ or previously read values; WeaponCount decides numbered versus Primary path.
+ No Weapon/Warhead object or parsed result is supplied by this seam.
+ """
+ if begin not in (0x71284a,0x712898):raise ValueError('Unsupported weapon reader entry')
+ u=m.u
+ for reg,v in ((UC_X86_REG_ESP,SP),(UC_X86_REG_EBP,typ),
+               (UC_X86_REG_EBX,typ+0x24),(UC_X86_REG_ESI,ini),(UC_X86_REG_EDI,ini),
+               (UC_X86_REG_EAX,u.mem_read(typ+0xd22,1)[0])):
+  u.reg_write(reg,v)
+ m.run_native(begin,0x712a8f)
+ assert u.reg_read(UC_X86_REG_ESP)==SP
+
+
+def read_type_rules(m,typ):
+ read_admitted_weapon_rules(m,typ)
+ u=m.u
+ for begin,end in TYPE_SLICES[1:]:
   for reg,v in ((UC_X86_REG_ESP,SP),(UC_X86_REG_EBP,typ),(UC_X86_REG_EBX,typ+0x24),(UC_X86_REG_ESI,RULES),(UC_X86_REG_EDI,RULES),(UC_X86_REG_EAX,u.mem_read(typ+0xd22,1)[0])):u.reg_write(reg,v)
-  run_checked(u,begin,end)
+  m.run_native(begin,end)
 
 def prepare():
  m,_,cells,init=create(False);u=m.u
@@ -34,7 +54,7 @@ def prepare():
   path=assets_root()/name
   if not path.exists():continue
   raw=path.read_bytes();sections,_=lexical(raw,{'FV'});m.rules_cache(sections)
-  read_type_rules(u,typ)
+  read_type_rules(m,typ)
   for reg,v in ((UC_X86_REG_ESP,SP),(UC_X86_REG_EDI,typ),(UC_X86_REG_EBP,typ+0x24),(UC_X86_REG_EBX,RULES)):u.reg_write(reg,v)
   run_checked(u,0x747b03,0x747b49)
   layers.append(dict(file=name,sha256=hashlib.sha256(raw).hexdigest(),burst_delays=list(struct.unpack('<4i',u.mem_read(typ+0xe48,16)))))
@@ -155,7 +175,7 @@ def spawn_launch():
   if not path.exists():continue
   raw=path.read_bytes();sections,_=lexical(raw,set(SPAWN_WEAPONS)|set(types));m.rules_cache(sections)
   for w in weapons.values():m.invoke(0x772080,w,(RULES,))
-  for typ in types.values():read_type_rules(u,typ)
+  for typ in types.values():read_type_rules(m,typ)
   layers.append(dict(file=layer,sha256=hashlib.sha256(raw).hexdigest(),sections=sorted(sections)))
  # ART reader from HasTurrets to the SecondSpawnOffset store (71602E..71605B).
  art,_=lexical((assets_root()/'ARTMD.INI').read_bytes(),set(types));m.make_ini(art)

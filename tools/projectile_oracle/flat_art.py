@@ -12,18 +12,32 @@ from unicorn.x86_const import (
     UC_X86_REG_EDI, UC_X86_REG_ESI, UC_X86_REG_ESP,
 )
 from tools.native_oracle import (
-    SCRATCH, RET_MAGIC, call, run_checked, finish_vectors, provenance,
+    SCRATCH, RET_MAGIC, call, run_checked, finish_vectors, provenance, image_bytes,
 )
 from tools.spatial_oracle.building_body_rules import Fixture, TYPE, INI, RULES, SP
 from tools.spatial_oracle.map_queries import dwords
 
 
+def crc(text, *, profile=None):
+    # Revalidate the selected identity before a cached legacy result can return.
+    # Scoped CRC calls get a fresh owner-bound machine; do not cache across
+    # executable configuration changes or skip the trusted profile's guards.
+    if profile is None:
+        image_bytes()
+        return _legacy_crc(text)
+    return _crc_call(text, profile)
+
+
 @lru_cache
-def crc(text):
+def _legacy_crc(text):
+    return _crc_call(text, None)
+
+
+def _crc_call(text, profile):
     raw = text.encode('ascii')
     return call(0x4A1DE0, ecx=SCRATCH,
                 stack_args=[SCRATCH + 0x100, len(raw)],
-                writes={SCRATCH: bytes(16), SCRATCH + 0x100: raw})['eax']
+                writes={SCRATCH: bytes(16), SCRATCH + 0x100: raw}, profile=profile)['eax']
 
 
 def ini_index(u, ini, backing, section_name, key, raw):

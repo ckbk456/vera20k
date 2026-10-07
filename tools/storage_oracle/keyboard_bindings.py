@@ -129,9 +129,9 @@ class KeyboardFixture:
                     after=[list(row) for row in after])
 
 
-def stock_csf():
-    data = mix((configured_gamemd().parent / "langmd.mix").read_bytes())[mix_hash("ra2md.csf")]
-    offset, entries = 24, {}
+def parse_csf(data, *, include_extras=False):
+    """Shared physical CSF decoding, without choosing an archive winner."""
+    offset, entries, extras = 24, {}, {}
     while data[offset:offset + 4] == b" LBL":
         count, size = struct.unpack_from("<II", data, offset + 4)
         offset += 12
@@ -145,9 +145,18 @@ def stock_csf():
             offset += size * 2
             if tag == b"WRTS":
                 size = struct.unpack_from("<I", data, offset)[0]
+                extras[key] = data[offset + 4:offset + 4 + size]
                 offset += 4 + size
+            else:
+                extras[key] = None
             entries[key] = value
-    return entries, hashlib.sha256(data).hexdigest()
+    digest = hashlib.sha256(data).hexdigest()
+    return (entries, digest, extras) if include_extras else (entries, digest)
+
+
+def stock_csf():
+    data = mix((configured_gamemd().parent / "langmd.mix").read_bytes())[mix_hash("ra2md.csf")]
+    return parse_csf(data)
 
 
 def generate():

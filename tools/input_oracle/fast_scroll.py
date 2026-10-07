@@ -514,6 +514,25 @@ class ThrottleServices:
                          "offline_service_calls": 0, "sleep_calls": [],
                          "command_calls": 0, "tactical_calls": 0, "render_calls": 0}
 
+    def import_transport(self, call):
+        """Original FF15 timeGetTime boundary; the native SHR4 still executes.
+
+        The supplied u32 Windows millisecond stream is an explicit OS input,
+        not an emulated clock or gameplay return. API ABI/wrap domain:
+        https://learn.microsoft.com/en-us/windows/win32/api/timeapi/nf-timeapi-timegettime
+        """
+        if ((call.spec.site, call.spec.iat, call.spec.argument_bytes)
+                != (0x006C8C40, 0x007E1530, 0) or call.arguments):
+            raise ValueError("Unsupported supplied timeGetTime transport")
+        try:
+            value = next(self.clocks[0x006C8C40])
+        except StopIteration as error:
+            raise RuntimeError("Unexpected extra timeGetTime read") from error
+        if type(value) is not int or not 0 <= value <= 0xFFFFFFFF:
+            raise ValueError("timeGetTime input must be an unsigned DWORD")
+        self.clock_reads.append({"reader": hex(0x006C8C40), "wall_ms": value})
+        call.return_to_native(value)
+
     def sink(self, uc, address, _size=0, _data=None):
         if address == SCRATCH + 0x3020 or address in self.clocks:
             source = address

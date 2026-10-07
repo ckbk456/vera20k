@@ -67,6 +67,45 @@ def make_destination_fixture(case):
     return u, call, read32
 
 
+def stop_speed_owner(case, *, profile=None):
+    """Full Drive/Ship Stop with original vtables; retain the disjoint Foot writer.
+
+    This is a supplied active-head state, not command admission or full Process.
+    The full physical Event followup remains the Paid/Mission owner's job.
+    """
+    from tools.spatial_oracle.track_speed_native import seed
+    from tools.spatial_oracle.locomotor_force_track import FOOT, LOCO, SP
+    from tools.native_oracle import RET_MAGIC
+    from unicorn.x86_const import UC_X86_REG_ECX
+    n = seed(case, profile=profile)
+    u = n.uc
+    ship = case.get('family', 'drive') == 'ship'
+    entry, writer, original_return = (0x69F510, 0x69F5B4, 0x69F5D5) if ship else (0x4AFE00, 0x4AFEA4, 0x4AFEC5)
+    n.write(LOCO + 0x50, struct.pack('<d', case['target']))
+    n.write(LOCO + 0x34, dwords(2688, 2688, 208))
+    n.write(LOCO + 0x40, dwords(*case.get('head', (2688, 2688, 208))))
+    before_foot = bytes(u.mem_read(FOOT, 0x800))
+    before_drive = bytes(u.mem_read(LOCO, 0x80))
+    n.write(SP, dwords(RET_MAGIC, LOCO + 4))
+    u.reg_write(UC_X86_REG_ESP, SP)
+    n.run_native(entry, RET_MAGIC, count=2000, required_addresses=(writer,))
+    assert u.reg_read(UC_X86_REG_ESP) == SP + 8
+    after_foot = bytes(u.mem_read(FOOT, 0x800))
+    assert after_foot == before_foot, 'Locomotor Stop must not publish Foot applied speed'
+    after_drive = bytes(u.mem_read(LOCO, 0x80))
+    target_bits = n.double_bits(LOCO + 0x50)
+    applied_bits = n.double_bits(FOOT + 0x578)
+    n.write(SP, dwords(RET_MAGIC))
+    u.reg_write(UC_X86_REG_ESP, SP)
+    u.reg_write(UC_X86_REG_ECX, FOOT)
+    n.run_native(0x4DB1A0, RET_MAGIC, count=3000, required_addresses=(0x50C050, 0x7C5F00))
+    return dict(input=case, before=dict(foot_raw=before_foot.hex(), drive_raw=before_drive.hex()),
+                after=dict(foot_raw=after_foot.hex(), drive_raw=after_drive.hex(),
+                           target_bits=target_bits, applied_bits=applied_bits),
+                getter_eax=u.reg_read(UC_X86_REG_EAX), writes=n.writes,
+                foot_preserved=True, selected_call=f'{entry:08X}', selected_return=f'{original_return:08X}')
+
+
 def query(case):
     u, call, read32 = make_destination_fixture(case)
     events = []

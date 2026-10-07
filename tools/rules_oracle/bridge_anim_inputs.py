@@ -12,6 +12,7 @@ from tools.rules_oracle.bridge_anim_lists import Lists,HEAP
 from tools.projectile_oracle.flat_art import crc
 from tools.spatial_oracle.building_body_rules import INI,SP,dwords
 from tools.native_oracle import run_checked,RET_MAGIC,NATIVE_SHA256,finish_vectors,provenance
+from tools.spatial_oracle.fv_cell_attack.steam_live_reader_helpers_scope import LIVE_READER_WS_PRINTF_CALLS
 from unicorn.x86_const import *
 DEFAULT_ASSETS=Path(os.environ.get('CARGO_TARGET_DIR','target'))/'asset/bridge-anim-inputs/extract'
 ROOT=Path(os.environ.get('VERA20K_BRIDGE_ANIM_ASSETS',str(DEFAULT_ASSETS)))
@@ -21,8 +22,9 @@ SCALARS={'start':0x2b4,'loop_start':0x2b8,'loop_end':0x2bc,'end':0x2c0,'loop_cou
 DOUBLES={'damage_f64_bits':0x2a8,'elasticity_f64_bits':0x310,'min_z_vel_f64_bits':0x318,'max_z_vel_f64_bits':0x320,'max_xy_vel_f64_bits':0x328}
 BOOLS={'bouncer':0x35a,'normalized':0x362,'scorch':0x36b,'crater':0x36d,'shadow':0x372}
 REFS={'bounce_anim':0x300,'expire_anim':0x304,'trailer_anim':0x308,'warhead':0x330}
-def physical_sections(raw):
- # Cache preparation is deliberately bounded to the selected unique sections.
+def physical_sections(raw,*,names=NAMES,empty_section_reopen=False):
+ # Cache preparation supplies either selected unique sections, or the complete
+ # unique physical root when names=None; it never interprets type/scalar values.
  # It supplies physical lexical strings, never parses scalar/type values.
  # Original INIClass525A60 file loading/archive selection are not executed.
  result={};current=None
@@ -30,7 +32,12 @@ def physical_sections(raw):
   line=line.strip(bytes(range(33)))
   if line.startswith(b'[') and b']' in line:
    name=line[1:line.index(b']')].decode('latin1');current={}
-   if name in NAMES:assert name not in result,name;result[name]=current
+   if names is None or name in names:
+    # Existing supplier omits empty sections. The explicit full-ART boundary
+    # may reopen an earlier empty occurrence; nonempty duplicates still fail.
+    # This does not claim physical native INI loader/section reuse parity.
+    if name in result and empty_section_reopen and not result[name]:del result[name]
+    assert name not in result,name;result[name]=current
    else:current=None
    continue
   if current is None:continue
@@ -40,41 +47,192 @@ def physical_sections(raw):
   if k and v:
    k=k.decode('latin1');assert k not in current,('duplicate-key',k);current[k]=v.decode('latin1')
  return {n:v for n,v in result.items() if v}
+def ascii_utf16(value,capacity):
+ # The existing physical Mission OS boundary, limited to ASCII CP_ACP input.
+ # -1 includes NULL and returned UTF16 code-unit count includes NULL:
+ # https://learn.microsoft.com/en-us/windows/win32/api/stringapiset/nf-stringapiset-multibytetowidechar
+ assert value.isascii();raw=(value+'\0').encode('utf-16-le');assert len(raw)//2<=capacity
+ return raw
+
+def clsid_bytes(value):
+ # Host OS transport, not original Windows code execution. GUID memory layout:
+ # https://learn.microsoft.com/en-us/windows/win32/api/guiddef/ns-guiddef-guid
+ # https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-clsidfromstring
+ import uuid
+ return uuid.UUID(value).bytes_le
+
 class Reader(Lists):
- def __init__(self,root,sections):
+ def __init__(self,root,sections,*,profile=None,heap_bytes=0x400000,native_registry_startup=False):
   self.assets={p.name.upper():p.read_bytes() for p in root.glob('*')};self.asset_loaded=[];self.asset_ptr={};self.sound_names=[]
-  super().__init__()
+  self.asset_source=None
+  super().__init__(profile=profile,heap_bytes=heap_bytes,native_registry_startup=native_registry_startup)
   # Retail startup installs the CRT floating scanner before ReadDouble5283D0.
   self.invoke(0x7C8F5E,0)
   self.make_ini(sections)
- def alloc(self,n):
-  out=self.cursor;self.cursor+=(n+15)&~15;assert self.cursor<HEAP+0x400000;return out
+  self.transport_events=[]
+  if self.image is not None:
+   self.transports={spec.site:self.import_transport for spec in profile.transports if spec.site in (0x527AF9,0x527B0C)}
  def cstring(self,s):
-  raw=s.encode('latin1')+b'\0';ptr=self.alloc(len(raw));self.u.mem_write(ptr,raw);return ptr
- def invoke(self,addr,obj,args=(),*,timeout_us=10_000_000,context=None):
-  self.u.mem_write(SP,dwords(RET_MAGIC,*args));self.u.reg_write(UC_X86_REG_ESP,SP);self.u.reg_write(UC_X86_REG_ECX,obj)
-  run_checked(self.u,addr,RET_MAGIC,count=2000000,timeout_us=timeout_us,context=context)
-  return self.u.reg_read(UC_X86_REG_EAX)
- def make_ini(self,sections):
-  u=self.u;u.mem_write(INI,bytes(0x40));rows=[]
+  raw=s.encode('latin1')+b'\0';ptr=self.alloc(len(raw));self.fixture_write(ptr,raw);return ptr
+ def invoke(self,addr,obj,args=(),*,timeout_us=10_000_000,context=None,preserve_context=False,stack_pointer=SP,count=2000000):
+  # Observation inside a retained original caller uses a reviewed disjoint
+  # stack and the complete Unicorn CPU context (flags/x87 included). Guest
+  # memory is never restored/copied. Historical calls retain their old ABI.
+  if preserve_context and stack_pointer==SP:
+   raise ValueError('Retained observational invocation needs a reviewed disjoint stack')
+  saved=self.u.context_save()if preserve_context else None
+  try:
+   self.fixture_write(stack_pointer,dwords(RET_MAGIC,*args));self.u.reg_write(UC_X86_REG_ESP,stack_pointer);self.u.reg_write(UC_X86_REG_ECX,obj)
+   self.run_native(addr,RET_MAGIC,count=count,timeout_us=timeout_us,context=context)
+   result=self.u.reg_read(UC_X86_REG_EAX)
+  finally:
+   if saved is not None:self.u.context_restore(saved)
+  return result
+ def make_ini(self,sections,*,pointer=INI):
+  # Separate root Rules and global ART receivers share this lexical-cache
+  # owner. Callers establish both before entering a retained original frame.
+  # Default callers retain the historical887180 receiver/reload semantics.
+  if self.image is not None:
+   # Immutable scoped image/profile identity owns this derived lexical index.
+   # Repeated keys across Rules/ART/SOUND reuse one existing native CRC result;
+   # scalar parsing and guest INI caches remain original native authorities.
+   if hasattr(self,'_lexical_crc_image')and self._lexical_crc_image is not self.image:
+    raise ValueError('Lexical CRC cache cannot move to another native image')
+   if self.image.machine is not self.u:
+    raise ValueError('Lexical CRC cache requires its original owner machine')
+   self.image.verify_code()
+   if not hasattr(self,'_lexical_crc_image'):
+    self._lexical_crc_image=self.image;self._lexical_crc_values={}
+  def lexical_crc(text):
+   if self.image is None:return crc(text)
+   if text not in self._lexical_crc_values:
+    self._lexical_crc_values[text]=crc(text,profile=self.image.profile)
+   return self._lexical_crc_values[text]
+  u=self.u;self.fixture_write(pointer,bytes(0x40));rows=[];layouts=[]
+  # Original ReadInt527818/52781B and ReadString528B73/528B76 write
+  # receiver+8/+4. Original5268A1/5277EA write the CRC-index cache+38.
+  # All other receiver words remain covered by immutable-byte fingerprints.
+  regions=[(pointer,4),(pointer+0xC,0x2C),(pointer+0x3C,4)]
   for name,keys in sections.items():
-   sec=self.alloc(0x44);u.mem_write(sec+0xc,dwords(self.cstring(name)));entries=[]
+   sec=self.alloc(0x44);name_ptr=self.cstring(name)
+   self.fixture_write(sec+0xc,dwords(name_ptr));entries=[]
+   regions.extend(((name_ptr,len(name.encode('latin1'))+1),(sec,0x3C),(sec+0x40,4)))
+   # Original52ACE0 intrusive list: embedded head/tail, distinct from
+   # the CRC index. Original526CC0 walks source order from section+18.
+   # See physical-ini-intrusive-entry-discovery.json; physical loading remains
+   # a supplied lexical cache, not an executed parser/retirement claim.
+   head,tail=sec+0x14,sec+0x20
+   self.fixture_write(sec+0x10,dwords(0x7EB744,0x7E1B0C,tail,0,0x7E1B0C,0,head))
+   previous=head
    for key,value in keys.items():
-    entry=self.alloc(0x28);u.mem_write(entry+0xc,dwords(self.cstring(key),self.cstring(value)));entries.append((crc(key),entry))
+    entry=self.alloc(0x28);self.fixture_write(entry,dwords(0x7EB734,tail,previous))
+    self.fixture_write(previous+4,dwords(entry));self.fixture_write(tail+8,dwords(entry));previous=entry
+    key_ptr=self.cstring(key);value_ptr=self.cstring(value)
+    self.fixture_write(entry+0xc,dwords(key_ptr,value_ptr));entries.append((lexical_crc(key),entry))
+    regions.extend(((entry,0x28),(key_ptr,len(key.encode('latin1'))+1),(value_ptr,len(value.encode('latin1'))+1)))
    items=self.alloc(len(entries)*8)
-   for i,(key,pointer) in enumerate(sorted(entries,key=lambda x:struct.unpack('<i',dwords(x[0]))[0])):u.mem_write(items+i*8,dwords(key,pointer))
-   u.mem_write(sec+0x2c,dwords(items,len(entries),len(entries),1,0));rows.append((crc(name),sec))
+   for i,(key,entry_pointer) in enumerate(sorted(entries,key=lambda x:struct.unpack('<i',dwords(x[0]))[0])):self.fixture_write(items+i*8,dwords(key,entry_pointer))
+   self.fixture_write(sec+0x2c,dwords(items,len(entries),len(entries),1,0));rows.append((lexical_crc(name),sec))
+   if entries:regions.append((items,len(entries)*8))
+   layouts.append(dict(pointer=sec,name=name,index_pointer=items,index_count=len(entries)))
   items=self.alloc(len(rows)*8)
-  for i,(key,pointer) in enumerate(sorted(rows,key=lambda x:struct.unpack('<i',dwords(x[0]))[0])):u.mem_write(items+i*8,dwords(key,pointer))
-  u.mem_write(INI+0x28,dwords(items,len(rows),len(rows),1,0))
+  for i,(key,entry_pointer) in enumerate(sorted(rows,key=lambda x:struct.unpack('<i',dwords(x[0]))[0])):self.fixture_write(items+i*8,dwords(key,entry_pointer))
+  self.fixture_write(pointer+0x28,dwords(items,len(rows),len(rows),1,0))
+  if rows:regions.append((items,len(rows)*8))
+  # Derived extents belong to this preparer, including existing callers which
+  # borrow make_ini without constructing Reader. Repreparing a receiver replaces
+  # its layout; guest memory remains authoritative and native reads own caches.
+  if not hasattr(self,'_ini_cache_layouts'):self._ini_cache_layouts={}
+  self._ini_cache_layouts[pointer]=dict(regions=tuple(regions),sections=layouts,index_pointer=items,index_count=len(rows))
+  return pointer
+ def ini_cache_snapshot(self,pointer=INI):
+  """Observe prepared immutable bytes and independently owned native caches.
+
+  Native last-section arguments are borrowed caller pointers. The section
+  cache and CRC-index cache may name different sections after find-only
+  queries; validate membership independently. A continuing caller can impose
+  stronger literal/section coherence where its executed body establishes it.
+  Original52775D stores the section key-index cache at section+3C. Hits cache
+  actual eight-byte index rows; a miss may retain the prior valid row.
+  """
+  layout=self._ini_cache_layouts[pointer]
+  argument,section,index=(self.read32(pointer+offset)for offset in (4,8,0x38))
+  def member(value,start,count):return value==0 or start<=value<start+count*8 and (value-start)%8==0
+  if bool(argument)!=bool(section)or section and section not in {row['pointer']for row in layout['sections']}:
+   raise ValueError('Native INI last-section cache has no owned section')
+  if argument:
+   # Addressability only: the native cache borrows an argument, rather than
+   # requiring it to be an allocation owned by this lexical receiver.
+   self.u.mem_read(argument,1)
+  if not member(index,layout['index_pointer'],layout['index_count']):
+   raise ValueError('Native INI section-index cache points outside its own index')
+  caches=[]
+  for row in layout['sections']:
+   entry=self.read32(row['pointer']+0x3C)
+   if not member(entry,row['index_pointer'],row['index_count']):
+    raise ValueError('Native INI key-index cache points outside its own section index')
+   caches.append(dict(row,cache_entry_pointer=entry,header_hex=bytes(self.u.mem_read(row['pointer'],0x44)).hex()))
+  digest=hashlib.sha256()
+  for address,size in layout['regions']:
+   digest.update(struct.pack('<II',address,size));digest.update(bytes(self.u.mem_read(address,size)))
+  return dict(receiver=pointer,header_hex=bytes(self.u.mem_read(pointer,0x40)).hex(),
+      immutable_sha256=digest.hexdigest(),immutable_regions=len(layout['regions']),
+      immutable_bytes=sum(size for _,size in layout['regions']),
+      index_pointer=layout['index_pointer'],index_count=layout['index_count'],
+      last_section_argument_pointer=argument,last_section_pointer=section,
+      section_index_cache_pointer=index,sections=caches,cache_pointer_membership_valid=True)
+ def import_transport(self,call):
+  for row in LIVE_READER_WS_PRINTF_CALLS:
+   if call.spec.site!=row['site']:continue
+   destination,pattern,index=struct.unpack('<III',call.read(call.sp,row['argument_bytes']))
+   if (destination!=call.sp+row['destination_sp_offset']or pattern!=row['format_address']or
+       not row['index_min']<=index<=row['index_max']):
+    raise ValueError('Original bounded occupancy-key wsprintf arguments changed')
+   if call.read(pattern,len(row['format_bytes']))!=row['format_bytes']:
+    raise ValueError('Original occupancy-key wsprintf format bytes changed')
+   # Supplied USER32 API: only original Add/RemoveOccupy%d with indices1..8.
+   # Signed decimal, NUL/count and cdecl contract:
+   # https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-wsprintfa
+   output=row['prefix_bytes']+bytes((ord('0')+index,))+b'\0'
+   call.write(destination,output);call.return_to_native(len(output)-1)
+   self.transport_events.append(dict(kind='OS_occupancy_key_wsprintfA',site=call.spec.site,
+       index=index,output_hex=output.hex(),return_characters=len(output)-1));return
+  if call.spec.site==0x527AF9:
+   codepage,flags,source,length,dest,capacity=call.arguments
+   assert (codepage,flags,length,capacity)==(0,1,0xffffffff,128)
+   assert source==call.sp+0x50 and dest==call.sp+0xD0
+   raw=call.read(source,128);assert b'\0'in raw
+   value=raw.split(b'\0')[0].decode('ascii');converted=ascii_utf16(value,capacity)
+   call.write(dest,converted);call.return_to_native(len(converted)//2)
+   self.transport_events.append(dict(kind='OS_ascii_to_utf16',value=value,output_hex=converted.hex(),return_code_units=len(converted)//2));return
+  if call.spec.site==0x527B0C:
+   source,dest=call.arguments
+   assert source==call.sp+0xC0 and dest==call.sp+0x20
+   raw=call.read(source,256);units=struct.unpack('<128H',raw);assert 0 in units
+   value=''.join(chr(v)for v in units[:units.index(0)])
+   assert len(value)==38 and value[0]=='{'and value[-1]=='}'
+   converted=clsid_bytes(value);call.write(dest,converted);call.return_to_native(0)
+   self.transport_events.append(dict(kind='OS_CLSIDFromString',value=value,bytes=converted.hex(),hresult=0));return
+  raise ValueError('Unsupported original import transport site')
  def hook(self,u,p,n,d):
   if p==0x5B40B0:
    name=self.string(u.reg_read(UC_X86_REG_ECX));raw=self.assets.get(name.upper());pointer=0
+   source=None
+   if self.asset_source is not None:
+    raw,source=self.asset_source.read(name)
+    if name.upper() in self.assets and self.assets[name.upper()]!=raw:
+     raise ValueError('Conflicting retained physical asset supplier: '+name)
    if raw:
-    if name.upper() not in self.asset_ptr:
-     pointer=self.alloc(len(raw));u.mem_write(pointer,raw);self.asset_ptr[name.upper()]=pointer
-    pointer=self.asset_ptr[name.upper()]
-   self.asset_loaded.append(dict(name=name,bytes=len(raw) if raw else 0,sha256=hashlib.sha256(raw).hexdigest() if raw else None,header8_hex=raw[:8].hex() if raw else None));self.ret(pointer,0);return
+    cache_key=name.upper()
+    if self.asset_source is not None:
+     from tools.sidebar_oracle.stock import mix_hash
+     cache_key=('native-crc',mix_hash(name))
+    if cache_key not in self.asset_ptr:
+     pointer=self.alloc(len(raw));self.fixture_write(pointer,raw);self.asset_ptr[cache_key]=pointer
+    pointer=self.asset_ptr[cache_key]
+   event=dict(name=name,bytes=len(raw) if raw else 0,sha256=hashlib.sha256(raw).hexdigest() if raw else None,header8_hex=raw[:8].hex() if raw else None)
+   if source is not None:event['physical_source']=source
+   self.asset_loaded.append(event);self.ret(pointer,0);return
   super().hook(u,p,n,d)
  def result(self,name,ptr,admitted):
   u=self.u

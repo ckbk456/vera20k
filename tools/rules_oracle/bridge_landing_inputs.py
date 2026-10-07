@@ -76,17 +76,9 @@ class Landing(Lists):
  def cstring(self,s):
   raw=s.encode('latin1')+b'\0';ptr=self.alloc(len(raw));self.u.mem_write(ptr,raw);return ptr
  def make_ini(self,sections):
-  u=self.u;u.mem_write(INI,bytes(0x40));rows=[]
-  for name,keys in sections.items():
-   sec=self.alloc(0x44);u.mem_write(sec+0xc,dwords(self.cstring(name)));entries=[]
-   for key,value in keys.items():
-    entry=self.alloc(0x28);u.mem_write(entry+0xc,dwords(self.cstring(key),self.cstring(value)));entries.append((crc(key),entry))
-   items=self.alloc(len(entries)*8)
-   for i,(key,pointer) in enumerate(sorted(entries,key=lambda x:struct.unpack('<i',dwords(x[0]))[0])):u.mem_write(items+i*8,dwords(key,pointer))
-   u.mem_write(sec+0x2c,dwords(items,len(entries),len(entries),1,0));rows.append((crc(name),sec))
-  items=self.alloc(len(rows)*8)
-  for i,(key,pointer) in enumerate(sorted(rows,key=lambda x:struct.unpack('<i',dwords(x[0]))[0])):u.mem_write(items+i*8,dwords(key,pointer))
-  u.mem_write(INI+0x28,dwords(items,len(rows),len(rows),1,0))
+  # The supplied CRC/source-order cache has one owner for all reader VMs.
+  from tools.rules_oracle.bridge_anim_inputs import Reader as IniReader
+  IniReader.make_ini(self,sections)
  def invoke(self,fn,this,args=()):
   self.u.mem_write(SP,dwords(RET_MAGIC,*args));self.u.reg_write(UC_X86_REG_ESP,SP);self.u.reg_write(UC_X86_REG_ECX,this)
   run_checked(self.u,fn,RET_MAGIC,count=2000000);return self.u.reg_read(UC_X86_REG_EAX)

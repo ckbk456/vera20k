@@ -24,6 +24,19 @@ BEGIN, END = 0x545535, 0x545C3F
 PROJECT_BEGIN, PROJECT_END = 0x545CEF, 0x545FA3
 
 
+# Original sprintf/ASCII integer-string machinery, shared by theater names and
+# numbered Unit weapon keys. Literal scopes are reviewed original caller/body
+# declarations; neither imports nor input failures enroll additional regions.
+NATIVE_ASCII_PRINTF_REGIONS = (
+    (0x7C8EF4,0x7C8F46,'be782f9613600dc0912636ff5cc9f91c8d3b860318d9f6517624b94ca2e11f65'),
+    (0x7CE18D,0x7CE31A,'0a24dab800b4eb48c4217a641fec927506c8822127e01d6ea5a812f78b6b785d'),
+    (0x7ce2d1,0x7ce9c6,'80e1f12107c1bcfd1a9adfa8bf48dc66c05cd52da16558fb4bd3f18d137aa1f8'),
+    (0x7CE9E6,0x7CEAAF,'9a4c75bd5d9c2ff411e14a54bffc195c96a32d3728e525aef7cc980df69632f2'),
+    (0x7D7840,0x7D78B5,'e85ca4198a284fa33b4141d18479ff2edfded90a25e35567ac9d55bd2bccb611'),
+    (0x7C9380,0x7C93E8,'84d17e172ff5e6bce23b7837cc15439649f685d00b3cdff9cc07cae79a0a88f2'),
+)
+NATIVE_ASCII_PRINTF_READS = ((0x7F97CC,0xC4),(0x7CE9C6,32))
+
 def signed(value):
     return struct.unpack('<i', dwords(value & 0xFFFFFFFF))[0]
 
@@ -67,11 +80,23 @@ def general_text(raw):
 
 
 class TheaterReader(Reader):
-    def __init__(self):
+    def __init__(self, *, owner=None, root=None, profile=None):
         self.phase = 'setup'
         self.reads = []
         self.pending_returns = {}
-        super().__init__(ROOT, {})
+        self.owner = owner
+        if owner is None:
+            super().__init__(Path(root or ROOT), {}, profile=profile)
+        else:
+            if owner.image is None:
+                raise ValueError('Shared theater reader requires an explicit scoped image')
+            self.u = owner.u
+            self.image = owner.image
+            self.asset_loaded = owner.asset_loaded
+            for name in ('fixture_write', 'run_native', 'alloc', 'invoke', 'read32', 'string', 'cstring', 'make_ini'):
+                setattr(self, name, getattr(owner, name))
+            from unicorn import UC_HOOK_CODE
+            self.u.hook_add(UC_HOOK_CODE, self.observe_read)
         md = Cs(CS_ARCH_X86, CS_MODE_32)
         md.detail = True
         instructions = list(md.disasm(bytes(self.u.mem_read(BEGIN, END - BEGIN)), BEGIN))
@@ -97,6 +122,10 @@ class TheaterReader(Reader):
         self.u.hook_add(UC_HOOK_MEM_WRITE, self.record_store)
 
     def hook(self, u, pc, size, data):
+        self.observe_read(u, pc, size, data)
+        super().hook(u, pc, size, data)
+
+    def observe_read(self, u, pc, size, data):
         if self.phase == 'read' and pc == 0x5276D0:
             sp = u.reg_read(UC_X86_REG_ESP)
             ret = self.read32(sp)
@@ -107,7 +136,6 @@ class TheaterReader(Reader):
             self.pending_returns[ret] = row
         elif self.phase == 'read' and pc in self.pending_returns:
             self.pending_returns.pop(pc)['value'] = signed(u.reg_read(UC_X86_REG_EAX))
-        super().hook(u, pc, size, data)
 
     def record_store(self, u, _access, address, size, value, _data):
         if self.phase != 'read' or u.reg_read(UC_X86_REG_EIP) not in self.result_stores:
@@ -119,38 +147,38 @@ class TheaterReader(Reader):
         row['location'] = hex(address - SP if row['storage'] == 'frame' else address)
 
     def prepare_records(self, records):
-        self.u.mem_write(INI, bytes(0x40))
+        self.fixture_write(INI, bytes(0x40))
         section_index = []
         for name, keys in records:
             sec = self.alloc(0x44)
-            self.u.mem_write(sec + 0xC, dwords(self.cstring(name)))
+            self.fixture_write(sec + 0xC, dwords(self.cstring(name)))
             entries = []
             for key, value in keys:
                 entry = self.alloc(0x28)
-                self.u.mem_write(entry + 0xC, dwords(self.cstring(key), self.cstring(value)))
-                entries.append((crc(key), entry))
+                self.fixture_write(entry + 0xC, dwords(self.cstring(key), self.cstring(value)))
+                entries.append((crc(key, profile=self.image.profile if self.image is not None else None), entry))
             items = self.alloc(len(entries) * 8)
             for index, (key_crc, pointer) in enumerate(entries):
-                self.u.mem_write(items + index * 8, dwords(key_crc, pointer))
+                self.fixture_write(items + index * 8, dwords(key_crc, pointer))
             # Ordered, not pre-sorted: native FindEntry performs its own sort.
-            self.u.mem_write(sec + 0x2C, dwords(items, len(entries), len(entries), 0, 0))
-            section_index.append((crc(name), sec))
+            self.fixture_write(sec + 0x2C, dwords(items, len(entries), len(entries), 0, 0))
+            section_index.append((crc(name, profile=self.image.profile if self.image is not None else None), sec))
         items = self.alloc(len(section_index) * 8)
         for index, (name_crc, pointer) in enumerate(section_index):
-            self.u.mem_write(items + index * 8, dwords(name_crc, pointer))
-        self.u.mem_write(INI + 0x28, dwords(items, len(section_index), len(section_index), 0, 0))
+            self.fixture_write(items + index * 8, dwords(name_crc, pointer))
+        self.fixture_write(INI + 0x28, dwords(items, len(section_index), len(section_index), 0, 0))
 
     def read(self, text):
         self.phase = 'setup'
         records = lexical_records(text)
         self.prepare_records(records)
-        self.u.mem_write(SP, bytes(0x1000))
-        self.u.mem_write(SP + 0x38, bytes(self.u.mem_read(INI, 0x40)))
+        self.fixture_write(SP, bytes(0x1000))
+        self.fixture_write(SP + 0x38, bytes(self.u.mem_read(INI, 0x40)))
         self.u.reg_write(UC_X86_REG_ESP, SP)
         self.reads = []
         self.pending_returns = {}
         self.phase = 'read'
-        run_checked(self.u, BEGIN, END, count=3000000,
+        self.run_native(BEGIN, END, count=3000000,
                     required_addresses=(0x5276D0, 0x545978, 0x545C3A))
         self.phase = 'setup'
         assert len(self.reads) == 56 and not self.pending_returns
@@ -169,11 +197,106 @@ class TheaterReader(Reader):
         self.u.reg_write(UC_X86_REG_ESP, SP)
         self.u.reg_write(UC_X86_REG_EDI, ordinal)
         self.u.reg_write(UC_X86_REG_EBX, base)
-        run_checked(self.u, PROJECT_BEGIN, PROJECT_END, count=10000)
+        self.run_native(PROJECT_BEGIN, PROJECT_END, count=10000)
         return dict(supplied_ordinal=ordinal, supplied_cumulative_base=base,
                     values={r['key']: signed(self.read32(int(r['resolved_global'], 16)))
                             for r in self.reads if r['storage'] == 'frame'})
 
+
+    def read_sets(self, raw, *, suffix, include_properties=False):
+        """Original ordinal/count/name caller seams after General reads.
+
+        Supplied loop ordinal and cumulative base retain the existing fixture
+        boundary. Native sprintf, scalar readers and name concatenation run;
+        physical archive lookup and suffix-to-theater binding are excluded.
+        """
+        self.prepare_records(lexical_records(raw.decode('latin1')))
+        self.fixture_write(SP + 0x38, bytes(self.u.mem_read(INI, 0x40)))
+        sets, tiles, base = [], {}, 0
+        if include_properties:
+            # Original outer loader caller prior: no shadow sets published yet.
+            self.fixture_write(SP + 0xAC, dwords(0))
+        for ordinal in range(300):
+            self.u.reg_write(UC_X86_REG_ESP, SP)
+            self.u.reg_write(UC_X86_REG_EDI, ordinal)
+            self.u.reg_write(UC_X86_REG_ESI, 0xffffffff)
+            stop = self.run_native(0x545FA3, (0x545FE5, 0x546C23), count=100000)
+            if stop == 0x546C23:
+                break
+            count = self.read32(SP + 0x28)
+            if count > 1000:
+                raise ValueError('Theater tile count exceeds physical fixture boundary')
+            self.fixture_write(SP + 0x2C, dwords(base))
+            self.fixture_write(SP + 0x30, dwords(base))
+            self.run_native(0x545FE5, 0x54609C, count=100000)
+            next_base = self.u.reg_read(UC_X86_REG_EAX)
+            if next_base != base + count:
+                raise ValueError('Theater LastTilesInSet conversion requires an expanded fixture')
+            self.run_native(0x54609C, 0x5460EA, count=100000)
+            set_name = self.string(SP + 0x280)
+            file_name = self.string(SP + 0x950)
+            self.project(ordinal, base)
+            property_frame = None
+            if include_properties:
+                self.fixture_write(SP + 0x24, dwords(base))
+                self.u.reg_write(UC_X86_REG_ESI, 0xffffffff)
+                self.run_native(0x5460EA, 0x546254, count=100000)
+                # Eleven original key outputs are retained in their caller
+                # frame; 54641F publishes them after the actual head ctor.
+                property_frame = bytes(self.u.mem_read(SP + 0x10, 0x100)).hex()
+            for index in range(count):
+                self.fixture_write(SP + 0x20, dwords(index))
+                self.fixture_write(SP + 0x1E, bytes(2))
+                self.run_native(0x5462B3, 0x54637B, count=100000)
+                native_name = self.string(SP + 0x414)
+                tiles[base + index] = native_name + '.' + suffix
+            row = dict(ordinal=ordinal, base=base, count=count, file=file_name, setname=set_name)
+            if property_frame is not None:
+                row['native_property_frame_hex'] = property_frame
+            sets.append(row)
+            base += count
+        else:
+            raise ValueError('Theater sections exceed bounded ordinal iteration')
+        globals_ = {int(row.get('resolved_global', row['location']), 16):
+                    self.read32(int(row.get('resolved_global', row['location']), 16))
+                    for row in self.reads}
+        return dict(sha256=sha(raw), globals=globals_, sets=sets, tiles=tiles, count=base,
+                    filename_boundary='Original FileName/%02d concatenation; suffix supplied by declared theater input')
+
+    @staticmethod
+    def publish_tile_properties(owner, pointer, frame_hex, *, outer_loader_flag=0):
+        """Original head stores consume the retained native property frame.
+
+        The incoming outer loader flag is an explicit caller input; it is not
+        an INI key. No property result or clamp is computed by this transport.
+        """
+        frame = bytes.fromhex(frame_hex)
+        if len(frame) != 0x100 or outer_loader_flag not in (0, 1):
+            raise ValueError('Invalid retained original tile property frame')
+        owner.fixture_write(SP + 0x10, frame)
+        owner.fixture_write(SP + 0x12, bytes((outer_loader_flag,)))
+        owner.u.reg_write(UC_X86_REG_ESP, SP)
+        owner.u.reg_write(UC_X86_REG_EBP, pointer)
+        owner.run_native(0x54641F, 0x5464BB, count=1000)
+
+    @staticmethod
+    def scenario_suffix(owner):
+        """Original Init_Theater index/pointer seams over retained Scenario.
+
+        Archive/render setup is excluded. The original table, arithmetic and
+        suffix pointer store execute; no host enum-to-extension table exists.
+        """
+        scenario = owner.read32(0xA8B230)
+        ordinal = owner.read32(scenario + 0x1258)
+        if ordinal >= 6:
+            raise ValueError('Original Scenario theater lookup did not select a retail record')
+        owner.u.reg_write(UC_X86_REG_ESP, SP)
+        owner.u.reg_write(UC_X86_REG_EDI, ordinal)
+        owner.run_native(0x5349D7, 0x5349E9, count=100)
+        owner.run_native(0x534A05, 0x534A0F, count=100)
+        pointer = owner.read32(SP + 0x2C)
+        return dict(ordinal=ordinal, pointer=pointer, suffix=owner.string(pointer),
+                    original_table='0x7E1B78', caller='0x5349D7..0x5349E9;0x534A05..0x534A0F')
 
 def uniform(keys, value, section='General', key_transform=lambda key: key):
     return '[' + section + ']\n' + ''.join(f'{key_transform(k)}={value}\n' for k in keys)

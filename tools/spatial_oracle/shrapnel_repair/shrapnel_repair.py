@@ -25,6 +25,23 @@ def state_bytes(r):return struct.pack('<B3xii250I',r['disabled'],r['index_a'],r[
 def rng_state(u,p):
  b=bytes(u.mem_read(p,1012));return dict(disabled=b[0],index_a=i32(u,p+4),index_b=i32(u,p+8),state=list(struct.unpack('<250I',b[12:])))
 
+def initialize_cell_crt(owner, *, include_null_cell=False):
+ """Execute the original13-entry Cell static initialization table once.
+
+ A shared physical fixture calls this before any Cell constructor. The table
+ and each reached callee need explicit enrollment on a scoped owner; no BSS
+ zero or copied prior is substituted for the original cold initializer.
+ """
+ u=owner.uc if hasattr(owner,'uc') else owner.u
+ initializers=struct.unpack('<13I',u.mem_read(0x8129FC,13*4))
+ for address in initializers:
+  if hasattr(owner,'call'):owner.call(address,count=100000)
+  else:owner.invoke(address,0)
+ result=dict(table='0x8129fc',initializers=[hex(a)for a in initializers],
+             level_height=i32(u,0x89E7C0),bridge_height=i32(u,0x89E7B4))
+ if include_null_cell:result['null_cell_hex']=bytes(u.mem_read(0x89E748,4)).hex()
+ return result
+
 def physical_map():
  raw=(ASSETS/'XShrapnel.MAP').read_bytes();_,cells=mapfacts.decode_cells(raw)
  # Preserve the original Shrapnel witness schema; ice is not a supplied input.
@@ -49,9 +66,7 @@ class Repair(OriginalRim):
   self.code_hash=sha(bytes(u.mem_read(0x401000,0x3E0000)))
   self.events=self.trace;self.heap=0x45000000;u.mem_map(self.heap,0x2000000)
   self.bootstrap=mapgen.Machine.startup(self)
-  initializers=struct.unpack('<13I',u.mem_read(0x8129FC,13*4))
-  for address in initializers:self.call(address,count=100000)
-  self.cell_startup=dict(table='0x8129fc',initializers=[hex(a) for a in initializers],level_height=i32(u,0x89E7C0),bridge_height=i32(u,0x89E7B4))
+  self.cell_startup=initialize_cell_crt(self)
   assert self.cell_startup['level_height']==104
   self.rngs={'main':0x886B88,'scenario':0x46000000+0x218,'mapgen':0xABE890}
   u.mem_write(0xA8B230,dwords(0x46000000))

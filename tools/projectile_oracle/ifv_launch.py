@@ -13,7 +13,39 @@ from tools.projectile_oracle.bridge_render_inputs import assets_root,lexical
 from tools.spatial_oracle.building_body_rules import RULES,SP,dwords
 
 from tools.projectile_oracle import guided_step as guided
+from tools.projectile_oracle.ifv_fire_coord import read_type_rules
 i32,xyz,vec=guided.i32,guided.xyz,guided.vec
+
+def warhead_section_admission(m,warhead,*,ini=RULES):
+ """Actual Warhead reader admission; absent sections take original RET4."""
+ m.fixture_write(SP,dwords(RET_MAGIC,ini));m.u.reg_write(UC_X86_REG_ESP,SP)
+ m.u.reg_write(UC_X86_REG_ECX,warhead)
+ pc=m.run_native(0x75d3a0,(0x75d3d2,RET_MAGIC),required_addresses=(0x526810,))
+ if pc==RET_MAGIC:
+  assert m.u.reg_read(UC_X86_REG_EAX)&255==0 and m.u.reg_read(UC_X86_REG_ESP)==SP+8
+ return dict(section_present=pc==0x75d3d2,boundary=f'{pc:08x}')
+
+def read_admitted_manager_flags(m,warhead,*,ini=RULES):
+ """Original three manager-gate reads; no whole Warhead reader claim.
+
+ The first interior seam carries the ctor/previous EMEffect byte in AL,
+ which original75D7D5 writes back while reading MindControl. The second seam
+ reads Parasite then Temporal and stops before the next IsLocomotor call;
+ its prepared three stack arguments are part of the saved boundary.
+ """
+ u=m.u
+ before={name:bool(u.mem_read(warhead+offset,1)[0])for name,offset in
+         (('mind_control',0x155),('parasite',0x159),('temporal',0x15a))}
+ for begin,end in ((0x75d7c6,0x75d7e6),(0x75d834,0x75d877)):
+  for reg,value in ((UC_X86_REG_ESP,SP),(UC_X86_REG_ESI,warhead),
+                    (UC_X86_REG_EBP,warhead+0x24),(UC_X86_REG_EDI,ini),
+                    (UC_X86_REG_EAX,u.mem_read(warhead+0x154,1)[0])):
+   u.reg_write(reg,value)
+  m.run_native(begin,end,required_addresses=(0x5295f0,))
+ assert u.reg_read(UC_X86_REG_ESP)==SP-12
+ return dict(before=before,after={name:bool(u.mem_read(warhead+offset,1)[0])for name,offset in
+         (('mind_control',0x155),('parasite',0x159),('temporal',0x15a))},
+         pending_is_locomotor_arguments=[m.read32(SP-12+4*i)for i in range(3)])
 
 def prepare():
  m,_,cells,initial=guided.create(False);u=m.u
@@ -25,9 +57,7 @@ def prepare():
   path=assets_root()/name
   if not path.exists():continue
   sections,_=lexical(path.read_bytes(),{'FV'});m.rules_cache(sections)
-  for begin,end in ((0x71284a,0x712a8f),(0x71338b,0x7133c8),(0x7147b4,0x7147ce),(0x714a49,0x714a63),(0x714016,0x714030)):
-   for reg,v in ((UC_X86_REG_ESP,SP),(UC_X86_REG_EBP,st),(UC_X86_REG_EBX,st+0x24),(UC_X86_REG_ESI,RULES),(UC_X86_REG_EDI,RULES),(UC_X86_REG_EAX,u.mem_read(st+0xd22,1)[0])):u.reg_write(reg,v)
-   run_checked(u,begin,end)
+  read_type_rules(m,st)
   type_layers.append(dict(file=name,turret_count=i32(u,st+0x808),weapon_count=i32(u,st+0x80c),turret=bool(u.mem_read(st+0xca1,1)[0]),gunner=bool(u.mem_read(st+0x805,1)[0]),radial_fire_segments=i32(u,st+0x6a4),weapons=[m.string(m.read32(st+0x898+n*0x1c)+0x24) for n in range(i32(u,st+0x80c))]))
  source=m.alloc(0x1000);u.mem_write(source,dwords(0x7f5c70));u.mem_write(source+0x6c4,dwords(st));u.mem_write(source+0x2b4,dwords(cells[16,20]));u.mem_write(source+0x90,b'\x01')
  # Deliberately not a native Unit constructor/placement proof. Flags=0 excludes

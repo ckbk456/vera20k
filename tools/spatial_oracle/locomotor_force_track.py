@@ -29,21 +29,34 @@ HEAD = [10 * 256 + 96, 10 * 256 + 160, 731]
 OLD_HEAD, OLD_DESTINATION = [2304, 2560, -347], [2176, 2176, 417]
 
 
+def initialize_drive_crt(m, *, include_globals=False):
+ """One native Drive static-initializer owner, shared by physical and setup proofs."""
+ table=bytes(m.u.mem_read(0x812D2C,56))
+ before={f'{a:08x}':m.read32(a)for a in(0x8A07D0,0x8A07C4)}
+ m.invoke(0x7CBED3,0,(0x812D2C,0x812D64))
+ result=dict(dispatcher='007cbed3',table_begin='00812d2c',table_end='00812d64',
+             table_bytes=table.hex(),initializers=[f'{a:08x}'for a in struct.unpack('<14I',table)],
+             before=before,after={f'{a:08x}':m.read32(a)for a in(0x8A07D0,0x8A07C4)})
+ if include_globals:
+  result.update(globals_hex=bytes(m.u.mem_read(0x8A0758,0x80)).hex(),
+                null_coord=list(struct.unpack('<3i',m.u.mem_read(0x8A0790,12))))
+ return result
+
 class OriginalForceTrack:
-    def __init__(self, row):
+    def __init__(self, row, *, profile=None):
         self.uc = u = Uc(UC_ARCH_X86, UC_MODE_32)
-        load_image(u)
+        self.image = load_image(u, profile=profile)
         u.mem_map(STACK_BASE, STACK_SIZE)
         u.mem_map(SCRATCH, 0xA0000)
         u.mem_map(RET_MAGIC, 0x1000)
         u.reg_write(UC_X86_REG_FPCW, 0x0E7F)
-        u.mem_write(0x822D80, dwords(0x0E7F))
+        self.write(0x822D80, dwords(0x0E7F))
         # Construct the actual Drive interfaces so the bunker call uses the
         # original vtable slot, rather than a synthetic dispatch table.
-        u.mem_write(SP, dwords(RET_MAGIC))
+        self.write(SP, dwords(RET_MAGIC))
         u.reg_write(UC_X86_REG_ESP, SP)
         u.reg_write(UC_X86_REG_ECX, LOCO)
-        run_checked(u, 0x4AF540, RET_MAGIC, count=150,
+        self.run_native(0x4AF540, RET_MAGIC, count=150,
                     required_addresses=(0x55A6C0,))
         assert u.reg_read(UC_X86_REG_ESP) == SP + 4
         assert self.unsigned(self.unsigned(LOCO + 4) + 0x70) == FORCE
@@ -51,45 +64,54 @@ class OriginalForceTrack:
         assert self.unsigned(UNIT_VTABLE + 0x1D0) == 0x5F5F30
         assert self.unsigned(UNIT_VTABLE + 0x544) == SPEED_SET
 
-        u.mem_write(FOOT, dwords(UNIT_VTABLE))
-        u.mem_write(FOOT + 0x674, dwords(LOCO + 4))
-        u.mem_write(FOOT + 0x9C, dwords(9 * 256 + 128, 10 * 256 + 128, 312))
-        u.mem_write(FOOT + 0x81, bytes((int(row.get('limbo', False)),)))
-        u.mem_write(FOOT + 0x90, bytes((int(row.get('alive', True)),)))
-        u.mem_write(FOOT + 0x578, struct.pack('<d', row.get('applied', 0.25)))
-        u.mem_write(FOOT + 0x580, struct.pack('<d', 1.5))
-        u.mem_write(FOOT + 0x6B6, bytes((int(row.get('occupation_enabled', False)),)))
-        u.mem_write(LOCO + 0xC, dwords(FOOT))
-        u.mem_write(LOCO + 0x34, dwords(*OLD_DESTINATION))
-        u.mem_write(LOCO + 0x40, dwords(*row.get('old_head', OLD_HEAD)))
-        u.mem_write(LOCO + 0x4C, dwords(row.get('residual', 971)))
-        u.mem_write(LOCO + 0x50, struct.pack('<d', 0.375))
-        u.mem_write(LOCO + 0x58, dwords(27, -7))
-        u.mem_write(LOCO + 0x60, bytes((int(row.get('reversed', False)),)))
-        u.mem_write(LOCO + 0x63, bytes((int(row.get('old_valid', True)),)))
+        self.write(FOOT, dwords(UNIT_VTABLE))
+        self.write(FOOT + 0x674, dwords(LOCO + 4))
+        self.write(FOOT + 0x9C, dwords(9 * 256 + 128, 10 * 256 + 128, 312))
+        self.write(FOOT + 0x81, bytes((int(row.get('limbo', False)),)))
+        self.write(FOOT + 0x90, bytes((int(row.get('alive', True)),)))
+        self.write(FOOT + 0x578, struct.pack('<d', row.get('applied', 0.25)))
+        self.write(FOOT + 0x580, struct.pack('<d', 1.5))
+        self.write(FOOT + 0x6B6, bytes((int(row.get('occupation_enabled', False)),)))
+        self.write(LOCO + 0xC, dwords(FOOT))
+        self.write(LOCO + 0x34, dwords(*OLD_DESTINATION))
+        self.write(LOCO + 0x40, dwords(*row.get('old_head', OLD_HEAD)))
+        self.write(LOCO + 0x4C, dwords(row.get('residual', 971)))
+        self.write(LOCO + 0x50, struct.pack('<d', 0.375))
+        self.write(LOCO + 0x58, dwords(27, -7))
+        self.write(LOCO + 0x60, bytes((int(row.get('reversed', False)),)))
+        self.write(LOCO + 0x63, bytes((int(row.get('old_valid', True)),)))
         # The null coordinate and height constants are supplied runtime data.
-        u.mem_write(0x8A0790, dwords(0, 0, 0))
+        self.write(0x8A0790, dwords(0, 0, 0))
         for address, value in ((0x89E7C0, 104), (0xB1D0AC, 416)):
-            u.mem_write(address, dwords(value))
-        u.mem_write(TABLE, bytes(0x100000))
-        u.mem_write(MAP + 0x13C, dwords(TABLE, 0x40000))
-        u.mem_write(DUMMY, bytes(0x200))
-        u.mem_write(DUMMY + 0x44, dwords(-1))
+            self.write(address, dwords(value))
+        self.write(TABLE, bytes(0x100000))
+        self.write(MAP + 0x13C, dwords(TABLE, 0x40000))
+        self.write(DUMMY, bytes(0x200))
+        self.write(DUMMY + 0x44, dwords(-1))
         for y in range(32):
             for x in range(32):
                 cell = self.cell_address(x, y)
-                u.mem_write(cell + 0x24, packed(x, y))
-                u.mem_write(cell + 0x44, dwords(-1))
-                u.mem_write(cell + 0x11B, bytes((2, 0)))
-                u.mem_write(cell + 0x124, dwords(0x400, 0x800))
-                u.mem_write(cell + 0x140, dwords(0x100 if row.get('bridge', False) else 0))
-                u.mem_write(TABLE + (y * 512 + x) * 4, dwords(cell))
+                self.write(cell + 0x24, packed(x, y))
+                self.write(cell + 0x44, dwords(-1))
+                self.write(cell + 0x11B, bytes((row.get("ground_level", 2), 0)))
+                self.write(cell + 0x124, dwords(0x400, 0x800))
+                self.write(cell + 0x140, dwords(0x100 if row.get('bridge', False) else 0))
+                self.write(TABLE + (y * 512 + x) * 4, dwords(cell))
 
         self.events, self.writes, self.marked_cells = [], [], set()
         self.before_owner = bytes(u.mem_read(FOOT, 0x800))
         self.before = self.state()
         u.hook_add(UC_HOOK_CODE, self.observe)
         u.hook_add(UC_HOOK_MEM_WRITE, self.observe_write)
+
+    def write(self, address, data):
+        if self.image is None:
+            self.uc.mem_write(address, data)
+        else:
+            self.image.write(address, data)
+
+    def run_native(self, begin, end, **kwargs):
+        return run_checked(self.uc, begin, end, image=self.image, **kwargs)
 
     @staticmethod
     def cell_address(x, y):
@@ -158,33 +180,33 @@ class OriginalForceTrack:
             u.reg_write(UC_X86_REG_EBP, FOOT)
             u.reg_write(UC_X86_REG_EDI, head[0])
             u.reg_write(UC_X86_REG_EBX, head[1])
-            u.mem_write(SP + 0x14, dwords(row['turn']))
-            u.mem_write(SP + 0x60, dwords(head[2]))
-            run_checked(u, 0x459190, 0x4591C4, count=10000,
+            self.write(SP + 0x14, dwords(row['turn']))
+            self.write(SP + 0x60, dwords(head[2]))
+            self.run_native(0x459190, 0x4591C4, count=10000,
                         required_addresses=(0x4591AF, FORCE, 0x4591B2, 0x4591BE, SPEED_SET))
             assert u.reg_read(UC_X86_REG_ESP) == SP
         else:
-            u.mem_write(SP, dwords(RET_MAGIC, LOCO + 4, row['turn'], *head))
+            self.write(SP, dwords(RET_MAGIC, LOCO + 4, row['turn'], *head))
             callback = row.get('supplied_callback')
             if callback is not None:
                 # Stop at the real return boundary, retaining the native call
                 # frame and locals. The supplied continuation inputs below do
                 # NOT purport to be outputs of any emulated crate effect.
-                run_checked(u, FORCE, 0x4B0D20, count=10000,
+                self.run_native(FORCE, 0x4B0D20, count=10000,
                             required_addresses=(0x4B0C53, 0x4B0C56, 0x481A00))
                 self.events.append(dict(stage='observed_no_overlay_return_before_supplied_state',
                                         result_al=u.reg_read(UC_X86_REG_EAX) & 255,
                                         state=self.state()))
                 u.reg_write(UC_X86_REG_EAX, callback['result_al'])
-                u.mem_write(FOOT + 0x81, bytes((int(callback['limbo']),)))
-                u.mem_write(FOOT + 0x90, bytes((int(callback['alive']),)))
-                u.mem_write(LOCO + 0x40, dwords(*callback['head']))
-                u.mem_write(LOCO + 0x63, bytes((int(callback['track_valid']),)))
+                self.write(FOOT + 0x81, bytes((int(callback['limbo']),)))
+                self.write(FOOT + 0x90, bytes((int(callback['alive']),)))
+                self.write(LOCO + 0x40, dwords(*callback['head']))
+                self.write(LOCO + 0x63, bytes((int(callback['track_valid']),)))
                 self.before_owner = bytes(u.mem_read(FOOT, 0x800))
-                run_checked(u, 0x4B0D20, RET_MAGIC, count=10000,
+                self.run_native(0x4B0D20, RET_MAGIC, count=10000,
                             required_addresses=(0x4B0D20,))
             else:
-                run_checked(u, FORCE, RET_MAGIC, count=10000,
+                self.run_native(FORCE, RET_MAGIC, count=10000,
                             required_addresses=(0x4B0C53, 0x4B0C56, 0x4B0C5D))
             assert u.reg_read(UC_X86_REG_ESP) == SP + 24
 
@@ -212,23 +234,23 @@ class OriginalForceTrack:
     def process_speed_prefix(self, row):
         u = self.uc
         typ = SCRATCH + 0x3000
-        u.mem_write(FOOT + 0x6C4, dwords(typ))
-        u.mem_write(FOOT + 0x5E0, dwords(-1))
-        u.mem_write(typ + 0xDBD, bytes((int(row['accelerates']),)))
-        u.mem_write(typ + 0xE0C, bytes((int(row.get('passive', False)),)))
-        u.mem_write(typ + 0x678, dwords(8))
-        u.mem_write(typ + 0x2F8, dwords(0))
-        u.mem_write(typ + 0x300, struct.pack('<d', 0.0625))
-        u.mem_write(typ + 0x308, struct.pack('<d', 0.03125))
-        u.mem_write(LOCO + 0x58, dwords(row['turn']))
-        u.mem_write(LOCO + 0x50, struct.pack('<d', row['target_fraction']))
-        u.mem_write(0x8A07D0, dwords(104))
-        u.mem_write(0x8A07C4, dwords(416))
+        self.write(FOOT + 0x6C4, dwords(typ))
+        self.write(FOOT + 0x5E0, dwords(-1))
+        self.write(typ + 0xDBD, bytes((int(row['accelerates']),)))
+        self.write(typ + 0xE0C, bytes((int(row.get('passive', False)),)))
+        self.write(typ + 0x678, dwords(8))
+        self.write(typ + 0x2F8, dwords(0))
+        self.write(typ + 0x300, struct.pack('<d', 0.0625))
+        self.write(typ + 0x308, struct.pack('<d', 0.03125))
+        self.write(LOCO + 0x58, dwords(row['turn']))
+        self.write(LOCO + 0x50, struct.pack('<d', row['target_fraction']))
+        self.write(0x8A07D0, dwords(104))
+        self.write(0x8A07C4, dwords(416))
         self.before = self.state()
         u.reg_write(UC_X86_REG_ESP, SP)
         u.reg_write(UC_X86_REG_ECX, LOCO)
-        u.mem_write(SP, dwords(RET_MAGIC, 0))
-        run_checked(u, 0x4B0F20, 0x4B1274, count=10000,
+        self.write(SP, dwords(RET_MAGIC, 0))
+        self.run_native(0x4B0F20, 0x4B1274, count=10000,
                     required_addresses=(0x4B0F74, 0x4B126F))
         assert u.reg_read(UC_X86_REG_ESP) == SP - 0x100
         assert u.reg_read(UC_X86_REG_ECX) == FOOT

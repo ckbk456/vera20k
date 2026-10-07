@@ -12,11 +12,22 @@ from tools.projectile_oracle.bridge_render_inputs import BulletReader
 from tools.spatial_oracle.building_body_rules import RULES,dwords
 
 def s32(m,p):return struct.unpack('<i',m.u.mem_read(p,4))[0]
+def construct_rules(m,*,pointer=None):
+ """Initialize the one native Rules receiver on the caller's retained VM.
+
+ Original665650 owns defaults and vector headers. Passing a pointer means
+ construct that allocation; callers reusing initialized Rules must not call
+ this again. Scoped owners use their checked fixture writer for the binding.
+ """
+ r=m.alloc(0x2000) if pointer is None else pointer
+ m.fixture_write(0x8871e0,dwords(r));m.invoke(0x665650,r)
+ return r
+
 def fresh():
  m=BulletReader({})
  m.u.mem_write(0x887568,dwords(0x7eb6d4,m.alloc(4096),1024,1,0,10))
  w=m.invoke(0x772fa0,m.cstring('OrderProbe'))
- r=m.alloc(0x2000);m.u.mem_write(0x8871e0,dwords(r));m.invoke(0x665650,r)
+ r=construct_rules(m)
  return m,w,r
 
 def chronology(cold_gravity=None):

@@ -1,0 +1,1006 @@
+{
+  "schema": "yr1001-bullet-live-readers-validation-v1",
+  "recorded_utc": "2026-10-06T23:55:45.641143+00:00",
+  "base_sha": "b43304db864b49979e2246317ebfd16a496ade49",
+  "implementation_sha": "08590f1348f8452ce252a99067922e83876d978d",
+  "status": "qualified_native_prerequisite_review_fixed_pending_delivery",
+  "native_sha256": "3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600",
+  "checks": [
+    {
+      "command": "VERA20K_REQUIRE_RETAIL_INI=1 VERA20K_REQUIRE_RETAIL_ASSETS=1 python -m tools.cargo_run -- test -p vera20k --lib",
+      "exit_code": 0,
+      "result": "9589 passed; 0 failed; 231 ignored",
+      "log": ".local/bullet-live-validation/rust-retail-lib.log",
+      "log_sha256": "ff2945ed7b2d92f4df018ead09a53efe945414092880959a2a6ad88bf4e124bc",
+      "execution_git_head": "b43304db864b49979e2246317ebfd16a496ade49",
+      "rust_src_tree": "f62d4f9f6b90496ab675303a6c2c278a22de0fc5",
+      "rust_sources_unchanged_since_check": true
+    },
+    {
+      "command": "VERA20K_REQUIRE_RETAIL_INI=1 VERA20K_REQUIRE_RETAIL_ASSETS=1 python -m tools.cargo_run -- clippy -p vera20k --lib",
+      "exit_code": 0,
+      "result": "exit 0; existing 729 warnings",
+      "log": ".local/bullet-live-validation/rust-clippy-lib.log",
+      "log_sha256": "7a2fd6d06fe9dfadea0b1510c52ce61743ab0a9e93539011966132222b1f3066",
+      "execution_git_head": "b43304db864b49979e2246317ebfd16a496ade49",
+      "rust_src_tree": "f62d4f9f6b90496ab675303a6c2c278a22de0fc5",
+      "rust_sources_unchanged_since_check": true
+    },
+    {
+      "command": "VERA20K_REQUIRE_RETAIL_INI=1 VERA20K_REQUIRE_RETAIL_ASSETS=1 python -m tools.cargo_run -- test --release -p vera20k --lib headless_scenario::retail_construction_tests::retail_headless_funnel_construction_is_deterministic_and_populated -- --ignored --exact",
+      "exit_code": 0,
+      "result": "1 passed; 0 failed; retail deterministic populated scenario construction",
+      "log": ".local/bullet-live-validation/release-retail-map-corrected.log",
+      "log_sha256": "dd245b7b0b64af56c69f0e985e7c8b403139f9dcd376b75019e8a483ea21e205",
+      "execution_git_head": "b43304db864b49979e2246317ebfd16a496ade49",
+      "rust_src_tree": "f62d4f9f6b90496ab675303a6c2c278a22de0fc5",
+      "rust_sources_unchanged_since_check": true
+    },
+    {
+      "command": "VERA20K_TEST_RETAIL=1 python -m unittest tools.tests.test_steam_live_assets tools.tests.test_fv_bullet_cold_startup tools.tests.test_fv_live_types tools.tests.test_fv_rules_prereaders tools.tests.test_native_scope tools.tests.test_native_ebp_transport tools.tests.test_native_range_index tools.tests.test_live_type_transports",
+      "exit_code": 0,
+      "result": "98 passed; 93.802 seconds; authenticated native/transport/prereader/guard and palette controls",
+      "log": ".local/bullet-live-validation/native-qualification-final-second.log",
+      "log_sha256": "e62fefe4687d67fc8d6351f5282726a7890bc90d047b1c7f3d73a917e1342c3e",
+      "execution_git_head": "ad5dbb84d4956739a6ced463ee16ca2c3401df8b",
+      "validated_tools_source_commit": "450d1587d3ad242585ec3edd81f17d6f52182a6e"
+    },
+    {
+      "command": "env -u VERA20K_GAMEMD_EXE python -m tools.run_tests",
+      "exit_code": 0,
+      "result": "660 tests; zero failures; 25 explicit skips; 24.208 seconds",
+      "log": ".local/bullet-live-validation/python-qualification-final.log",
+      "log_sha256": "86e77e8b973c7faaaf14a054bc6f3eb6e3bb7f346a01cff2eba8903c8f982de8",
+      "execution_git_head": "ad5dbb84d4956739a6ced463ee16ca2c3401df8b",
+      "validated_tools_source_commit": "450d1587d3ad242585ec3edd81f17d6f52182a6e"
+    },
+    {
+      "command": "python -m tools.spatial_oracle.fv_cell_attack.steam_bullet_startup_scope --check",
+      "exit_code": 0,
+      "result": "native golden payload unchanged; current source metadata reproduced",
+      "log": ".local/bullet-live-validation/bullet-qualification-final-check.log",
+      "log_sha256": "107c199cb4af21716c1420266e8be78508bc0ac19900d4c8e864fce14ca294ad",
+      "execution_git_head": "ad5dbb84d4956739a6ced463ee16ca2c3401df8b",
+      "validated_tools_source_commit": "450d1587d3ad242585ec3edd81f17d6f52182a6e"
+    },
+    {
+      "command": "python tools/skill_sync.py --check",
+      "exit_code": 0,
+      "result": "skill mirrors match; zero updates",
+      "log": ".local/bullet-live-validation/skill-qualification-final.log",
+      "log_sha256": "75262509650ce729d238e21d471f799bdd0ba9bb5f853986b74d5de69cd5e4a4",
+      "execution_git_head": "ad5dbb84d4956739a6ced463ee16ca2c3401df8b",
+      "validated_tools_source_commit": "450d1587d3ad242585ec3edd81f17d6f52182a6e"
+    },
+    {
+      "command": "python tools/sim_field_ratchet.py --base delivery/main",
+      "exit_code": 0,
+      "result": "2513 fields unchanged at base b43304db",
+      "log": ".local/bullet-live-validation/ratchet-qualification-final.log",
+      "log_sha256": "57616c1e6459abe184b4e8ab4cbd069250f98419960d053ac68a591e08ef9189",
+      "execution_git_head": "ad5dbb84d4956739a6ced463ee16ca2c3401df8b",
+      "validated_tools_source_commit": "450d1587d3ad242585ec3edd81f17d6f52182a6e"
+    }
+  ],
+  "standalone_native_controls": [
+    {
+      "result": {
+        "path": ".local/fv-movement-validation/live-assets-20261006/native-catalog-seventh.result.json",
+        "sha256": "cab0534530cfd06c48535e6c255941d60519589562b09c96a87ae3b4d651b4d7",
+        "bytes": 382954
+      },
+      "log": {
+        "path": ".local/fv-movement-validation/live-assets-20261006/native-catalog-seventh.log",
+        "sha256": "5166536f3a8607c3aeb4aa7391a71f1646c9052229d9959033cd1fc584362602",
+        "bytes": 571
+      },
+      "native_sha256": "3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600",
+      "profile_name": "steam-15918130-fv-ordered-live-types-v1",
+      "profile_sha256": "6dd633d2fbae3f1ae032b6ade4c2d8373635e894c310e516113b84afd4e77424",
+      "profile_code_regions": 1029,
+      "sources_at_execution": {
+        "tools/spatial_oracle/fv_cell_attack/steam_live_assets.py": "5694865ea4f58c55d803185e25740fe3036e1c07f6c92f44ec698fef8fcd021e",
+        "tools/spatial_oracle/fv_cell_attack/steam_live_asset_scope.py": "24027a851ea116dff6adfb697a157fe6feeb2f836f2306629912411c19983846",
+        "tools/rules_oracle/bridge_anim_inputs.py": "26f2bc0d56a1fce6a849dad3073b6c010357ccf6fcaa69c7e1491807383cc633",
+        "tools/rules_oracle/bridge_anim_lists.py": "960eda2fe04bd9edbb250cc9e9374d417b2c051848a6fd0eb701a230cc9c4394",
+        "tools/sidebar_oracle/stock.py": "a7daa5bd8a02ed846527420567552fe98612c4669c453e40c5667f0de725eeec",
+        "tools/storage_oracle/keyboard_bindings.py": "8ab6dca7657122f0c5669eee11e5121362305465e51652a6983e6a42dc674c4b",
+        "tools/native_oracle.py": "0e71c346ee8066cf75abe09c16f51b06c6d02177a4bf7ddba861948b59ad8e59"
+      },
+      "scenario_counter_unchanged": true,
+      "rng_unchanged": true,
+      "source_hashes_unchanged": true,
+      "elapsed_seconds": 497.85243344306946,
+      "status": "passed",
+      "observations": {
+        "csf_entries": 5211,
+        "sound_unique_native_names": 818,
+        "sound_full_unique_source_order_matched": true,
+        "sample_counts_all_zero": true,
+        "factory_ready": 1,
+        "audio_index": 0,
+        "sound_physical_sha256": "0a8e85381aef1a0f97074c953bfe99504da00c6220fae1a023a1afd857023232",
+        "csf_physical_sha256": "f3382231d7eb3bd713bf3908ecdba175a1b2e20d9d80fa2702e9ab84c3a79deb"
+      }
+    },
+    {
+      "result": {
+        "path": ".local/fv-movement-validation/live-assets-20261006/native-voxel-files-third.result.json",
+        "sha256": "ddf42cc6d7f582142634910e0bea82877817d81d19186a186e59273df9357bfa",
+        "bytes": 354907
+      },
+      "log": {
+        "path": ".local/fv-movement-validation/live-assets-20261006/native-voxel-files-third.log",
+        "sha256": "7d439c625de6aa8d4601e188167243e0f8c7f45df98340bd8522e9af2ec75db7",
+        "bytes": 1004
+      },
+      "native_sha256": "3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600",
+      "profile_name": "steam-15918130-fv-ordered-live-types-v1",
+      "profile_sha256": "4e02329a82a9060b726af616fcc6bd5af7524681eae637245a38ee5c60f6ab78",
+      "profile_code_regions": 1030,
+      "sources_at_execution": {
+        "tools/spatial_oracle/fv_cell_attack/steam_live_assets.py": "5694865ea4f58c55d803185e25740fe3036e1c07f6c92f44ec698fef8fcd021e",
+        "tools/spatial_oracle/fv_cell_attack/steam_live_asset_scope.py": "82185427a06561026e9e7f89b0e808be16d98be8a2e37debd7054dc0b188b99c",
+        "tools/rules_oracle/bridge_anim_inputs.py": "26f2bc0d56a1fce6a849dad3073b6c010357ccf6fcaa69c7e1491807383cc633",
+        "tools/rules_oracle/bridge_anim_lists.py": "960eda2fe04bd9edbb250cc9e9374d417b2c051848a6fd0eb701a230cc9c4394",
+        "tools/sidebar_oracle/stock.py": "a7daa5bd8a02ed846527420567552fe98612c4669c453e40c5667f0de725eeec",
+        "tools/storage_oracle/keyboard_bindings.py": "8ab6dca7657122f0c5669eee11e5121362305465e51652a6983e6a42dc674c4b",
+        "tools/native_oracle.py": "0e71c346ee8066cf75abe09c16f51b06c6d02177a4bf7ddba861948b59ad8e59"
+      },
+      "scenario_counter_unchanged": true,
+      "rng_unchanged": true,
+      "source_hashes_unchanged": true,
+      "elapsed_seconds": 0.49478888511657715,
+      "status": "passed",
+      "control_only_entry_pairs": [
+        [
+          4667888,
+          [
+            805306368
+          ]
+        ],
+        [
+          7691472,
+          [
+            805306368
+          ]
+        ],
+        [
+          6018416,
+          [
+            805306368
+          ]
+        ],
+        [
+          6018864,
+          [
+            805306368
+          ]
+        ]
+      ],
+      "observations": {
+        "physical_resources": [
+          {
+            "resource": "FV.VXL",
+            "native_missing": false,
+            "header_hex": "00000000010000000100000065870000f037012400380124b0380124"
+          },
+          {
+            "resource": "FV.HVA",
+            "native_missing": false,
+            "header_hex": "000000000100000001000000c0c00124"
+          },
+          {
+            "resource": "FVBARL.VXL",
+            "native_missing": true,
+            "header_hex": "01000000000000000000000000000000000000000000000000000000"
+          },
+          {
+            "resource": "FVBARL.HVA",
+            "native_missing": true,
+            "header_hex": "01000000000000000000000000000000"
+          }
+        ],
+        "file_events": 20,
+        "hva_scale_from_native_loaded_vxl": true
+      }
+    },
+    {
+      "result": {
+        "path": ".local/fv-movement-validation/live-assets-20261006/native-eva-first.result.json",
+        "sha256": "814ff0a68e210cf165033f1fcd63a92afd39b06a885e0614074a3b464cbfddb6",
+        "bytes": 455107
+      },
+      "log": {
+        "path": ".local/fv-movement-validation/live-assets-20261006/native-eva-first.log",
+        "sha256": "cef06532d2c4ece307c19e1adc5963ddd505efea06975f70da5b556b514ca585",
+        "bytes": 358
+      },
+      "native_sha256": "3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600",
+      "profile_name": "steam-15918130-fv-ordered-live-types-v1",
+      "profile_sha256": "f61211f5eae9d142292fa938aa2d43002867c396e774f99fea48a40e0f9fbb72",
+      "profile_code_regions": 1038,
+      "sources_at_execution": {
+        "tools/spatial_oracle/fv_cell_attack/steam_live_assets.py": "87604c952844d9aafeaecaed06fad74d827bbb318b11e952d2242a06231bba8b",
+        "tools/spatial_oracle/fv_cell_attack/steam_live_asset_scope.py": "82185427a06561026e9e7f89b0e808be16d98be8a2e37debd7054dc0b188b99c",
+        "tools/rules_oracle/bridge_anim_inputs.py": "26f2bc0d56a1fce6a849dad3073b6c010357ccf6fcaa69c7e1491807383cc633",
+        "tools/rules_oracle/bridge_anim_lists.py": "960eda2fe04bd9edbb250cc9e9374d417b2c051848a6fd0eb701a230cc9c4394",
+        "tools/sidebar_oracle/stock.py": "a7daa5bd8a02ed846527420567552fe98612c4669c453e40c5667f0de725eeec",
+        "tools/storage_oracle/keyboard_bindings.py": "8ab6dca7657122f0c5669eee11e5121362305465e51652a6983e6a42dc674c4b",
+        "tools/native_oracle.py": "0e71c346ee8066cf75abe09c16f51b06c6d02177a4bf7ddba861948b59ad8e59",
+        "tools/spatial_oracle/fv_cell_attack/steam_live_catalog_scope.py": "04777a88415b026d641478a1702c69dee37a0e2b0538599a75da5f24e4408d4e",
+        "tools/spatial_oracle/fv_cell_attack/steam_live_types.py": "ea404bf0404864d89a6d466e3e3bd16355073287d99411202333cbac1dd67d40",
+        "tools/spatial_oracle/fv_cell_attack/steam_movement_profile.py": "f23ee06d89374dc3c8c6f5ff17490e5ef184f5b3b8127a29ab7225bbf23c15ae"
+      },
+      "scenario_counter_unchanged": true,
+      "rng_unchanged": true,
+      "source_hashes_unchanged": true,
+      "elapsed_seconds": 105.34628319740295,
+      "status": "passed",
+      "observations": {
+        "eva_native_count": 470,
+        "source_entries": 470,
+        "unique_source_names": 470,
+        "full_unique_source_order_matched": true,
+        "physical_sha256": "e4df441ac619ba3b68e84ceee55e3eaf7c64c0410176cf2ea442085da9feeadc",
+        "native_lookup_indices": [
+          0,
+          235,
+          469
+        ],
+        "missing_lookup": 4294967295
+      }
+    }
+  ],
+  "standalone_control_limits": [
+    "These earlier independent controls retain their own source and profile hashes; they are not an exact-publication-source joined retail type pass.",
+    "Full Sound source entries819/native unique818; native null audio index, no manufactured sample ordinals.",
+    "Partial failures and original timeout diagnostics are preserved locally; no failed control is counted as a successful corpus."
+  ],
+  "critic": {
+    "status": "completed_two_P2_findings_fixed_and_validated",
+    "reviewed_head": "d3941a1c482f4c95ca223e1fe97d6c23633a6c14",
+    "mechanism": "one fresh ephemeral read-only Codex CLI session; agent spawn rejected before any review began",
+    "report_sha256": "5ead6fba072a57934ccd4dac09fe82cb83405afddec4f7abc8bb8d831bca7110",
+    "events_sha256": "3417f4f85ddc8897681dbdb7c2c99046ac836587ebeb7a55886b25cd73601edb",
+    "project_code_tests_builds_executed_by_critic": false,
+    "findings": [
+      {
+        "severity": "P2",
+        "finding": "Shared startup lost compatibility with legacy Repair and A* borrowers missing new adapters.",
+        "resolution": "Use the existing owner adapters when missing; preserve bound scoped adapters and original native calls. Failed-first controls reproduced both errors; two fresh guarded native VMs produce identical complete startup observations."
+      },
+      {
+        "severity": "P2",
+        "finding": "Six Steam CLI source manifests required a private OleRun packet despite the authenticated public projection fallback.",
+        "resolution": "Bind the evidence selected by the unchanged shared authentication owner. All six actual CLI source manifests pass; private/projection digest rejection remains active."
+      }
+    ],
+    "joined_receipt_assessment": "Neither finding invalidates the successful joined live-reader run; original execution provenance is retained."
+  },
+  "delivery": {
+    "status": "ready_PR_auto_merge_enabled_waiting_corrected_exact_head_CI",
+    "target": "ckbk456/vera20k",
+    "source_only": true,
+    "pr_number": 10,
+    "pr_url": "https://github.com/ckbk456/vera20k/pull/10",
+    "first_published_head": "9ae364a55e611f57704d9fc4f7773da14a687ea4",
+    "first_CI": "six passed, Windows Python failed; preserved and corrected, not waived"
+  },
+  "remaining": [
+    "Full Process/Session after668EF5",
+    "House/map placement chronology",
+    "Native paid Move/Stop/resume",
+    "Windows capture and human gameplay acceptance"
+  ],
+  "preserved_joined_attempts": [
+    {
+      "worktree": "held-w02-engineering",
+      "run_name": "ordered-live-types-first-vm",
+      "exit_code": 1,
+      "producer_unchanged": true,
+      "elapsed_seconds": 1095.053817469161,
+      "freeze_sha256": "6391d9e8a52db6a742a1adf32fa7981104b16c036f85dd401c0bcf3989dc051a",
+      "status": "failed_closed_no_successful_corpus",
+      "finding": "Nativecase-insensitive CSF search was supplieduppercasebyte order instead oflowercasefold order; falsemissingNAME:ALLIANCE thenunownedoriginalwideformatswitch"
+    },
+    {
+      "worktree": "publication",
+      "run_name": "ordered-live-types-publication-first-vm",
+      "exit_code": -15,
+      "producer_unchanged": true,
+      "freeze_sha256": "7d16b357ff6f0b92905d1e1cbd6888d1092d0bad354e2bd4433741c472709e99",
+      "status": "owned_cancellation_after_confirmed_identical_scope_failure_before_source_edits"
+    },
+    {
+      "status": "failed_closed_no_successful_corpus",
+      "run_name": "ordered-live-types-publication-second-vm",
+      "freeze_sha256": "ac9b19ec3e1287371955c34d1c843973252ae0fa720431c71c1f1b17032ea0e7",
+      "outputs_local_only": true,
+      "exit_code": 1,
+      "producer_unchanged": true,
+      "elapsed_seconds": 1020.8567048530094,
+      "producer_count": 2463,
+      "finding": "Original Anim vtable+A0 four-byte slot7E36A8 was not declared; no successful corpus. Precise slot grant added; independent Anim-body control then exposed missing prior native Map/Theater binding."
+    },
+    {
+      "exit_code": -15,
+      "producer_unchanged": true,
+      "producer_count": 2463,
+      "elapsed_seconds": 198.57872134586796,
+      "freeze_sha256": "a6619497d41b3f2fe2a1aacabbddb899e9d5a406418d005de93df624025d53bb",
+      "log_sha256": "bfbb24a7df988a5e31cbf3b142285558f45a740caf9e767be44a557b42df474a",
+      "worktree": "publication",
+      "run_name": "ordered-live-types-publication-third-vm",
+      "status": "owned_cancellation_before_source_edits",
+      "finding": "Confirmed stock Building NumberOfDocks4 requires original resize/clear vector closure before any successful joined qualification."
+    },
+    {
+      "status": "failed_closed_no_successful_corpus",
+      "run_name": "ordered-live-types-publication-fourth-vm",
+      "source_head": "ad5dbb84d",
+      "freeze_sha256": "d4e6e20a5510dde3b45a611dfd1c0783c7e6758861f6423e9975094c9fab2816",
+      "outputs_local_only": true,
+      "exit_code": 1,
+      "producer_unchanged": true,
+      "producer_count": 2463,
+      "elapsed_seconds": 1236.1499541939702,
+      "log_sha256": "e86310933141d3839ff3d90a7d4fb61642b120e2c0abee8a5251678cb632d136",
+      "finding": "Original native DWORD copying of default BuildCat DontCare requires compiler padding; original GACNST body stopped at8193A4",
+      "observed_reader_counts": {
+        "Country": 14,
+        "SuperWeapon": 12,
+        "Anim": 610,
+        "Building": 3
+      },
+      "worktree": "publication"
+    }
+  ],
+  "corrected_prerequisites": [
+    "OriginalCSF strcmp-style comparator7C8D20 foldsASCII A-Z tolowercase; suppliedrecords sortbythatorder andpreservephysicalvalueordinals/extras. All5211nativeGetString comparisons plus14absentphysicaltags pass.",
+    "OriginalmissingCSF wide%hs switch andASCII conversion execute; onlytwo exactsinglethreadInterlocked OS calls updateactualguestDWORD B78BA4 andreturnupdated32bitvalues.",
+    "Building originaloccupancykey WS printfA is a suppliedOS boundary restrictedtooriginaltwoformatliterals,indices1..8,exactstackdestination andcdeclcleanup. OriginalWindowsAPIbody is notexecuted/measured.",
+    "Nativebuildingitoa andTerrainframe-color wrapper are originalhashedbodies; locale/I64/scanset/errorbranches retainfailclosed boundaries.",
+    "Original Anim vtable+A0 dispatch word7E36A8 and unconditional Terrain+9C dispatch word7F54F4/getter41CFA0 are precisely enrolled with literal original hashes.",
+    "Original Full_Init Map/Theater687631..68764F executes before retained root Process using a distinct physical Map-only receiver; native Scenario+1258 setter preserves Rules/ART caches, counter and RNG.",
+    "Supplied theater archive registration follows authenticated InitTheater5349C0 call order and original six-record table, selected by the same VM native theater result. Original archive construction, full InitTheater and unloads are not executed.",
+    "Original stock NumberOfDocks4 resizing uses verified465E70/465F50 and exact7E4640/7E4644 virtual slots; actual GAAIRC and AMRADR bodies grow capacity1 to4 with native allocations.",
+    "Armor parser772A50 scans11 pointer rows through7E523C; corrected existing table7E5210 to44 bytes and actual original string extents. Misleading Pip/Foundation/Layer/Category/PipScale/Action labels were corrected from original callers and loop bounds.",
+    "Original DWORD strncpy reads aligned None and yellow terminators. Precisely covered8-byte compiler-padded literals follow proven VHPScan/Pip cold defaults, including stock DNOA/DNOB; unrelated defaults remain excluded.",
+    "Original6267A0 palette theater activation executes before retained Rules Process, using native Scenario theater0; original628740 constructor creates NULL manager with five owned allocations16/24/24/16/748 and31 empty buckets. Genuine retained native Colors manager is separately tested without replacing its records or index. Warm reload remains fail closed.",
+    "Infantry original42-row sequence table8255C8,35 exact missing literals and confirmed %s scan-set/memset dependencies are authenticated. Only selected physical sequence/scanner paths are qualified.",
+    "Original aligned default Verses847C40:68 and wood Armor81DB50:8, plus ParticleSystem BehavesLike836EE0:20, use exact inspected literal/table extents and source hashes.",
+    "Per-image immutable original-byte cache delegates misses to existing file_span. Fresh mapped code/IAT comparison and current authorization remain mandatory every instruction; cache-hit tamper and image/VM isolation controls pass."
+  ],
+  "joined_native": {
+    "status": "passed_bounded_native_prerequisite",
+    "run_name": "ordered-live-types-publication-fifth-vm",
+    "command": "python -m tools.spatial_oracle.fv_cell_attack.retained_startup_run --scope live-types --run-name ordered-live-types-publication-fifth-vm --execute",
+    "source_head": "450d1587d3ad242585ec3edd81f17d6f52182a6e",
+    "freeze_sha256": "daa6a22fb679dcc1c1e188c5617c51de09a02e20c825463adbdb950f3c98134c",
+    "outputs_local_only": true,
+    "exit_code": 0,
+    "producer_unchanged": true,
+    "producer_count": 2463,
+    "elapsed_seconds": 2558.7701105589513,
+    "log_sha256": "9e39d4dbfd55210e303b66db62fca94f9d6f3c3a13b84a0b3df9a4685327b11c",
+    "result": {
+      "path": ".local/fv-movement-validation/ordered-live-types-publication-fifth-vm/result.json",
+      "sha256": "e394fa87d4fbd94533d1ba3525148ed619c734daf9702a719a7a0e271e6fae78",
+      "bytes": 1863
+    },
+    "outputs": [
+      {
+        "path": ".local/fv-movement-validation/ordered-live-types-publication-fifth-vm/full.json",
+        "bytes": 85332251,
+        "sha256": "bf317e820c397cca6d871ca6e07675309f1696f5cba8bb6f52905fd1075088c9"
+      },
+      {
+        "path": ".local/fv-movement-validation/ordered-live-types-publication-fifth-vm/full.meta.json",
+        "bytes": 389465,
+        "sha256": "5aa91008290bf519b8821328319eea03ddd125706c528f597b2b7158b7e8e4da"
+      },
+      {
+        "path": ".local/fv-movement-validation/ordered-live-types-publication-fifth-vm/full_reader.json",
+        "bytes": 87984,
+        "sha256": "af5f1daef7d7bca01f82d9dd30b00508eb6d9914c01b307638bb01b63e616bf4"
+      },
+      {
+        "path": ".local/fv-movement-validation/ordered-live-types-publication-fifth-vm/full_reader.meta.json",
+        "bytes": 389465,
+        "sha256": "ee90515b682c99b1ea6016c856bcc31f600318ad207bc129b7695d57055194fd"
+      }
+    ],
+    "raw_execution": {
+      "path": ".local/fv-movement-validation/ordered-live-types-publication-fifth-vm/executions/retained-dialog-execution-91edfbbc676b4e19b8b45360d8a09842.json",
+      "sha256": "c4a5cf879ea92da79d284c78f2fe042f2591cb15eea52b30865f9647ec93ba6d",
+      "bytes": 86907349
+    },
+    "raw_receipt_sha256": "b2dcef9cc0dd07416f340a2afe808613c6f8d1127d905ed24be043ed6ce2df2a",
+    "semantic_payload_sha256": "9375ef513deb56e23dad9d672a2dde57e197b85875b294d433e430a223f56560",
+    "output_binding_valid": true,
+    "profile_name": "steam-15918130-fv-ordered-live-types-v1",
+    "profile_code_regions": 1057,
+    "native_begin": 6721261,
+    "native_end": 6721269,
+    "primary_entries": 1976,
+    "primary_reader_counts": {
+      "Country": 14,
+      "SuperWeapon": 12,
+      "Anim": 610,
+      "Building": 402,
+      "Aircraft": 12,
+      "Unit": 82,
+      "Infantry": 65,
+      "Weapon": 204,
+      "Bullet": 39,
+      "Warhead": 116,
+      "Terrain": 78,
+      "Smudge": 46,
+      "Overlay": 250,
+      "Particle": 22,
+      "ParticleSystem": 14,
+      "VoxelAnim": 10
+    },
+    "registry_counts_before": {
+      "Country": 14,
+      "Side": 5,
+      "Overlay": 250,
+      "SuperWeapon": 12,
+      "Warhead": 105,
+      "Smudge": 46,
+      "Terrain": 78,
+      "Building": 402,
+      "Unit": 82,
+      "Aircraft": 12,
+      "Infantry": 65,
+      "Anim": 609,
+      "VoxelAnim": 10,
+      "Particle": 22,
+      "ParticleSystem": 13,
+      "Weapon": 1,
+      "Bullet": 0
+    },
+    "registry_counts_after": {
+      "Country": 14,
+      "Side": 5,
+      "Overlay": 250,
+      "SuperWeapon": 12,
+      "Warhead": 117,
+      "Smudge": 46,
+      "Terrain": 78,
+      "Building": 402,
+      "Unit": 82,
+      "Aircraft": 12,
+      "Infantry": 65,
+      "Anim": 619,
+      "VoxelAnim": 10,
+      "Particle": 22,
+      "ParticleSystem": 14,
+      "Weapon": 204,
+      "Bullet": 39
+    },
+    "checks": {
+      "original_stack": true,
+      "remaining_frame": true,
+      "scene_rules_surface": true,
+      "lexical_bytes": true,
+      "separate_receivers": true,
+      "reader_order": true,
+      "original_member_order": true,
+      "active_loop_coverage": true,
+      "original_reader_calls": true,
+      "original_postpasses": true,
+      "mission_order": true,
+      "mission_receivers": true,
+      "constructor_ids": true,
+      "counter_chronology": true,
+      "native_allocation_extents": true
+    },
+    "prereader_checks": {
+      "reader_order": true,
+      "original_receivers": true,
+      "original_returns": true,
+      "original_stack": true,
+      "remaining_frame": true,
+      "scene_rules_surface": true,
+      "lexical_bytes": true,
+      "separate_art": true,
+      "rng": true,
+      "constructor_ids": true,
+      "counter_chronology": true,
+      "native_allocation_extents": true
+    },
+    "missions": 32,
+    "postpasses": 606,
+    "native_constructors": 265,
+    "constructor_counts": {
+      "Weapon": 203,
+      "Anim": 10,
+      "ParticleSystem": 1,
+      "Bullet": 39,
+      "Warhead": 12
+    },
+    "counter_before": 1001704,
+    "counter_after": 1001969,
+    "rng_unchanged": true,
+    "observed_rng_calls": 0,
+    "asset_requests": 3508,
+    "native_allocations": 11861,
+    "native_palette_activation": {
+      "entry": 6449056,
+      "original_caller": 5459380,
+      "native_index": 0,
+      "native_created": true,
+      "native_allocations": 5,
+      "native_allocation_sizes": [
+        16,
+        24,
+        24,
+        16,
+        748
+      ],
+      "cold_bucket_count": 31,
+      "cold_bucket_counts_all_zero": true,
+      "retained_counter_rng": true
+    },
+    "physical_library_palette_requests": [
+      {
+        "name": "LIBTEM.PAL",
+        "bytes": 768,
+        "sha256": "79e668c9bd08bc5eed811df19de2af418cf8b434b97abf1fe2d65809321507e0"
+      }
+    ],
+    "source_catalog_counts": {
+      "csf": 5211,
+      "sound": 818,
+      "eva": 470
+    },
+    "qualification": "Original retained 668EED\u2192679A10\u2192668EF5 executes all16 primary family loops, native dynamic membership/constructors, postpasses and32 Missions. Later constructors may append members after an earlier family loop; final registry counts are distinct from actual original primary counts. Supplied lexical/physical IO, decoded CSF, null audio and Surface/clock/heap priors remain explicit. No whole Windows startup or Rust numeric/rendering/gameplay parity claim."
+  },
+  "anim_body_controls": [
+    {
+      "status": "passed",
+      "bodies": 611,
+      "elapsed_seconds": 228.3508622739464,
+      "physical_requests": 927,
+      "log": ".local/bullet-live-validation/anim-family-theater-control-second.log",
+      "priors": "Fresh native selected CRT/Scenario/Rules/Anim constructors, full ART/CSF and palette buffers; cold empty Sound/EVA/namedColors; core archive stack only; other type masters omitted. Not joined retail parity.",
+      "log_sha256": "d832627c5497f8847e861fd4a0fb0db77df09650b587bbfd892143f9aee859fe"
+    },
+    {
+      "status": "passed",
+      "bodies": 611,
+      "elapsed_seconds": 227.32593223406002,
+      "physical_requests": 902,
+      "log": ".local/bullet-live-validation/anim-family-theater-assets-control.log",
+      "priors": "Same isolated native body control with actual native Map/Theater binding and supplied original theater archive order. Cold empty Sound/EVA/namedColors and omitted other-family masters. Not joined retail parity.",
+      "log_sha256": "932208d0098b4c0b284aa6dff4758f8341c3f241ef43cf8ca750da3f47d4bd1e"
+    }
+  ],
+  "building_docks_control": {
+    "status": "passed",
+    "names": [
+      "GAAIRC",
+      "AMRADR"
+    ],
+    "docks": 4,
+    "capacity_before": 1,
+    "capacity_after": 4,
+    "elapsed_seconds": 7.7857686809729785,
+    "log": ".local/bullet-live-validation/building-docks-control-fourth.log",
+    "log_sha256": "e3ff73e33e0fe50142fdf1f28fb97e7c746bb940753c01cae6330e224f30f8ba",
+    "qualification": "Original complete primary Building bodies on a fresh native selected startup with physical selected Rules/ART, physical CSF/theater assets, cold empty Sound/EVA/namedColors and omitted other family masters. Diagnostic closure control, not joined retail parity."
+  },
+  "preserved_setup_failures": [
+    {
+      "log": ".local/bullet-live-validation/native-qualification-final.log",
+      "log_sha256": "5aaecee707d147bf100fefd7c98c3539eb25b1e51f2fdafe20289a2bab3319cf",
+      "exit_code": 1,
+      "finding": "Two existing retained-caller tests stopped before initialization because the required extracted-palette override was omitted; corrected setup retry passed all98"
+    }
+  ],
+  "additional_closure_controls": [
+    {
+      "log": {
+        "path": ".local/bullet-live-validation/building-family-control-second.log",
+        "sha256": "6aee2e59d7b58ec6819684b9072a34686b23ca7bc57c1c1057d3e7efe2252ae1",
+        "bytes": 14719
+      },
+      "status": "passed",
+      "source_entries": 403,
+      "unique_primary_returns": 402,
+      "elapsed_seconds": 1109.183423,
+      "priors": "Original constructors and primary bodies, full physical Rules/ART, cold Sound/EVA/namedColors, omitted other-family masters; isolated diagnostic, not joined parity."
+    },
+    {
+      "log": {
+        "path": ".local/bullet-live-validation/building-real-palette-control-second.log",
+        "sha256": "c1843e3d2cfa19bfd740b12246f226f758b1d7b4edc4a8110747835fb0404e4c",
+        "bytes": 3127
+      },
+      "status": "passed",
+      "elapsed_seconds": 3.655098,
+      "qualification": "Original CANEWY04 Palette=lib resolves actual768-byte LIBTEM.PAL and nonNULL native type palette pointer; supplied RGB565 Surface does not establish rendering parity."
+    },
+    {
+      "log": {
+        "path": ".local/bullet-live-validation/remaining-primary-body-fourth.log",
+        "sha256": "cbfcc67bd7b7b65c316fbf95e5e7bbe24333f76b0537bbd5c8db49085357e692",
+        "bytes": 2717
+      },
+      "status": "passed",
+      "elapsed_seconds": 205.463813971,
+      "primary_returns": {
+        "ParticleSystem": 13,
+        "VoxelAnim": 10
+      },
+      "new_native_constructors": 1,
+      "priors": "All physical native master constructors, full Colors, original Map/theater activation and five prereaders; earlier primary bodies/postpasses omitted, cold Sound/EVA. Final isolated counter/cache/frame checks pass; not joined parity."
+    }
+  ],
+  "preserved_partial_family_diagnostics": [
+    {
+      "log": {
+        "path": ".local/bullet-live-validation/remaining-family-control-third.log",
+        "sha256": "4e7ecf0e25c0551bc73d3cd49ce334b9efb2b5962cb2974316b96937d3f3b53c",
+        "bytes": 4299
+      },
+      "status": "native_finite_timeout_no_successful_corpus",
+      "instruction_count": 166672932,
+      "timeout_seconds": 1200,
+      "completed": {
+        "Country": 14,
+        "SuperWeapon": 12,
+        "Anim": 610
+      },
+      "last_family": "Building",
+      "last_entry": 297
+    },
+    {
+      "log": {
+        "path": ".local/bullet-live-validation/remaining-family-control-fourth.log",
+        "sha256": "4c01872a7a07228332e519df2527d1e185cbe0fc672ab79a0518d60b499fce78",
+        "bytes": 5963
+      },
+      "status": "failed_closed_no_successful_corpus",
+      "failure_id": "52cf870397074562af6600493871fada",
+      "completed": {
+        "Country": 14,
+        "SuperWeapon": 12,
+        "Anim": 610,
+        "Building": 402,
+        "Aircraft": 12,
+        "Unit": 82
+      },
+      "finding": "First Infantry sequence table8255C8 was outside declared scope; precise table/literals and confirmed scanner helper added after original exit."
+    },
+    {
+      "log": {
+        "path": ".local/bullet-live-validation/remaining-primary-body-first.log",
+        "sha256": "ac314e81efd3b1bcec0b114da69cd0662055d5ba2a9d7d7ebe108bbd9b2dd9ab",
+        "bytes": 14514
+      },
+      "status": "partial_returns_only_no_successful_corpus",
+      "failure_id": "369e47f5b5fa4c9380f394a8b439e309",
+      "completed": {
+        "Infantry": 65,
+        "Weapon": 79,
+        "Bullet": 17
+      },
+      "finding": "Warhead original aligned DWORD default Verses copy needed precisely proven two-byte padding."
+    },
+    {
+      "log": {
+        "path": ".local/bullet-live-validation/remaining-primary-body-second.log",
+        "sha256": "03b1f098eb4d750af2102918751233965bc561cdcc37f0345f32c4b32809e02f",
+        "bytes": 10837
+      },
+      "status": "partial_returns_only_no_successful_corpus",
+      "failure_id": "34ee76fd1cc249c9a347eb0daadf6793",
+      "completed": {
+        "Warhead": 105
+      },
+      "finding": "Terrain original wood Armor default needed precisely proven three-byte compiler padding."
+    },
+    {
+      "log": {
+        "path": ".local/bullet-live-validation/remaining-primary-body-third.log",
+        "sha256": "31ba994f7593e9591db1f9821cc70ef1fc7ef4f5d0ebd044c4a0cbf4651c04fa",
+        "bytes": 30367
+      },
+      "status": "partial_returns_only_no_successful_corpus",
+      "failure_id": "261073acf1b544eebd006ec07fe2966a",
+      "completed": {
+        "Terrain": 78,
+        "Smudge": 46,
+        "Overlay": 250,
+        "Particle": 22
+      },
+      "finding": "ParticleSystem original five-pointer BehavesLike table836EE0 needed its exact20-byte extent."
+    }
+  ],
+  "source_sha256_at_joined_execution": {
+    "tools/_cargo_cache.py": "4495ca93688794cb4cc32f06995b9f1fd9dd91271cb5358c8fde8f88e4af3c1a",
+    "tools/input_oracle/fast_scroll.py": "02a2d87b37eff71df850fc70a6c31ec0a2f7f658e8aee8d616ab27b67b908e9f",
+    "tools/native_inspect.py": "ef7ff6551c943a79a02939462d6da9bb1ff9d2e46afe6142251a94e1447824a6",
+    "tools/native_oracle.py": "4b42417b5104145250f5b6321e4cb3e9ced560d7528d406334e1d9c2dc343a45",
+    "tools/projectile_oracle/bridge_render_inputs_palette.py": "94b2d81d145533d67994b725c314f80ba1d105f73b99250a5a93e8049e37dd2a",
+    "tools/projectile_oracle/bridge_render_inputs_selection.py": "93973b90c5355ce6ca955fd942eeb9e8d5a6bfceb995acf1d50807259464997f",
+    "tools/projectile_oracle/flat_art.py": "d7bec7ed89075bfd9f50138b54fa0bdc95599083b997c2b031f596851029be29",
+    "tools/projectile_oracle/ifv_fire_coord.py": "737cfdb438c73477d596d760dca430e0199c30471878c9fcc4903e100ebd6396",
+    "tools/projectile_oracle/ifv_launch.py": "12b465b3b7c80f5e0bba8385d81c85612fab5c1673cf150e0291f075dd3889f8",
+    "tools/rules_oracle/bridge_anim_inputs.py": "40c597dcc13599ee3a74b4232264937f86161588450fd3366bd431e30240815c",
+    "tools/rules_oracle/bridge_anim_lists.py": "960eda2fe04bd9edbb250cc9e9374d417b2c051848a6fd0eb701a230cc9c4394",
+    "tools/rules_oracle/bridge_child_sound.py": "4132e5307f9592c2e18c5930712e2c6b4239108726f038f4509b2137c3e27928",
+    "tools/rules_oracle/bridge_landing_inputs.py": "0d8755b9150edaf94b8992465b2ab4505520fd51c7d3708e5b2fd52f2c77d52b",
+    "tools/rules_oracle/read_double_percent.py": "75a1a98d74e1ecf6d69eb899c41b3c350db1758684f36af6c8e07bc35540eec2",
+    "tools/rules_oracle/theater_general_reader.py": "80aa99a8b1c5685233165090e9bc2f906b6c1f44057e1500fc9cd9a5d02509f2",
+    "tools/rules_oracle/weapon_speed_order.py": "9c5ffa4644a371d90c139d2ddae98c9abc0b7cbd0b83925cffd08d333c8b7105",
+    "tools/sidebar_oracle/stock.py": "a7daa5bd8a02ed846527420567552fe98612c4669c453e40c5667f0de725eeec",
+    "tools/spatial_oracle/anytown_damage/mission.py": "8a1030ae74eeb0a64740a856058b116a27edcd58b49915cede3dea821a23d6ca",
+    "tools/spatial_oracle/anytown_damage/navigation.py": "0058cea0b7aa7c40961f65960d843a96de539a3d09e5d5625e9c8def7e41bc68",
+    "tools/spatial_oracle/anytown_damage/navigation_inputs.py": "3f567ae0ad07ea3d17ba794a05d69b29e2e28ce1acaf3ff43994471137269c76",
+    "tools/spatial_oracle/bridge_rim.py": "cd32ca8f068bf7cf7ebe4b71f5c0f5855226b9f85ff38e73d23d84eae9bd1268",
+    "tools/spatial_oracle/building_body_rules.py": "a88f3b58b55d7587b79221eb94f99782328a2a2d38c404e28009caea30d01d55",
+    "tools/spatial_oracle/fv_cell_attack/retained_startup_run.py": "82525e998c2ac26ee91d5f2e4bfb75a8802d2158eeb43cab7920d65ad2a54ca2",
+    "tools/spatial_oracle/fv_cell_attack/steam_bullet_startup_scope.py": "90905930e14bfea96ee3a42b5edf5c7f4dbb6ba8f40cdfe874db6a0e8c0b34ea",
+    "tools/spatial_oracle/fv_cell_attack/steam_live_asset_scope.py": "25221eae7cbf5262e7791ef35866d7d70f3706ef26e1b0e20ab9b8683f748b66",
+    "tools/spatial_oracle/fv_cell_attack/steam_live_assets.py": "f1be0fc7dea828a3618302388c509de0302c8a8b7c38287ea4f248990850658f",
+    "tools/spatial_oracle/fv_cell_attack/steam_live_catalog_scope.py": "04777a88415b026d641478a1702c69dee37a0e2b0538599a75da5f24e4408d4e",
+    "tools/spatial_oracle/fv_cell_attack/steam_live_formatter_scope.py": "39fc0156c79b35e02ef3ec62842b20d9c003c1b8fba5cc34c15504bb852089da",
+    "tools/spatial_oracle/fv_cell_attack/steam_live_reader_helpers_scope.py": "36470947d34caec83e388fab6025da55412260351bb0bc20f3cb3654d1b01bf3",
+    "tools/spatial_oracle/fv_cell_attack/steam_live_types.py": "f0e2d35772c31548a6e2b503838e795d2ae5e90f4380d2172d2b268a75b5f3bc",
+    "tools/spatial_oracle/fv_cell_attack/steam_live_types_scope.py": "0b7012aa9bc80bf5407ebb4f0685260770c165d702876b640a896bdea222c17b",
+    "tools/spatial_oracle/fv_cell_attack/steam_movement_profile.py": "4dc93c2dd50c6c5a14dff067fa0837b5a4777be45c705428dfc729fa71a0cb1c",
+    "tools/spatial_oracle/fv_cell_attack/steam_physical_navigation_profile.py": "631f114dd66cd3ee607c6aacaf3c7bcc317951c92c6892cb6e3833b5b4862a41",
+    "tools/spatial_oracle/fv_cell_attack/steam_rules_general_scope.py": "803d1d374f4468cbdb94b1faa5ea7ee0dd2a78c6ced7966d4767311bd1b00546",
+    "tools/spatial_oracle/fv_cell_attack/steam_rules_prereader_scope.py": "06dea2bfd149284f0d382330fc9ffed3847dd150bc06a236e95d085922b50e32",
+    "tools/spatial_oracle/ifv_turret_switching.py": "7e2098127c640a918f42c4178c57a1d1dd831c007aa907fc0cc67ce7cfbdb28f",
+    "tools/spatial_oracle/locomotor_force_track.py": "e9789d1bbf3e8d31e67ec26ab238e0657c2d161d7a00bf1e1f3a6c155ffa83d7",
+    "tools/spatial_oracle/map_queries.py": "699ada143ed69210dd12ff5099b516dd2f28c689b7db6c27ae38e04ed1a73b78",
+    "tools/spatial_oracle/mapgen_range.py": "34d7123fb8441155bb5e216b16cda209daf769b7d33aabf3556503807094e890",
+    "tools/spatial_oracle/shrapnel_repair/hierarchy_composition.py": "85b978786ced97710c5b8b1968edafc434f04b118ebfe6dd5270fc2804c87cc6",
+    "tools/spatial_oracle/shrapnel_repair/retail_inputs.py": "3ab84f391a0ac10e6fe5893c89e7f7ed45e1993ca2b9c7dd130dc54cbfc7fd00",
+    "tools/spatial_oracle/shrapnel_repair/shrapnel_repair.py": "1f1deed4a437400a6e7c4fb2d63b57727bd71a3da16d2d213fcfef420c6bc945",
+    "tools/spatial_oracle/shrapnel_repair/zone_composition.py": "841ca72d0017949600beee624b2121070b36d7b624c8261dfb09283a25dff995",
+    "tools/spatial_oracle/track_destination.py": "ec08b5710891d115acbdb71c18cbcd48243cb84737efad3983c8aa82340d291b",
+    "tools/spatial_oracle/track_outer_continuation.py": "3aae5a0a13111e2dc9b3908461db1f3a33ca2224212cd445f8c06af41d891480",
+    "tools/spatial_oracle/track_speed_native.py": "ca4fa1421338171d2f02e50a9ba2312f3341139149491b51f1fd7cae3f23f451",
+    "tools/storage_oracle/keyboard_bindings.py": "8ab6dca7657122f0c5669eee11e5121362305465e51652a6983e6a42dc674c4b",
+    "tools/test_native_oracle.py": "d96ce81353540dbc6829334d26eb24d65cf9c46a54981f06ba6879ccf88c7f25",
+    "tools/tests/test_cargo_labels.py": "1dc69292d062d84aeb2078c8a170ce7c110657d505d50405108350db2cf0ca7b",
+    "tools/tests/test_fv_bullet_cold_startup.py": "0a71a63e4f854c1bea70b8b23152c541f65018a3f83ffc2b5d640a22481f7865",
+    "tools/tests/test_fv_live_types.py": "42a6f10c44b8f81e3333762e67a35d73ea557f8682e07582acf2d03dc78521ad",
+    "tools/tests/test_fv_ordered_cold_startup.py": "db606f3e584e1b5cc56c9b033762e2ea5d0a9aef14711b401210fabcfc00fdc6",
+    "tools/tests/test_fv_rules_prereaders.py": "a461d8aad5bd8193e6aa257cc839d75dd9ff52410367638af7a7539823f811e4",
+    "tools/tests/test_live_type_transports.py": "9df92feaa82e7224d2ee9b0a393b2bb37799ab75f8347cf48ab425a3354e026d",
+    "tools/tests/test_native_ebp_transport.py": "54e1d5c8d45d5433d4ad578256d8fb5c96bbfc237a20d6348622912ea79e5c96",
+    "tools/tests/test_native_range_index.py": "9231502a5591d519c48916bc5e929660da313a6c58dfb76ca338f8bb0ced4a25",
+    "tools/tests/test_native_scope.py": "5825cf3a3021190c608781f4c06cd2ceae4cb190482558a2e5e5fe135fe27186",
+    "tools/tests/test_steam_live_assets.py": "eba50eaa24f8f9c0221e1aa17d43da6fa65515cb60602d976423d1e06ea378e2",
+    "tools/voxel_oracle/recoil.py": "4e469402429c27e7ef341d36c1d311a3cfe2d8bc53a1d46bec8f887ba62b1de3"
+  },
+  "source_sha256": {
+    "tools/_cargo_cache.py": "4495ca93688794cb4cc32f06995b9f1fd9dd91271cb5358c8fde8f88e4af3c1a",
+    "tools/input_oracle/fast_scroll.py": "02a2d87b37eff71df850fc70a6c31ec0a2f7f658e8aee8d616ab27b67b908e9f",
+    "tools/native_inspect.py": "ef7ff6551c943a79a02939462d6da9bb1ff9d2e46afe6142251a94e1447824a6",
+    "tools/native_oracle.py": "4b42417b5104145250f5b6321e4cb3e9ced560d7528d406334e1d9c2dc343a45",
+    "tools/projectile_oracle/bridge_render_inputs_palette.py": "94b2d81d145533d67994b725c314f80ba1d105f73b99250a5a93e8049e37dd2a",
+    "tools/projectile_oracle/bridge_render_inputs_selection.py": "93973b90c5355ce6ca955fd942eeb9e8d5a6bfceb995acf1d50807259464997f",
+    "tools/projectile_oracle/flat_art.py": "d7bec7ed89075bfd9f50138b54fa0bdc95599083b997c2b031f596851029be29",
+    "tools/projectile_oracle/ifv_fire_coord.py": "737cfdb438c73477d596d760dca430e0199c30471878c9fcc4903e100ebd6396",
+    "tools/projectile_oracle/ifv_launch.py": "12b465b3b7c80f5e0bba8385d81c85612fab5c1673cf150e0291f075dd3889f8",
+    "tools/rules_oracle/bridge_anim_inputs.py": "40c597dcc13599ee3a74b4232264937f86161588450fd3366bd431e30240815c",
+    "tools/rules_oracle/bridge_anim_lists.py": "960eda2fe04bd9edbb250cc9e9374d417b2c051848a6fd0eb701a230cc9c4394",
+    "tools/rules_oracle/bridge_child_sound.py": "4132e5307f9592c2e18c5930712e2c6b4239108726f038f4509b2137c3e27928",
+    "tools/rules_oracle/bridge_landing_inputs.py": "0d8755b9150edaf94b8992465b2ab4505520fd51c7d3708e5b2fd52f2c77d52b",
+    "tools/rules_oracle/read_double_percent.py": "75a1a98d74e1ecf6d69eb899c41b3c350db1758684f36af6c8e07bc35540eec2",
+    "tools/rules_oracle/theater_general_reader.py": "80aa99a8b1c5685233165090e9bc2f906b6c1f44057e1500fc9cd9a5d02509f2",
+    "tools/rules_oracle/weapon_speed_order.py": "9c5ffa4644a371d90c139d2ddae98c9abc0b7cbd0b83925cffd08d333c8b7105",
+    "tools/sidebar_oracle/stock.py": "a7daa5bd8a02ed846527420567552fe98612c4669c453e40c5667f0de725eeec",
+    "tools/spatial_oracle/anytown_damage/mission.py": "8a1030ae74eeb0a64740a856058b116a27edcd58b49915cede3dea821a23d6ca",
+    "tools/spatial_oracle/anytown_damage/navigation.py": "0058cea0b7aa7c40961f65960d843a96de539a3d09e5d5625e9c8def7e41bc68",
+    "tools/spatial_oracle/anytown_damage/navigation_inputs.py": "3f567ae0ad07ea3d17ba794a05d69b29e2e28ce1acaf3ff43994471137269c76",
+    "tools/spatial_oracle/bridge_rim.py": "cd32ca8f068bf7cf7ebe4b71f5c0f5855226b9f85ff38e73d23d84eae9bd1268",
+    "tools/spatial_oracle/building_body_rules.py": "a88f3b58b55d7587b79221eb94f99782328a2a2d38c404e28009caea30d01d55",
+    "tools/spatial_oracle/fv_cell_attack/retained_startup_run.py": "82525e998c2ac26ee91d5f2e4bfb75a8802d2158eeb43cab7920d65ad2a54ca2",
+    "tools/spatial_oracle/fv_cell_attack/steam_bullet_startup_scope.py": "90905930e14bfea96ee3a42b5edf5c7f4dbb6ba8f40cdfe874db6a0e8c0b34ea",
+    "tools/spatial_oracle/fv_cell_attack/steam_live_asset_scope.py": "25221eae7cbf5262e7791ef35866d7d70f3706ef26e1b0e20ab9b8683f748b66",
+    "tools/spatial_oracle/fv_cell_attack/steam_live_assets.py": "f1be0fc7dea828a3618302388c509de0302c8a8b7c38287ea4f248990850658f",
+    "tools/spatial_oracle/fv_cell_attack/steam_live_catalog_scope.py": "04777a88415b026d641478a1702c69dee37a0e2b0538599a75da5f24e4408d4e",
+    "tools/spatial_oracle/fv_cell_attack/steam_live_formatter_scope.py": "39fc0156c79b35e02ef3ec62842b20d9c003c1b8fba5cc34c15504bb852089da",
+    "tools/spatial_oracle/fv_cell_attack/steam_live_reader_helpers_scope.py": "36470947d34caec83e388fab6025da55412260351bb0bc20f3cb3654d1b01bf3",
+    "tools/spatial_oracle/fv_cell_attack/steam_live_types.py": "f0e2d35772c31548a6e2b503838e795d2ae5e90f4380d2172d2b268a75b5f3bc",
+    "tools/spatial_oracle/fv_cell_attack/steam_live_types_scope.py": "0b7012aa9bc80bf5407ebb4f0685260770c165d702876b640a896bdea222c17b",
+    "tools/spatial_oracle/fv_cell_attack/steam_movement_profile.py": "e52816599240d73ba44588688198bb78ac9a46145f4011f258f735fe21aecc98",
+    "tools/spatial_oracle/fv_cell_attack/steam_physical_navigation_profile.py": "631f114dd66cd3ee607c6aacaf3c7bcc317951c92c6892cb6e3833b5b4862a41",
+    "tools/spatial_oracle/fv_cell_attack/steam_rules_general_scope.py": "803d1d374f4468cbdb94b1faa5ea7ee0dd2a78c6ced7966d4767311bd1b00546",
+    "tools/spatial_oracle/fv_cell_attack/steam_rules_prereader_scope.py": "06dea2bfd149284f0d382330fc9ffed3847dd150bc06a236e95d085922b50e32",
+    "tools/spatial_oracle/ifv_turret_switching.py": "7e2098127c640a918f42c4178c57a1d1dd831c007aa907fc0cc67ce7cfbdb28f",
+    "tools/spatial_oracle/locomotor_force_track.py": "e9789d1bbf3e8d31e67ec26ab238e0657c2d161d7a00bf1e1f3a6c155ffa83d7",
+    "tools/spatial_oracle/map_queries.py": "699ada143ed69210dd12ff5099b516dd2f28c689b7db6c27ae38e04ed1a73b78",
+    "tools/spatial_oracle/mapgen_range.py": "c6437acd09a426175af9b84229fe5e33ead410d6eae8757981b0c84f9740c376",
+    "tools/spatial_oracle/shrapnel_repair/hierarchy_composition.py": "85b978786ced97710c5b8b1968edafc434f04b118ebfe6dd5270fc2804c87cc6",
+    "tools/spatial_oracle/shrapnel_repair/retail_inputs.py": "3ab84f391a0ac10e6fe5893c89e7f7ed45e1993ca2b9c7dd130dc54cbfc7fd00",
+    "tools/spatial_oracle/shrapnel_repair/shrapnel_repair.py": "1f1deed4a437400a6e7c4fb2d63b57727bd71a3da16d2d213fcfef420c6bc945",
+    "tools/spatial_oracle/shrapnel_repair/zone_composition.py": "841ca72d0017949600beee624b2121070b36d7b624c8261dfb09283a25dff995",
+    "tools/spatial_oracle/track_destination.py": "ec08b5710891d115acbdb71c18cbcd48243cb84737efad3983c8aa82340d291b",
+    "tools/spatial_oracle/track_outer_continuation.py": "3aae5a0a13111e2dc9b3908461db1f3a33ca2224212cd445f8c06af41d891480",
+    "tools/spatial_oracle/track_speed_native.py": "ca4fa1421338171d2f02e50a9ba2312f3341139149491b51f1fd7cae3f23f451",
+    "tools/storage_oracle/keyboard_bindings.py": "8ab6dca7657122f0c5669eee11e5121362305465e51652a6983e6a42dc674c4b",
+    "tools/test_native_oracle.py": "d96ce81353540dbc6829334d26eb24d65cf9c46a54981f06ba6879ccf88c7f25",
+    "tools/tests/test_cargo_labels.py": "1dc69292d062d84aeb2078c8a170ce7c110657d505d50405108350db2cf0ca7b",
+    "tools/tests/test_fv_bullet_cold_startup.py": "0a71a63e4f854c1bea70b8b23152c541f65018a3f83ffc2b5d640a22481f7865",
+    "tools/tests/test_fv_live_types.py": "a707bbb4037f2314b220aef2685a7a924d52d02a3d2cc3b103423366c6873dad",
+    "tools/tests/test_fv_ordered_cold_startup.py": "db606f3e584e1b5cc56c9b033762e2ea5d0a9aef14711b401210fabcfc00fdc6",
+    "tools/tests/test_fv_rules_prereaders.py": "a461d8aad5bd8193e6aa257cc839d75dd9ff52410367638af7a7539823f811e4",
+    "tools/tests/test_live_type_transports.py": "9df92feaa82e7224d2ee9b0a393b2bb37799ab75f8347cf48ab425a3354e026d",
+    "tools/tests/test_native_ebp_transport.py": "54e1d5c8d45d5433d4ad578256d8fb5c96bbfc237a20d6348622912ea79e5c96",
+    "tools/tests/test_native_range_index.py": "9231502a5591d519c48916bc5e929660da313a6c58dfb76ca338f8bb0ced4a25",
+    "tools/tests/test_native_scope.py": "41072816c775be2fca94ee9ddef09c51e9da03286992f182f617b418ef4d6f0a",
+    "tools/tests/test_steam_live_assets.py": "eba50eaa24f8f9c0221e1aa17d43da6fa65515cb60602d976423d1e06ea378e2",
+    "tools/voxel_oracle/recoil.py": "4e469402429c27e7ef341d36c1d311a3cfe2d8bc53a1d46bec8f887ba62b1de3",
+    ".gitattributes": "46873f37c7c86139a62206c7aeb883a94508e82bb7ef05e71f425941ed872e52"
+  },
+  "post_review_checks": [
+    {
+      "command": "VERA20K_TEST_RETAIL=1 python -m unittest tools.tests.test_steam_live_assets tools.tests.test_fv_bullet_cold_startup tools.tests.test_fv_live_types tools.tests.test_fv_rules_prereaders tools.tests.test_native_scope tools.tests.test_native_ebp_transport tools.tests.test_native_range_index tools.tests.test_live_type_transports",
+      "result": "102 tests, zero failures, 94.680 seconds",
+      "exit_code": 0,
+      "log": "critic-focused-final.log",
+      "log_sha256": "73e019e50631970bdde01b24d85e2770ad081a539b2fa0bc1a92811bbdb58d63",
+      "execution_head": "d3941a1c482f4c95ca223e1fe97d6c23633a6c14",
+      "validated_source_commit": "c174da17bd03c872abeb64e92255dea37b94a9df",
+      "provenance": "Executed with dirty review-fix tool bytes subsequently committed unchanged in validated_source_commit; environment.sh and explicit authenticated palette root were supplied."
+    },
+    {
+      "command": "env -u VERA20K_GAMEMD_EXE python -m tools.run_tests",
+      "result": "664 tests, zero failures, 26 explicit skips, 24.090 seconds",
+      "exit_code": 0,
+      "log": "critic-portable-final.log",
+      "log_sha256": "64a02cf5ebf4b230a9d76c5f658bbb24ba460ea2b0c12b259b61657c306aacd4",
+      "execution_head": "d3941a1c482f4c95ca223e1fe97d6c23633a6c14",
+      "validated_source_commit": "c174da17bd03c872abeb64e92255dea37b94a9df",
+      "provenance": "Executed with dirty review-fix tool bytes subsequently committed unchanged in validated_source_commit; environment.sh and explicit authenticated palette root were supplied."
+    },
+    {
+      "command": "python -m unittest tools.tests.test_native_scope.BorrowedStartupContractTests tools.tests.test_native_scope.SteamCliMeasurementManifestTests tools.tests.test_native_scope.OleRunMeasurementGuardTests",
+      "result": "7 tests passed",
+      "exit_code": 0,
+      "log": "critic-regressions-fixed.log",
+      "log_sha256": "46ccc3738bcfe7c96e4e8f6355a4f6be6eb4c9da24aa03db5376aefe6773a1e7",
+      "execution_head": "d3941a1c482f4c95ca223e1fe97d6c23633a6c14",
+      "validated_source_commit": "c174da17bd03c872abeb64e92255dea37b94a9df",
+      "provenance": "Executed with dirty review-fix tool bytes subsequently committed unchanged in validated_source_commit; environment.sh and explicit authenticated palette root were supplied."
+    },
+    {
+      "command": "python -m unittest tools.tests.test_fv_live_types.NativeLiveCallerControls.test_borrowed_startup_matches_existing_scoped_owner_on_fresh_vms",
+      "result": "1 test passed; complete native startup observation equality and mapped code verification in two fresh VMs",
+      "exit_code": 0,
+      "log": "critic-native-startup-pair-second.log",
+      "log_sha256": "0276289a917b36926f4a82fd7b7e1660cb3eb443b96c998d41c5d3cf04007a39",
+      "execution_head": "d3941a1c482f4c95ca223e1fe97d6c23633a6c14",
+      "validated_source_commit": "c174da17bd03c872abeb64e92255dea37b94a9df",
+      "provenance": "Executed with dirty review-fix tool bytes subsequently committed unchanged in validated_source_commit; environment.sh and explicit authenticated palette root were supplied."
+    },
+    {
+      "command": "python -m tools.spatial_oracle.fv_cell_attack.steam_bullet_startup_scope --check",
+      "result": "PASS; golden payload unchanged SHA256 58ac1abcc6a2d173c077801f00028f907d36ab44d5c8fa2abd29144906ea466a",
+      "exit_code": 0,
+      "log": "critic-bullet-metadata-check.log",
+      "log_sha256": "107c199cb4af21716c1420266e8be78508bc0ac19900d4c8e864fce14ca294ad",
+      "execution_head": "d3941a1c482f4c95ca223e1fe97d6c23633a6c14",
+      "validated_source_commit": "c174da17bd03c872abeb64e92255dea37b94a9df",
+      "provenance": "Executed with dirty review-fix tool bytes subsequently committed unchanged in validated_source_commit; environment.sh and explicit authenticated palette root were supplied."
+    },
+    {
+      "command": "python tools/skill_sync.py --check",
+      "result": "PASS",
+      "exit_code": 0,
+      "log": "critic-skills-final.log",
+      "log_sha256": "75262509650ce729d238e21d471f799bdd0ba9bb5f853986b74d5de69cd5e4a4",
+      "execution_head": "d3941a1c482f4c95ca223e1fe97d6c23633a6c14",
+      "validated_source_commit": "c174da17bd03c872abeb64e92255dea37b94a9df",
+      "provenance": "Executed with dirty review-fix tool bytes subsequently committed unchanged in validated_source_commit; environment.sh and explicit authenticated palette root were supplied."
+    },
+    {
+      "command": "python tools/sim_field_ratchet.py --base delivery/main",
+      "result": "PASS; 2513 fields unchanged",
+      "exit_code": 0,
+      "log": "critic-ratchet-final.log",
+      "log_sha256": "57616c1e6459abe184b4e8ab4cbd069250f98419960d053ac68a591e08ef9189",
+      "execution_head": "d3941a1c482f4c95ca223e1fe97d6c23633a6c14",
+      "validated_source_commit": "c174da17bd03c872abeb64e92255dea37b94a9df",
+      "provenance": "Executed with dirty review-fix tool bytes subsequently committed unchanged in validated_source_commit; environment.sh and explicit authenticated palette root were supplied."
+    }
+  ],
+  "preserved_review_regression_attempts": [
+    {
+      "log": "critic-regressions-failed-first.log",
+      "log_sha256": "be604869b204b346cd7331b185877f49c06a00c307ba16f843782620ee2dc45b",
+      "result": "Expected failed-first: 3 tests, 8 errors; missing startup adapters and all six missing private manifest inputs."
+    },
+    {
+      "log": "critic-native-startup-pair.log",
+      "log_sha256": "46de0195cf582a3176eaf0d8468cc471e7be227e1e72fa17449e6a580dcde5d4",
+      "result": "Complete native observations already matched; an unjustified hardcoded FPCW test assertion failed. Corrected test assumption without production change; not a native closure failure."
+    }
+  ],
+  "post_review_joined_equivalence": {
+    "joined_execution_head": "450d1587d3ad242585ec3edd81f17d6f52182a6e",
+    "validated_source_commit": "c174da17bd03c872abeb64e92255dea37b94a9df",
+    "joined_rerun": false,
+    "unchanged_functions": [
+      {
+        "source": "tools/spatial_oracle/fv_cell_attack/steam_movement_profile.py",
+        "function": "constructor_inputs",
+        "ast_sha256": "5d93bcbe46ff9ff080936079ca2491a1561dcbb87a19e3fefb7bdf18230b2612",
+        "unchanged": true
+      },
+      {
+        "source": "tools/spatial_oracle/fv_cell_attack/steam_movement_profile.py",
+        "function": "generate_typed_master",
+        "ast_sha256": "73fbb30a27d108cffb9cff7e16cf889cec3d7523723d4d1bfb3e97f95a67e0a6",
+        "unchanged": true
+      },
+      {
+        "source": "tools/spatial_oracle/fv_cell_attack/steam_movement_profile.py",
+        "function": "typed_master_inputs",
+        "ast_sha256": "d746e9977c9d7f7bd2e1315306d47d7bbde56d392917424cd2ab5693e412aaf4",
+        "unchanged": true
+      },
+      {
+        "source": "tools/spatial_oracle/fv_cell_attack/steam_live_types.py",
+        "function": "main",
+        "ast_sha256": "09775d69c1c571ef3482684edd216e9cecf6020234ee1558b7e908e1d53c1d1d",
+        "unchanged": true
+      },
+      {
+        "source": "tools/spatial_oracle/fv_cell_attack/steam_live_types.py",
+        "function": "continue_live_types",
+        "ast_sha256": "251608a8aaa1c0b6f247f9d3805a93b54f464a02dacde5d3044e9b665d3161bc",
+        "unchanged": true
+      },
+      {
+        "source": "tools/spatial_oracle/anytown_damage/mission.py",
+        "function": "olerun_measurement",
+        "ast_sha256": "7c01d8e422c05fdab8d2f8d9eff27c961743e72ab2c70e4cb84c86c0b00f3025",
+        "unchanged": true
+      }
+    ],
+    "startup": "Existing scoped receiver retains identical bound fixture/native adapters, addresses, arguments, guards and original instructions; fresh guarded baseline/borrower execution observations match completely. Only missing legacy adapters gain the existing-owner fallback.",
+    "cli": "Changed only six __main__ evidence source bindings; the joined generator does not execute these branches. Authentication owner unchanged.",
+    "metadata": "Regenerated Bullet source hashes only; native golden payload unchanged.",
+    "limits": "The original 2463-producer freeze proves the original execution, not a new execution at the post-review commit. Focused/native equality and unchanged executed functions qualify these subsequent fixes; wider W02 remains open."
+  },
+  "windows_checkout_correction": {
+    "trigger": "First published head 9ae364a55e611f57704d9fc4f7773da14a687ea4 failed Windows Python CI while the other six checks passed.",
+    "failed_workflow": 37548857528,
+    "failed_log_sha256": "d57e92261ec19e4da542b67575d291ee4974fcdadbdcb8e4761f90379834d159",
+    "cause": "Git autocrlf checkout changed the two hash-pinned LF OleRun evidence files. Exact byte authentication correctly rejected source and projection digests.",
+    "failed_first_log_sha256": "de9d847f3781397ed5db61d7aca83a8a634355fcfbdb0e68681a5b97c1d70f4e",
+    "resolution": "Two exact-path text eol=lf attributes; real git core.autocrlf=true checkout-filter regression authenticates both original file hashes. No normalization in the validator, no hash weakening, no native runtime change.",
+    "source_commit": "08590f1348f8452ce252a99067922e83876d978d",
+    "checks": [
+      {
+        "command": "python -m unittest tools.tests.test_native_scope",
+        "result": "54 passed in 0.178 seconds",
+        "execution_head": "9ae364a55e611f57704d9fc4f7773da14a687ea4",
+        "validated_source_commit": "08590f1348f8452ce252a99067922e83876d978d",
+        "provenance": "Dirty line-ending policy/regression bytes subsequently committed unchanged; native runtime files unchanged.",
+        "log_sha256": "24e0c35cc74f4d44d314d333951837db1204dd67e251a120052c44be66a6216c"
+      },
+      {
+        "command": "env -u VERA20K_GAMEMD_EXE python -m tools.run_tests",
+        "result": "665 tests in 24.626 seconds; zero failures, 26 explicit skips",
+        "execution_head": "9ae364a55e611f57704d9fc4f7773da14a687ea4",
+        "validated_source_commit": "08590f1348f8452ce252a99067922e83876d978d",
+        "provenance": "Dirty line-ending policy/regression bytes subsequently committed unchanged; native runtime files unchanged.",
+        "log_sha256": "7475463a5b8b08400d1635ae574fcaf6fc401eba0394bc1ea1cbf64c3ee10aa8"
+      }
+    ],
+    "joined_rerun": false,
+    "qualification": "Joined runtime remains exactly c174da17 after the validated review fixes; this later commit changes only two checkout attributes and a portable test."
+  }
+}

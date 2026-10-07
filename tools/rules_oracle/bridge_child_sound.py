@@ -8,7 +8,7 @@ the other sound types and physical INI/archive loading are outside this fixture.
 import json,struct,hashlib,os
 from pathlib import Path
 from unicorn.x86_const import *
-from tools.rules_oracle.bridge_anim_inputs import Reader,crc,physical_sections
+from tools.rules_oracle.bridge_anim_inputs import Reader,physical_sections
 from tools.spatial_oracle.building_body_rules import INI,SP,dwords
 from tools.native_oracle import run_checked,RET_MAGIC,finish_vectors,provenance
 ROOT=Path(os.environ.get('VERA20K_BRIDGE_CHILD_SOUND_ASSETS',str(Path(os.environ.get('CARGO_TARGET_DIR','target'))/'asset/bridge-child-sound/extract')))
@@ -34,16 +34,6 @@ class Sound(Reader):
   self.u.mem_write(0xb1d378,dwords(0x7eb6d4,self.alloc(64),16,1,0,10))
   self.samples=[];self.invoke(0x7510d0,INI)
   self.registry_samples=self.samples.copy()
- def make_ini(self,sections):
-  super().make_ini(sections)
-  # Supply the source-order entry links as well as Reader's CRC index.
-  index=self.read32(INI+0x28)
-  for i in range(self.read32(INI+0x2c)):
-   sec=self.read32(index+i*8+4);name=self.string(self.read32(sec+0xc));keys=sections[name]
-   entryindex=self.read32(sec+0x2c);entries={self.read32(entryindex+j*8):self.read32(entryindex+j*8+4) for j in range(len(keys))}
-   ordered=[entries[crc(key)] for key in keys];sentinel=self.alloc(0x20)
-   if ordered:self.u.mem_write(sec+0x18,dwords(ordered[0]))
-   for j,p in enumerate(ordered):self.u.mem_write(p+4,dwords(ordered[j+1] if j+1<len(ordered) else sentinel,ordered[j-1] if j else sentinel))
  def hook(self,u,p,n,d):
   if p==0x4015c0:
    name=self.string(u.reg_read(UC_X86_REG_EDX));self.samples.append(name)

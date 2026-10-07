@@ -11,7 +11,7 @@ from pathlib import Path
 
 from unicorn import Uc, UC_ARCH_X86, UC_MODE_32
 from unicorn.x86_const import *
-from tools.native_oracle import (load_image, run_checked, call, SCRATCH,
+from tools.native_oracle import (load_image, run_checked, SCRATCH,
     STACK_BASE, STACK_SIZE, RET_MAGIC, finish_vectors, provenance)
 
 TYPE = SCRATCH
@@ -39,24 +39,33 @@ def dwords(*values):
 
 
 class Fixture:
-    def __init__(self):
+    def __init__(self, *, profile=None):
         self.u = Uc(UC_ARCH_X86, UC_MODE_32)
-        load_image(self.u)
+        self.image = load_image(self.u) if profile is None else load_image(self.u, profile=profile)
         self.u.mem_map(SCRATCH, 0x10000)
         self.u.mem_map(STACK_BASE, STACK_SIZE)
         self.u.mem_map(RET_MAGIC, 0x1000)
         self.u.reg_write(UC_X86_REG_FPCW, 0x0E7F)
-        self.u.mem_write(TYPE + 0x1F8, b'TEST\0')
+        self.fixture_write(TYPE + 0x1F8, b'TEST\0')
+
+    def fixture_write(self, address, blob):
+        if self.image is None:
+            self.u.mem_write(address, blob)
+        else:
+            self.image.write(address, blob)
+
+    def run_native(self, begin, end, **kwargs):
+        return run_checked(self.u, begin, end, image=self.image, **kwargs)
 
     def write(self, address, value):
-        self.u.mem_write(address, dwords(value))
+        self.fixture_write(address, dwords(value))
 
     def ini(self, key, raw):
         u = self.u
         name = bytes(u.mem_read(key, 64)).split(b'\0')[0]
-        crc = call(0x4A1DE0, ecx=SCRATCH, stack_args=[SCRATCH+0x100,len(name)],
-            writes={SCRATCH:bytes(16), SCRATCH+0x100:name})['eax']
-        u.mem_write(INI, bytes(0x40))
+        from tools.projectile_oracle.flat_art import crc as native_crc
+        crc = native_crc(name.decode('ascii'), profile=self.image.profile if self.image is not None else None)
+        self.fixture_write(INI, bytes(0x40))
         self.write(INI+4, TYPE+0x1F8)
         self.write(INI+8, SECTION)
         self.write(SECTION+0x2C, INDEX)
@@ -66,42 +75,42 @@ class Fixture:
         self.write(INDEX, crc)
         self.write(INDEX+4, ENTRY)
         self.write(ENTRY+0x10, RAW)
-        u.mem_write(RAW, (raw or '').encode('ascii')+b'\0')
+        self.fixture_write(RAW, (raw or '').encode('ascii')+b'\0')
 
     def triple(self, raw, initial, which):
         u=self.u
         begin,end,key,offset=TRIPLES[which]
         self.ini(key,raw)
-        u.mem_write(TYPE+offset, dwords(*initial))
+        self.fixture_write(TYPE+offset, dwords(*initial))
         u.reg_write(UC_X86_REG_ESP,SP)
         u.reg_write(UC_X86_REG_EBP,TYPE)
         u.reg_write(UC_X86_REG_EDI,TYPE+0x1F8)
-        run_checked(u,begin,end)
+        self.run_native(begin,end)
         return list(struct.unpack('<iii',u.mem_read(TYPE+offset,12)))
 
     def scalar(self, raw, key, default, fn):
         self.ini(key,raw)
         u=self.u
-        u.mem_write(SP,dwords(RET_MAGIC,TYPE+0x1F8,key,default))
+        self.fixture_write(SP,dwords(RET_MAGIC,TYPE+0x1F8,key,default))
         u.reg_write(UC_X86_REG_ESP,SP)
         u.reg_write(UC_X86_REG_ECX,INI)
-        run_checked(u,fn,RET_MAGIC)
+        self.run_native(fn,RET_MAGIC)
         value=u.reg_read(UC_X86_REG_EAX)
         return struct.unpack('<i',dwords(value))[0] if fn==0x5276D0 else bool(value & 255)
 
     def buildup(self, count, gate, stages, speed_bits):
         u=self.u
-        u.mem_write(TYPE+0xF04,dwords(0,1,0))
-        u.mem_write(TYPE+0x16B7,bytes([gate]))
+        self.fixture_write(TYPE+0xF04,dwords(0,1,0))
+        self.fixture_write(TYPE+0x16B7,bytes([gate]))
         self.write(TYPE+0x16F8,stages)
-        u.mem_write(SHP+6,struct.pack('<H',(count or 0)&65535))
+        self.fixture_write(SHP+6,struct.pack('<H',(count or 0)&65535))
         self.write(0x8871E0,RULES)
-        u.mem_write(RULES+0x1518,struct.pack('<Q',int(speed_bits,16)))
+        self.fixture_write(RULES+0x1518,struct.pack('<Q',int(speed_bits,16)))
         u.reg_write(UC_X86_REG_ESP,SP)
         u.reg_write(UC_X86_REG_EBP,TYPE)
         u.reg_write(UC_X86_REG_EBX,0)
         u.reg_write(UC_X86_REG_EAX,0 if count is None else SHP)
-        run_checked(u,0x45F2AA,0x45F310)
+        self.run_native(0x45F2AA,0x45F310)
         return list(struct.unpack('<iii',u.mem_read(TYPE+0xF04,12)))
 
 

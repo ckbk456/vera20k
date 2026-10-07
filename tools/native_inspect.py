@@ -15,8 +15,8 @@ from pathlib import Path
 import sys
 
 import capstone
-from capstone import CS_AC_READ, CS_AC_WRITE, CS_ARCH_X86, CS_GRP_CALL, CS_GRP_JUMP, CS_MODE_32, Cs
-from capstone.x86_const import X86_INS_CALL, X86_INS_LEA, X86_OP_IMM, X86_OP_MEM
+from capstone import CS_AC_READ, CS_AC_WRITE, CS_ARCH_X86, CS_GRP_CALL, CS_GRP_JUMP, CS_GRP_RET, CS_GRP_INT, CS_MODE_32, Cs
+from capstone.x86_const import X86_INS_CALL, X86_INS_JMP, X86_INS_HLT, X86_INS_LEA, X86_OP_IMM, X86_OP_MEM
 
 from tools import native_oracle as native
 
@@ -221,12 +221,90 @@ def integer(value: str) -> int:
         raise argparse.ArgumentTypeError('Expected a decimal or 0x-prefixed integer') from error
 
 
+def rooted_flow(data: bytes, roots: list[int], *, stops=(), maximum=10000) -> dict:
+    """Static branch discovery, never a function extent or execution enrollment.
+
+    Calls are reported for separate caller/callee review. Direct jumps can be
+    tail calls; they are followed without assigning class/function ownership.
+    Indirect transfers stay unresolved. Exact reached instruction spans avoid
+    authorizing unrelated bytes between disjoint CRT assembly blocks.
+    """
+    if not roots or maximum < 1 or any(not 0 <= value <= 0xFFFFFFFF for value in (*roots, *stops)):
+        raise ValueError('Use nonempty x86 roots, x86 stop addresses and a positive instruction budget')
+    sections = [row for row in section_rows(data) if row['flags'] & EXECUTABLE]
+    decoder = Cs(CS_ARCH_X86, CS_MODE_32)
+    decoder.detail = True
+    pending, decoded, occupied = list(roots), {}, {}
+    calls_found, unresolved, boundaries = [], [], set()
+    stops = set(stops)
+    while pending:
+        address = pending.pop()
+        if address in stops:
+            boundaries.add(address)
+            continue
+        if address in decoded:
+            continue
+        if address in occupied:
+            raise native.OracleError(f'Rooted instruction flow overlaps another instruction at {address:#x}')
+        if len(decoded) >= maximum:
+            raise native.OracleError('Rooted instruction budget exhausted; discovery is incomplete')
+        section = next((row for row in sections if row['address'] <= address < row['address'] + row['file_bytes']), None)
+        if section is None:
+            raise native.OracleError(f'Rooted instruction flow reached non-file-backed executable bytes at {address:#x}')
+        size = min(15, section['address'] + section['file_bytes'] - address)
+        _, payload = native.file_span(data, address, size)
+        ins = next(decoder.disasm(payload, address, count=1), None)
+        if ins is None:
+            raise native.OracleError(f'Truncated or undecodable rooted instruction at {address:#x}')
+        if any(byte in occupied for byte in range(address, address + ins.size)):
+            raise native.OracleError(f'Rooted instruction flow overlaps another instruction at {address:#x}')
+        row = dict(**instruction_row(ins), section=section['index'])
+        decoded[address] = row
+        occupied.update((byte, address) for byte in range(address, address + ins.size))
+        target = ins.operands[0].imm & 0xFFFFFFFF if len(ins.operands) == 1 and ins.operands[0].type == X86_OP_IMM else None
+        if ins.group(CS_GRP_CALL):
+            if ins.id != X86_INS_CALL:
+                target = None
+            calls_found.append(dict(address=address, target=target))
+            if target is None:
+                unresolved.append(dict(address=address, transfer='call', operands=ins.op_str))
+        elif ins.group(CS_GRP_JUMP):
+            if target is None:
+                unresolved.append(dict(address=address, transfer='jump', operands=ins.op_str))
+            else:
+                pending.append(target)
+            if ins.id == X86_INS_JMP or target is None:
+                continue
+        elif ins.group(CS_GRP_RET) or ins.group(CS_GRP_INT) or ins.id == X86_INS_HLT:
+            continue
+        pending.append(address + ins.size)
+    instructions = [decoded[address] for address in sorted(decoded)]
+    spans = []
+    for row in instructions:
+        if spans and spans[-1]['end'] == row['address'] and spans[-1]['section'] == row['section']:
+            spans[-1]['end'] += row['size']
+        else:
+            spans.append(dict(start=row['address'], end=row['address'] + row['size'], section=row['section']))
+    for span in spans:
+        offset, payload = native.file_span(data, span['start'], span['end'] - span['start'])
+        span.update(file_offset=offset, sha256=hashlib.sha256(payload).hexdigest())
+    return dict(roots=list(roots), stops=sorted(stops), reached_boundaries=sorted(boundaries),
+                instructions=instructions, ranges=spans, calls=calls_found, unresolved=unresolved,
+                limits=['Static rooted branch walk only; neither active reachability nor complete function/call closure is established.',
+                        'Calls are not followed; indirect transfers, dataflow aliases and runtime code are unresolved.',
+                        'Direct jumps may be tail calls into another function; ranges carry no class or function ownership.',
+                        'Reported byte ranges/hashes do not authorize execution or automatically enroll a trusted profile.'])
+
+
 def parser() -> argparse.ArgumentParser:
     cli = argparse.ArgumentParser(description=__doc__)
     commands = cli.add_subparsers(dest='command', required=True)
     command = commands.add_parser('identity', help='Identify a candidate PE without enrolling or executing it')
     command.add_argument('--reference', choices=IDENTITY_REFERENCES, action='append', default=[],
                          help='Compare an existing fixture owner’s stored region hashes; repeat for multiple owners')
+    command.add_argument('--flow-root', type=integer, action='append', default=[], help='Candidate static branch discovery root; repeat for multiple roots')
+    command.add_argument('--flow-stop', type=integer, action='append', default=[], help='Nonexecuting discovery boundary; repeat')
+    command.add_argument('--flow-maximum', type=int, default=10000, help='Maximum reached instructions (default10000)')
     commands.add_parser('sections', help='Describe checked PE sections and file backing')
     for name in ('read', 'disasm'):
         command = commands.add_parser(name, help='Read bytes' if name == 'read' else 'Disassemble a file-backed range')
@@ -250,7 +328,12 @@ def parser() -> argparse.ArgumentParser:
 
 def inspect(data: bytes, options: argparse.Namespace) -> dict:
     if options.command == 'identity':
-        return identity(data, options.reference)
+        result = identity(data, options.reference)
+        if options.flow_root:
+            result['rooted_flow'] = rooted_flow(data, options.flow_root, stops=options.flow_stop, maximum=options.flow_maximum)
+        elif options.flow_stop:
+            raise ValueError('--flow-stop requires --flow-root')
+        return result
     if options.command == 'sections':
         return dict(sections=section_rows(data), limits=['Section virtual tails can be BSS, not bytes from the executable.'])
     if options.command == 'read':

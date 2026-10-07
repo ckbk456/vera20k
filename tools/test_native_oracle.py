@@ -276,6 +276,7 @@ run_checked(machine, 0x1000, 0x1002, count=4,
 
     def test_mission_rules_failure_keeps_setup_selector_and_physical_layer(self):
         from tools.rules_oracle.bridge_anim_inputs import Reader
+        from tools.spatial_oracle.building_body_rules import Fixture
         from tools.spatial_oracle import anytown_damage
 
         # Load the real Mission code with only its unused scene/asset provider
@@ -297,6 +298,9 @@ run_checked(machine, 0x1000, 0x1002, count=4,
         machine.mem_map(mission.SP & ~0xFFF, 0x1000)
         reader = object.__new__(Reader)
         reader.u = machine
+        reader.f = object.__new__(Fixture)
+        reader.f.u, reader.f.image = machine, None
+        reader.image, reader.sinks, reader.transports = None, {}, {}
         reader.rules_cache = lambda sections: None
         reader.invoke = lambda addr, obj, args=(), **kw: (
             Reader.invoke(reader, addr, obj, args, **kw) if addr == 0x66D530 else 0)
@@ -309,8 +313,9 @@ run_checked(machine, 0x1000, 0x1002, count=4,
             layer.write_bytes(raw)
             # Skip earlier setup stages and inject only the failing General
             # Rules call through the real Mission -> Reader -> runner path.
-            with patch.object(mission.base, "layers", side_effect=[[], [(layer.name, layer)]]), \
-                    patch.object(mission.base, "lexical", return_value=({}, [])):
+            with patch.object(mission, "_fixture_base", return_value=base), \
+                    patch.object(base, "layers", side_effect=[[], [(layer.name, layer)]]), \
+                    patch.object(base, "lexical", return_value=({}, [])):
                 with self.assertRaises(oracle.NativeExecutionError) as caught:
                     setup.setup(context={"case": "synthetic-placement", "placement_index": 7})
         report = caught.exception.diagnostics
@@ -375,6 +380,26 @@ class IdentityAndReferenceTests(unittest.TestCase):
         self.assertEqual(before, {p: (p.read_bytes(), p.stat().st_mtime_ns) for p in before})
         with self.assertRaisesRegex(oracle.OracleError, r"\$\.cases\[0\]\[1\]: expected 17, got 18"):
             self.finish({"cases": [(42, 18)]})
+        self.assertEqual(before, {p: (p.read_bytes(), p.stat().st_mtime_ns) for p in before})
+
+    def test_transport_provenance_round_trip_preserves_ranges_and_strict_values(self):
+        transport = {"site": 0x401000, "stack_reads": ((4, 8),),
+                     "stack_writes": ((12, 4),), "forward_entry": None}
+        metadata = dict(self.metadata, execution_profile={"transports": [transport]})
+        self.finish({"value": 42}, "--write", provenance=metadata)
+        sidecar = self.target.with_suffix(".meta.json")
+        before = {p: (p.read_bytes(), p.stat().st_mtime_ns)
+                  for p in (self.target, sidecar)}
+        saved = json.loads(sidecar.read_text())
+        self.assertEqual(saved["execution_profile"]["transports"][0]["stack_reads"], [[4, 8]])
+        self.finish({"value": 42}, provenance=metadata)
+        for changed, mismatch in (
+                (dict(transport, stack_reads=((4, 9),)), r"stack_reads\[0\]\[1\]: expected 8, got 9"),
+                (dict(transport, site=float(transport["site"])), "site: expected int, got float"),
+                (dict(transport, forward_entry=False), "forward_entry: expected NoneType, got bool")):
+            with self.assertRaisesRegex(oracle.OracleError, mismatch):
+                self.finish({"value": 42}, provenance=dict(
+                    metadata, execution_profile={"transports": [changed]}))
         self.assertEqual(before, {p: (p.read_bytes(), p.stat().st_mtime_ns) for p in before})
 
     def test_provenance_change_rejects_matching_payload(self):

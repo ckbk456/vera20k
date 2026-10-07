@@ -1,0 +1,3 @@
+# These evidence files are authenticated by their exact original LF bytes.
+tools/spatial_oracle/fv_cell_attack/windows_olerun_probe.ps1 text eol=lf
+tools/spatial_oracle/fv_cell_attack/windows_olerun_functional_projection.json text eol=lf

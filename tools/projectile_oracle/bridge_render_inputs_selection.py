@@ -5,9 +5,34 @@ an empty sound registry; its allocated AP warhead retains constructor fields.
 import importlib.util,json,struct,argparse
 from pathlib import Path
 from unicorn.x86_const import *
-from tools.native_oracle import run_checked,NATIVE_SHA256
+from tools.native_oracle import run_checked,NATIVE_SHA256,RET_MAGIC
 from tools.spatial_oracle.building_body_rules import SP,RULES,dwords
 from tools.projectile_oracle import bridge_render_inputs as mod
+
+def weapon_section_admission(m,weapon,*,ini=RULES):
+ """Actual Weapon reader entry/admission and absent-section native return."""
+ m.fixture_write(SP,dwords(RET_MAGIC,ini));m.u.reg_write(UC_X86_REG_ESP,SP)
+ m.u.reg_write(UC_X86_REG_ECX,weapon)
+ pc=m.run_native(0x772080,(0x7720b2,RET_MAGIC),required_addresses=(0x526810,))
+ if pc==RET_MAGIC:
+  assert m.u.reg_read(UC_X86_REG_EAX)&255==0 and m.u.reg_read(UC_X86_REG_ESP)==SP+8
+ return dict(section_present=pc==0x7720b2,boundary=f'{pc:08x}')
+
+def read_admitted_warhead_pointer(m,weapon,*,ini=RULES):
+ """Original selected Weapon Warhead read/store on an existing admitted VM.
+
+ Stop at772998 before the next Projectile ReadString; its five prepared stack
+ arguments are recorded as an interior caller boundary, not a full reader.
+ """
+ u=m.u
+ for reg,value in ((UC_X86_REG_ESP,SP),(UC_X86_REG_ESI,weapon),
+                   (UC_X86_REG_EBX,weapon+0x24),(UC_X86_REG_EDI,ini)):
+  u.reg_write(reg,value)
+ before=m.read32(weapon+0xac)
+ m.run_native(0x772942,0x772998,required_addresses=(0x528a10,))
+ assert u.reg_read(UC_X86_REG_ESP)==SP-20
+ return dict(before=before,after=m.read32(weapon+0xac),
+             pending_projectile_arguments=[m.read32(SP-20+4*i)for i in range(5)])
 
 def initialize_weapon(m):
  """Fresh selected105mm/Rules owner in a BulletReader-compatible machine.

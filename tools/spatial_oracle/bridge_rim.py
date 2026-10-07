@@ -41,39 +41,52 @@ class OriginalRim:
         u.mem_map(STACK_BASE, STACK_SIZE)
         u.mem_map(RET_MAGIC, 0x1000)
         u.mem_map(CELLS, 0x2000000)
+        self.prepare_map(case, rect=rect)
+        self.events, self.writes = [], []
+        self.call(0x49F2F0, count=100)
+        u.hook_add(UC_HOOK_CODE, self.observe)
+        u.hook_add(UC_HOOK_MEM_WRITE, self.write)
+
+    def fixture_write(self, address, blob):
+        self.uc.mem_write(address, blob)
+
+    def prepare_map(self, case, *, rect=None):
+        """Install authored scalar map input in this owner's existing VM.
+
+        The shared scoped owner overrides fixture_write. This is caller input,
+        not a substitute for Cell construction, Recalc or a navigation answer.
+        """
+        u = self.uc
         self.ptrs = {(r[0], r[1]): CELLS + i * 0x200 for i, r in enumerate(case['cells'])}
         self.coords = {v: k for k, v in self.ptrs.items()}
         table = bytearray(0x100000)
         for x, y, tile, sub, flags, overlay, state, anchor, level, land in case['cells']:
             p = self.ptrs[x, y]
-            u.mem_write(p + 0x24, packed(x, y))
+            self.fixture_write(p + 0x24, packed(x, y))
             # Anchor slot's +2C is not the derived self relation. It is unused
             # by the selector while the self bit is set; initialize to zero.
             ap = self.ptrs[tuple(anchor)] if anchor and not flags & 0x80 else 0
-            u.mem_write(p + 0x2C, dwords(ap))
-            u.mem_write(p + 0x38, dwords(tile))
-            u.mem_write(p + 0x44, dwords(-1 if overlay is None else overlay))
-            u.mem_write(p + 0xEC, dwords(land))
-            u.mem_write(p + 0x11A, bytes((sub, level)))
-            u.mem_write(p + 0x11E, bytes((state,)))
-            u.mem_write(p + 0x140, dwords(flags))
+            self.fixture_write(p + 0x2C, dwords(ap))
+            self.fixture_write(p + 0x38, dwords(tile))
+            self.fixture_write(p + 0x44, dwords(-1 if overlay is None else overlay))
+            self.fixture_write(p + 0xEC, dwords(land))
+            self.fixture_write(p + 0x11A, bytes((sub, level)))
+            self.fixture_write(p + 0x11E, bytes((state,)))
+            self.fixture_write(p + 0x140, dwords(flags))
             struct.pack_into('<I', table, (y * 512 + x) * 4, p)
-        u.mem_write(TABLE, bytes(table))
-        u.mem_write(MAP + 0x13C, dwords(TABLE, 0x40000))
-        u.mem_write(MAP + 0xF4, dwords(*case['size']))
-        u.mem_write(DUMMY, bytes(0x200))
-        u.mem_write(DUMMY + 0x38, dwords(-1))
-        u.mem_write(DUMMY + 0x44, dwords(-1))
-        u.mem_write(self.family['base'], dwords(case['bridge_base']))
+        table_address = getattr(self, 'cell_table_address', TABLE)
+        self.fixture_write(table_address, bytes(table))
+        self.fixture_write(MAP + 0x13C, dwords(table_address, 0x40000))
+        self.fixture_write(MAP + 0xF4, dwords(*case['size']))
+        self.fixture_write(DUMMY, bytes(0x200))
+        self.fixture_write(DUMMY + 0x38, dwords(-1))
+        self.fixture_write(DUMMY + 0x44, dwords(-1))
+        self.fixture_write(self.family['base'], dwords(case['bridge_base']))
         if rect is not None:
-            u.mem_write(MAP + 0x124, dwords(*rect))
+            self.fixture_write(MAP + 0x124, dwords(*rect))
         for key, address in GLOBALS.items():
             value = case['rim_keys'][key]
-            u.mem_write(address, dwords(-1 if value is None else value))
-        self.events, self.writes = [], []
-        self.call(0x49F2F0, count=100)
-        u.hook_add(UC_HOOK_CODE, self.observe)
-        u.hook_add(UC_HOOK_MEM_WRITE, self.write)
+            self.fixture_write(address, dwords(-1 if value is None else value))
 
     def coord(self, pointer):
         return list(struct.unpack('<hh', self.uc.mem_read(pointer + 0x24, 4)))
