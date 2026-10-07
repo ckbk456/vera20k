@@ -58,11 +58,23 @@ golden payload is unchanged; its producer metadata is refreshed. Skill sync and
 the unchanged 2,513-field ratchet pass. Rust source remains the exact prior
 qualified tree; no new Rust check is claimed here.
 
-The mandatory fresh same-VM joined run is pending. Its receipt must retain
-primary counts, tail rereads,
-Tiberium membership, constructor/counter/allocation chronology, original stack
-and saved registers, immutable lexical bytes and all three RNG stores/draws.
-Full retail corpora and raw execution receipts stay ignored and local.
+The mandatory fresh same-VM joined run passed at implementation
+`a92d0f70192df5f8ad81cf9e220ff56812f2f3f9` in 2,609.295 seconds. All 2,468
+frozen producers were unchanged; four outputs bind to one raw receipt. It
+retained 1,976 primary entries across 16 families, 32 Missions, 606 postpasses
+and 265 constructors, then executed all twelve tail calls and 118 actual
+Warhead rereads. Six further ID-bearing constructors advanced the native
+counter from 1,001,969 to 1,001,975; four Tiberium constructors remained
+separate. Their image pointers resolve to actual Overlay members
+TIB01/GEM01/TIB2_01/TIB3_01 at native ordinals 102/27/127/147.
+
+All 15 live and 18 tail checks are true, including original `668FA2` opcode
+`c20400`, return sentinel, stack consumption and saved-register restoration.
+Both passes leave all three RNG stores unchanged with zero observed draws.
+The [sanitized receipt](evidence/yr1001-rules-process-tail.validation.json)
+binds exact artifacts, native/source identity, source-frozen outputs and
+validation provenance. Full retail corpora and raw execution receipts stay
+ignored and local. One fresh independent critic and delivery remain pending.
 
 Run the source-frozen joined route from the repository environment:
 
@@ -93,6 +105,13 @@ after the earlier upstream checkpoint. No upstream change is imported here.
 - Open [#435](https://github.com/YuriPlanet/vera20k/pull/435) suggests later
   Quickplay/multi-House and scheduled screenshot fixture leads. Rust release
   observations do not establish native startup chronology.
+- The later audit refresh is pinned at
+  `a3ef1b4e950682dca635d69dce73e7afbb678116`:
+  [#1087](https://github.com/YuriPlanet/vera20k/pull/1087) adds computer-House
+  AI superweapon firing and target selection. Its actual seeded Scenario RNG
+  target tests are useful later evidence, with Fire_SW/map/object/FNPC fixture
+  boundaries. Its thirteen AI value lists, IQ gate and House/type prerequisites
+  remain outside this root Process-tail tooling chain; no change is imported.
 
 Delivery requires final validation, one fresh independent read-only critic,
 the authorized PR/merge and seven required checks at its exact published head.

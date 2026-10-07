@@ -1,0 +1,604 @@
+{
+  "schema": "yr1001-rules-process-tail-validation-v1",
+  "recorded_utc": "2026-10-07T06:59:33.287594+00:00",
+  "base_sha": "b65a8eb97867838d32b9a9d1a878a12ac56f79c1",
+  "implementation_sha": "a92d0f70192df5f8ad81cf9e220ff56812f2f3f9",
+  "status": "qualified_native_prerequisite_pending_single_critic_and_delivery",
+  "native_sha256": "3e81a61775d2745d1dabe397325ef663cd994ffc194da4e998e3bf5d2d308600",
+  "scope": "Original retained root Rules.Process through stock mode-zero absent-command-bar RET4; no Rust/gameplay change",
+  "checks": [
+    {
+      "command": "python -m unittest tools.tests.test_fv_rules_process_tail tools.tests.test_fv_live_types tools.tests.test_fv_rules_prereaders tools.tests.test_fv_ordered_cold_startup tools.tests.test_fv_bullet_cold_startup -v",
+      "exit_code": 0,
+      "result": "24 passed in21.483s",
+      "log": ".local/rules-process-tail-validation/focused-tail-first.log",
+      "log_sha256": "74dbf5ac8a4835fb30a7ffd33762eaaaf283195506034cb00981104046328508",
+      "execution_git_head": "b65a8eb97867838d32b9a9d1a878a12ac56f79c1",
+      "validated_source_commit": "a92d0f70192df5f8ad81cf9e220ff56812f2f3f9",
+      "note": "Ran on final producer bytes before implementation commit; no claim of execution at final documentation HEAD."
+    },
+    {
+      "command": "VERA20K_TEST_RETAIL=1 python -m unittest tools.tests.test_native_image tools.tests.test_native_scope tools.tests.test_native_ebp_transport tools.tests.test_native_range_index tools.tests.test_live_type_transports tools.tests.test_steam_live_assets -v",
+      "exit_code": 0,
+      "result": "97 passed in75.247s",
+      "log": ".local/rules-process-tail-validation/shared-guards-final.log",
+      "log_sha256": "6ebdde4f3a9dc39b1cf30ebc985a83a9573eb268705e70440a70ad1c8d62f4ce",
+      "execution_git_head": "b65a8eb97867838d32b9a9d1a878a12ac56f79c1",
+      "validated_source_commit": "a92d0f70192df5f8ad81cf9e220ff56812f2f3f9",
+      "note": "Ran on final producer bytes before implementation commit; no claim of execution at final documentation HEAD."
+    },
+    {
+      "command": "env -u VERA20K_GAMEMD_EXE python -m tools.run_tests",
+      "exit_code": 0,
+      "result": "669 tests; zero failures;28 explicit skips;24.431s",
+      "log": ".local/rules-process-tail-validation/python-portable-first.log",
+      "log_sha256": "02130dcd63ae1da1383288641965af371943a31ac0a206927c98763043d5660e",
+      "execution_git_head": "b65a8eb97867838d32b9a9d1a878a12ac56f79c1",
+      "validated_source_commit": "a92d0f70192df5f8ad81cf9e220ff56812f2f3f9",
+      "note": "Ran on final producer bytes before implementation commit; no claim of execution at final documentation HEAD."
+    },
+    {
+      "command": "python -m tools.spatial_oracle.fv_cell_attack.steam_bullet_startup_scope --check",
+      "exit_code": 0,
+      "result": "Native payload unchanged; refreshed producer metadata reproduced",
+      "log": ".local/rules-process-tail-validation/bullet-metadata-check.log",
+      "log_sha256": "6c13636ac3954ef5106742da4de767e00c3e3600397e9edf2bcb5bc7ff4c193c",
+      "execution_git_head": "b65a8eb97867838d32b9a9d1a878a12ac56f79c1",
+      "validated_source_commit": "a92d0f70192df5f8ad81cf9e220ff56812f2f3f9",
+      "note": "Ran on final producer bytes before implementation commit; no claim of execution at final documentation HEAD."
+    },
+    {
+      "command": "python tools/skill_sync.py --check",
+      "exit_code": 0,
+      "result": "Skill mirrors match; zero files updated",
+      "log": ".local/rules-process-tail-validation/skills-final.log",
+      "log_sha256": "75262509650ce729d238e21d471f799bdd0ba9bb5f853986b74d5de69cd5e4a4",
+      "execution_git_head": "b65a8eb97867838d32b9a9d1a878a12ac56f79c1",
+      "validated_source_commit": "a92d0f70192df5f8ad81cf9e220ff56812f2f3f9",
+      "note": "Ran on final producer bytes before implementation commit; no claim of execution at final documentation HEAD."
+    },
+    {
+      "command": "python tools/sim_field_ratchet.py --base delivery/main",
+      "exit_code": 0,
+      "result": "2513 fields; unchanged at merge-base b65a8eb9",
+      "log": ".local/rules-process-tail-validation/ratchet-final.log",
+      "log_sha256": "ff488a7e26e1392ecaede24ba4d7fe4475d5f569913fb114b37d5305def8fb35",
+      "execution_git_head": "b65a8eb97867838d32b9a9d1a878a12ac56f79c1",
+      "validated_source_commit": "a92d0f70192df5f8ad81cf9e220ff56812f2f3f9",
+      "note": "Ran on final producer bytes before implementation commit; no claim of execution at final documentation HEAD."
+    }
+  ],
+  "joined": {
+    "command": "python -m tools.spatial_oracle.fv_cell_attack.retained_startup_run --scope rules-tail --run-name ordered-rules-tail-publication-first-vm --execute",
+    "execution_git_head": "a92d0f70192df5f8ad81cf9e220ff56812f2f3f9",
+    "exit_code": 0,
+    "elapsed_seconds": 2609.2947119018063,
+    "producer_count": 2468,
+    "producer_unchanged": true,
+    "changed_producers": {},
+    "interrupted": null,
+    "freeze_sha256": "894b0889c76b38c9bd25e66f179fdc739314d8b12f6a7c7b54955fb523522987",
+    "stdout_sha256": "bcb4e13ffc7cc82b5c057561beee73735dbe500610cb4afa9b9cce114442e380",
+    "output_binding_valid": true,
+    "outputs": {
+      "full.json": {
+        "bytes": 104742652,
+        "sha256": "67e03ddb711c547e6c2a7ff8c2c96a3ab8cd9ef40fdf39eebc6d20c4ce066799"
+      },
+      "full.meta.json": {
+        "bytes": 405988,
+        "sha256": "75ce4ddec422e2e9891e86e9872c81c587dba46c0984d58c27a3f608d985c5a3"
+      },
+      "full_reader.json": {
+        "bytes": 88377,
+        "sha256": "bf9857435877450e43b16e72d2d58bb002038adfa6414a48d3cec3486d27a1df"
+      },
+      "full_reader.meta.json": {
+        "bytes": 405988,
+        "sha256": "0b77d4693380cd5be19dae4b739b1267b38006c00fe571bf3c8673aa72bd75f0"
+      }
+    },
+    "raw_execution_file_sha256": "7344d7c7f54ac405299b721fade17f3ac335d49ac4f3047aed612f41d665800d",
+    "raw_receipt_sha256": "ce118c123ce1e6b374ff687d5b2d5710d6578e29ad30e7812383b190f4787ae5",
+    "semantic_payload_sha256": "36411686b4f81ed4f1339fd320c627167ec432156263e9d31771c9fe410b8236",
+    "normalized_source_count": 619,
+    "ordered_tiberium_crt": {
+      "family": "Tiberium",
+      "ordinal": 3220,
+      "end_ordinal": 3220,
+      "slot": 8475216,
+      "entry": 7476800,
+      "unpublished_scenario": true
+    },
+    "live": {
+      "primary_entries": 1976,
+      "primary_counts": {
+        "Country": 14,
+        "SuperWeapon": 12,
+        "Anim": 610,
+        "Building": 402,
+        "Aircraft": 12,
+        "Unit": 82,
+        "Infantry": 65,
+        "Weapon": 204,
+        "Bullet": 39,
+        "Warhead": 116,
+        "Terrain": 78,
+        "Smudge": 46,
+        "Overlay": 250,
+        "Particle": 22,
+        "ParticleSystem": 14,
+        "VoxelAnim": 10
+      },
+      "missions": 32,
+      "postpasses": 606,
+      "constructors": 265,
+      "checks": {
+        "original_stack": true,
+        "remaining_frame": true,
+        "scene_rules_surface": true,
+        "lexical_bytes": true,
+        "separate_receivers": true,
+        "reader_order": true,
+        "original_member_order": true,
+        "active_loop_coverage": true,
+        "original_reader_calls": true,
+        "original_postpasses": true,
+        "mission_order": true,
+        "mission_receivers": true,
+        "constructor_ids": true,
+        "counter_chronology": true,
+        "native_allocation_extents": true
+      },
+      "counter_before": 1001704,
+      "counter_after": 1001969,
+      "rng_unchanged": true,
+      "observed_rng_draws": 0
+    },
+    "tail": {
+      "top_level_calls": [
+        {
+          "entry": 6738544,
+          "caller": 6721287,
+          "section": "Easy",
+          "ecx": 605974016,
+          "edx": 605971528,
+          "argument": 8487220,
+          "second_argument": 256,
+          "entry_esp": 268959676
+        },
+        {
+          "entry": 6738544,
+          "caller": 6721305,
+          "section": "Normal",
+          "ecx": 605974016,
+          "edx": 605971608,
+          "argument": 8502112,
+          "second_argument": 256,
+          "entry_esp": 268959676
+        },
+        {
+          "entry": 6738544,
+          "caller": 6721323,
+          "section": "Difficult",
+          "ecx": 605974016,
+          "edx": 605971688,
+          "argument": 8626372,
+          "second_argument": 256,
+          "entry_esp": 268959676
+        },
+        {
+          "entry": 6732032,
+          "caller": 6721331,
+          "section": "CrateRules",
+          "ecx": 605966096,
+          "edx": 4294967294,
+          "argument": 605974016,
+          "second_argument": 256,
+          "entry_esp": 268959676
+        },
+        {
+          "entry": 6732720,
+          "caller": 6721339,
+          "section": "CombatDamage",
+          "ecx": 605966096,
+          "edx": 268959392,
+          "argument": 605974016,
+          "second_argument": 256,
+          "entry_esp": 268959676
+        },
+        {
+          "entry": 6737776,
+          "caller": 6721347,
+          "section": "Radiation",
+          "ecx": 605966096,
+          "edx": 607434544,
+          "argument": 605974016,
+          "second_argument": 256,
+          "entry_esp": 268959676
+        },
+        {
+          "entry": 6738256,
+          "caller": 6721355,
+          "section": "ElevationModel",
+          "ecx": 605966096,
+          "edx": 701249808,
+          "argument": 605974016,
+          "second_argument": 256,
+          "entry_esp": 268959676
+        },
+        {
+          "entry": 6738416,
+          "caller": 6721363,
+          "section": "WallModel",
+          "ecx": 605966096,
+          "edx": 607436692,
+          "argument": 605974016,
+          "second_argument": 256,
+          "entry_esp": 268959676
+        },
+        {
+          "entry": 6722016,
+          "caller": 6721371,
+          "section": "AudioVisual",
+          "ecx": 605966096,
+          "edx": 607437012,
+          "argument": 605974016,
+          "second_argument": 256,
+          "entry_esp": 268959676
+        },
+        {
+          "entry": 6721456,
+          "caller": 6721379,
+          "section": "SpecialWeapons",
+          "ecx": 605966096,
+          "edx": 607414132,
+          "argument": 605974016,
+          "second_argument": 256,
+          "entry_esp": 268959676
+        },
+        {
+          "entry": 7478544,
+          "caller": 6721386,
+          "section": "Tiberiums",
+          "ecx": 605974016,
+          "edx": 268959452,
+          "argument": 256,
+          "second_argument": 8936061,
+          "entry_esp": 268959680
+        },
+        {
+          "entry": 6768208,
+          "caller": 6721435,
+          "section": "AdvancedCommandBar",
+          "ecx": 605966096,
+          "edx": 610776272,
+          "argument": 605974016,
+          "second_argument": 0,
+          "entry_esp": 268959672
+        }
+      ],
+      "checks": {
+        "original_return": true,
+        "original_ret4_instruction": true,
+        "original_ret4_stack": true,
+        "saved_registers": true,
+        "scene_rules_surface": true,
+        "top_level_order": true,
+        "original_receivers": true,
+        "difficulty_rows": true,
+        "command_bar_flag": true,
+        "lexical_bytes": true,
+        "constructor_ids": true,
+        "counter_chronology": true,
+        "warhead_member_order": true,
+        "warhead_ini": true,
+        "warhead_loop_coverage": true,
+        "tiberium_ini": true,
+        "tiberium_loop_coverage": true,
+        "native_allocation_extents": true
+      },
+      "native_epilogues": [
+        {
+          "entry": 6721442,
+          "opcode_hex": "c20400",
+          "esp": 268959744,
+          "return_address": 805306368
+        }
+      ],
+      "saved_registers_before": {
+        "edi": 256,
+        "esi": 8936061,
+        "ebp": 609683488,
+        "ebx": 0
+      },
+      "restored_registers_after": {
+        "edi": 256,
+        "esi": 8936061,
+        "ebp": 609683488,
+        "ebx": 0
+      },
+      "actual_after_esp": 268959752,
+      "original_frame_before_sha256": "5d2d628604ed604f1e0b79ab5d3e54dfa8e5160f3feca712b64d23cb127ad8b2",
+      "mode": 0,
+      "command_bar_boundary": "Original mode-zero absent AdvancedCommandBar return; populated command-bar and accepted Session settings excluded.",
+      "warhead_rereads": 118,
+      "warhead_member_order_verified": true,
+      "constructors": [
+        {
+          "entry": 7720640,
+          "family": "Warhead",
+          "pointer": 702451504,
+          "caller": 7726111,
+          "name": "Fire2",
+          "counter_before": 1001969,
+          "native_id_after": 1001970
+        },
+        {
+          "entry": 4355376,
+          "family": "Anim",
+          "pointer": 702458960,
+          "caller": 4361199,
+          "name": "MINDANIMR",
+          "counter_before": 1001970,
+          "native_id_after": 1001971
+        },
+        {
+          "entry": 4355376,
+          "family": "Anim",
+          "pointer": 702460144,
+          "caller": 4361199,
+          "name": "xxxx",
+          "counter_before": 1001971,
+          "native_id_after": 1001972
+        },
+        {
+          "entry": 4635584,
+          "family": "Bullet",
+          "pointer": 702475696,
+          "caller": 4638719,
+          "name": "NukeUp",
+          "counter_before": 1001972,
+          "native_id_after": 1001973
+        },
+        {
+          "entry": 4635584,
+          "family": "Bullet",
+          "pointer": 702476464,
+          "caller": 4638719,
+          "name": "NukeDown",
+          "counter_before": 1001973,
+          "native_id_after": 1001974
+        },
+        {
+          "entry": 4635584,
+          "family": "Bullet",
+          "pointer": 702477440,
+          "caller": 4638719,
+          "name": "PulsPr",
+          "counter_before": 1001974,
+          "native_id_after": 1001975
+        }
+      ],
+      "tiberium_constructors": [
+        {
+          "entry": 7476928,
+          "pointer": 702488000,
+          "caller": 7478678,
+          "name": "Riparius",
+          "counter_before": 1001975,
+          "native_id_after": 4294967295,
+          "native_ordinal_after": 0
+        },
+        {
+          "entry": 7476928,
+          "pointer": 702488352,
+          "caller": 7478678,
+          "name": "Cruentus",
+          "counter_before": 1001975,
+          "native_id_after": 4294967295,
+          "native_ordinal_after": 1
+        },
+        {
+          "entry": 7476928,
+          "pointer": 702488800,
+          "caller": 7478678,
+          "name": "Vinifera",
+          "counter_before": 1001975,
+          "native_id_after": 4294967295,
+          "native_ordinal_after": 2
+        },
+        {
+          "entry": 7476928,
+          "pointer": 702489248,
+          "caller": 7478678,
+          "name": "Aboreus",
+          "counter_before": 1001975,
+          "native_id_after": 4294967295,
+          "native_ordinal_after": 3
+        }
+      ],
+      "tiberium_reads": 4,
+      "tiberium_members": [
+        {
+          "index": 0,
+          "pointer": 702488000,
+          "name": "Riparius",
+          "native_id": 4294967295,
+          "native_ordinal": 0,
+          "image_pointer": 610737744,
+          "image_overlay": {
+            "index": 102,
+            "name": "TIB01"
+          },
+          "image_dimensions": [
+            12,
+            12,
+            8
+          ],
+          "type_bytes_sha256": "cd01126a57cfb088a4f66ebfce25ed99bbb6ead819e3f1ce07efba0e771d6c76"
+        },
+        {
+          "index": 1,
+          "pointer": 702488352,
+          "name": "Cruentus",
+          "native_id": 4294967295,
+          "native_ordinal": 1,
+          "image_pointer": 610677008,
+          "image_overlay": {
+            "index": 27,
+            "name": "GEM01"
+          },
+          "image_dimensions": [
+            12,
+            12,
+            0
+          ],
+          "type_bytes_sha256": "96ca0beb4be6e08cf50dff86a93925ec019054b6aed3fc36d1f75521159dc83e"
+        },
+        {
+          "index": 2,
+          "pointer": 702488800,
+          "name": "Vinifera",
+          "native_id": 4294967295,
+          "native_ordinal": 2,
+          "image_pointer": 610758528,
+          "image_overlay": {
+            "index": 127,
+            "name": "TIB2_01"
+          },
+          "image_dimensions": [
+            12,
+            12,
+            8
+          ],
+          "type_bytes_sha256": "88b27d42be930d69e74f40888ee1f17150d57d408fcdda630a8a13feaeaf55ec"
+        },
+        {
+          "index": 3,
+          "pointer": 702489248,
+          "name": "Aboreus",
+          "native_id": 4294967295,
+          "native_ordinal": 3,
+          "image_pointer": 610776272,
+          "image_overlay": {
+            "index": 147,
+            "name": "TIB3_01"
+          },
+          "image_dimensions": [
+            12,
+            12,
+            8
+          ],
+          "type_bytes_sha256": "241a294339605a3ad9344021213e5b4a23637d04da787aa0e72984743ccfd1e8"
+        }
+      ],
+      "counter_before": 1001969,
+      "counter_after": 1001975,
+      "allocations": 262,
+      "allocator_requested_bytes": 38464,
+      "allocator_cursor_before": 702450640,
+      "allocator_cursor_after": 702497744,
+      "asset_requests": 2,
+      "rules_after_sha256": "bc14b7653e8f96129fda3dd4ba13818bdd0b31910394eeabdb5e66e8ce917b98",
+      "final_registry_counts": {
+        "Country": 14,
+        "Side": 5,
+        "Overlay": 250,
+        "SuperWeapon": 12,
+        "Warhead": 118,
+        "Smudge": 46,
+        "Terrain": 78,
+        "Building": 402,
+        "Unit": 82,
+        "Aircraft": 12,
+        "Infantry": 65,
+        "Anim": 621,
+        "VoxelAnim": 10,
+        "Particle": 22,
+        "ParticleSystem": 14,
+        "Weapon": 204,
+        "Bullet": 42
+      },
+      "rng_unchanged": true,
+      "observed_rng_draws": 0,
+      "rng_before_sha256": {
+        "main": "dca67435629d486cac458300c323b247b68ed22541e3169dbaa0ec0412d595e6",
+        "scenario": "bb47a3aaad942e89d8b7113f7b0d582763081b72a7ea45a1a93ac88715821a49",
+        "mapgen": "dca67435629d486cac458300c323b247b68ed22541e3169dbaa0ec0412d595e6"
+      },
+      "rng_after_sha256": {
+        "main": "dca67435629d486cac458300c323b247b68ed22541e3169dbaa0ec0412d595e6",
+        "scenario": "bb47a3aaad942e89d8b7113f7b0d582763081b72a7ea45a1a93ac88715821a49",
+        "mapgen": "dca67435629d486cac458300c323b247b68ed22541e3169dbaa0ec0412d595e6"
+      }
+    }
+  },
+  "diagnostic_controls": [
+    {
+      "command": "python -m unittest tools.tests.test_fv_rules_process_tail -v",
+      "result": "3 passed in1.243s before adding populated-command-bar regression",
+      "log_sha256": "a80f880b65f7f66e114f97edfd296b9f7475da21b8f9a5f305838c6fa01cc088",
+      "priors": "Absent tail sections; omitted physical asset initialization; original CRT/Scenario/Rules/frame execute; not stock joined qualification"
+    },
+    {
+      "command": "PYTHONPATH=. python .local/rules-process-tail-validation/physical-tail-control.py",
+      "result": "First full catalog diagnostic passed physical difficulty/Crate, then failed Combat67B128 undeclared7F0D24",
+      "exit_code": 1,
+      "log_sha256": "9fd653042f68c163d146a6431db993339b35f16a76bddee52710c52d821a9938",
+      "priors": "Full real catalogs/Colors/master constructors/prereaders; primary bodies cold; not joined parity"
+    },
+    {
+      "command": "PYTHONPATH=. python .local/rules-process-tail-validation/physical-tail-control.py",
+      "result": "Remaining Combat-through-command-bar roots passed in237.575s",
+      "exit_code": 0,
+      "log_sha256": "697e7d08d6549e5bb877a4b935c7d44615bd88a84adce97396bfc3937c7424b0",
+      "priors": "Real CSF/Colors/assets/master constructors/prereaders; original cold Sound/EVA missing-name behavior and primary bodies; no donor state, not joined parity"
+    }
+  ],
+  "preserved_failed_attempts": [
+    {
+      "log": ".local/rules-process-tail-validation/empty-tail-first.log",
+      "log_sha256": "ca27aa186ca96b36883030f82c812a5065eb1f0ff7ed61e344d852cf4bc5c60d"
+    },
+    {
+      "log": ".local/rules-process-tail-validation/empty-tail-second.log",
+      "log_sha256": "d3ed40c2c39330d6fca4a71d11a21a29208324a7015f8f96056632db4b02fddb"
+    },
+    {
+      "log": ".local/rules-process-tail-validation/physical-tail-first.log",
+      "log_sha256": "9fd653042f68c163d146a6431db993339b35f16a76bddee52710c52d821a9938"
+    }
+  ],
+  "earlier_rust_qualification": {
+    "execution_git_head": "b43304db864b49979e2246317ebfd16a496ade49",
+    "rust_src_tree": "f62d4f9f6b90496ab675303a6c2c278a22de0fc5",
+    "rust_sources_unchanged": true,
+    "retail_lib": "9589 passed;231 ignored",
+    "clippy": "Exit0;729 existing warnings",
+    "release_retail_map": "1 passed; deterministic populated scenario",
+    "prior_receipt": "yr1001-bullet-live-readers.validation.json",
+    "not_rerun_in_this_source_only_chain": true
+  },
+  "upstream_audit": {
+    "initial_sha": "b8aed28019bb6f34c3262a7e8fcee0d26e8a21a0",
+    "refresh_sha": "a3ef1b4e950682dca635d69dce73e7afbb678116",
+    "merged_prs": [
+      "https://github.com/YuriPlanet/vera20k/pull/1083",
+      "https://github.com/YuriPlanet/vera20k/pull/1086",
+      "https://github.com/YuriPlanet/vera20k/pull/1085",
+      "https://github.com/YuriPlanet/vera20k/pull/1087"
+    ],
+    "later_fixture_lead": "https://github.com/YuriPlanet/vera20k/pull/435",
+    "integration": "None; instruction/ABI cautions and later House/AI/RNG leads only"
+  },
+  "critic": {
+    "status": "Pending one fresh independent read-only critic after final implementation/validation"
+  },
+  "boundaries": [
+    "Supplied lexical/CSF/physical archive/file IO, bounded heap/CRT/TLS, clock/RGB565 Surface and null audio output remain explicit; no full Windows startup/device/render parity.",
+    "Only unchanged cold mode0 and absent stock command-bar sections qualified; present/other modes rejected, accepted Session excluded.",
+    "Later Rules layers, accepted Session, House/map placement, paid FV Move/Stop/resume, rendering/numeric gameplay parity and human/device acceptance remain open.",
+    "Full retail/raw execution corpus and host/session metadata remain ignored/local; previous receipts/held dirty W02 are preserved."
+  ]
+}
