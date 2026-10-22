@@ -1,13 +1,122 @@
 name: Windows
 
-# Windows x86-64: the main development platform.
-# Manual only: run it from the Actions tab or with
-# `gh workflow run windows.yml --ref <branch>`.
+# Fork-only validation helper. The candidate checkout is exact and contains
+# none of this workflow's changes. Retail tests run on the local machine.
 on:
   workflow_dispatch:
+    inputs:
+      candidate_ref:
+        description: Exact candidate commit to compile
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cell-audit-windows-validation
+  cancel-in-progress: false
+
+env:
+  CI_CANDIDATE_REF: ${{ inputs.candidate_ref }}
+  CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER: rust-lld
+  CARGO_TARGET_DIR: C:\vera20k-ci-cell-audit\target
 
 jobs:
-  test:
-    uses: ./.github/workflows/test.yml
-    with:
-      os: windows-latest
+  compile:
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.candidate_ref }}
+          path: candidate
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Prepare portable source path
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $ciRoot = 'C:\vera20k-ci-cell-audit'
+          $ciSource = Join-Path $ciRoot 'source'
+          if (Test-Path -LiteralPath $ciRoot) { throw 'Validation root already exists' }
+          New-Item -ItemType Directory -Path $ciRoot | Out-Null
+          New-Item -ItemType Directory -Path (Join-Path $ciRoot 'records') | Out-Null
+          New-Item -ItemType Directory -Path (Join-Path $ciRoot 'artifacts') | Out-Null
+          $ciCheckout = Join-Path $env:GITHUB_WORKSPACE 'candidate'
+          if ($env:CI_CANDIDATE_REF -notmatch '^[0-9a-fA-F]{40}$') { throw 'Candidate must be an exact commit' }
+          $ciHead = (& git -C $ciCheckout rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $ciHead -notmatch '^[0-9a-f]{40}$') { throw 'Invalid candidate commit' }
+          if ($ciHead -ne $env:CI_CANDIDATE_REF.ToLowerInvariant()) { throw 'Candidate checkout differs from request' }
+          & git clone -c core.autocrlf=true -c core.eol=crlf --no-hardlinks --no-checkout $ciCheckout $ciSource
+          if ($LASTEXITCODE -ne 0) { throw 'Candidate clone failed' }
+          & git -C $ciSource checkout --detach $ciHead
+          if ($LASTEXITCODE -ne 0) { throw 'Candidate checkout failed' }
+          & rustc -Vv | Set-Content -LiteralPath (Join-Path $ciRoot 'records\rustc.txt') -Encoding utf8
+      - name: Compile library test executables
+        shell: pwsh
+        working-directory: C:\vera20k-ci-cell-audit\source
+        run: |
+          & cargo test --locked --workspace --lib --no-run --message-format=json > C:\vera20k-ci-cell-audit\records\test-artifacts.jsonl
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Compile application
+        shell: pwsh
+        working-directory: C:\vera20k-ci-cell-audit\source
+        run: |
+          & cargo build --locked --profile fast --bin vera20k --message-format=json > C:\vera20k-ci-cell-audit\records\app-artifacts.jsonl
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Record and package exact build outputs
+        shell: pwsh
+        working-directory: C:\vera20k-ci-cell-audit\source
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $ciRoot = 'C:\vera20k-ci-cell-audit'
+          $ciArtifacts = Join-Path $ciRoot 'artifacts'
+          $ciRecords = Join-Path $ciRoot 'records'
+          $ciStatus = @(& git status --porcelain --untracked-files=normal)
+          if ($LASTEXITCODE -ne 0 -or $ciStatus.Count -ne 0) { throw 'Source changed during compilation' }
+          $ciMessages = @(Get-Content -LiteralPath (Join-Path $ciRecords 'test-artifacts.jsonl') | ForEach-Object { $_ | ConvertFrom-Json })
+          $ciTests = @($ciMessages | Where-Object { $_.reason -eq 'compiler-artifact' -and $_.profile.test -and $_.executable })
+          if ($ciTests.Count -ne 2) { throw 'Expected both library test executables' }
+          $ciMessages = @(Get-Content -LiteralPath (Join-Path $ciRecords 'app-artifacts.jsonl') | ForEach-Object { $_ | ConvertFrom-Json })
+          $ciApp = @($ciMessages | Where-Object { $_.reason -eq 'compiler-artifact' -and $_.target.name -eq 'vera20k' -and -not $_.profile.test -and $_.executable })
+          if ($ciApp.Count -ne 1) { throw 'Expected the application executable' }
+          $ciOutputs = @()
+          foreach ($ciMessage in @($ciTests) + @($ciApp)) {
+              $ciName = Split-Path -Leaf $ciMessage.executable
+              $ciDestination = Join-Path $ciArtifacts $ciName
+              Copy-Item -LiteralPath $ciMessage.executable -Destination $ciDestination
+              $ciOutputs += [ordered]@{
+                  file = $ciName
+                  target = $ciMessage.target.name
+                  test = $ciMessage.profile.test
+                  sha256 = (Get-FileHash -LiteralPath $ciDestination -Algorithm SHA256).Hash.ToLowerInvariant()
+              }
+          }
+          $ciFiles = [ordered]@{}
+          foreach ($ciPath in @(& git ls-files)) {
+              $ciFiles[$ciPath] = (Get-FileHash -LiteralPath $ciPath -Algorithm SHA256).Hash.ToLowerInvariant()
+          }
+          $ciManifest = [ordered]@{
+              schema_version = 'vera20k.private-windows-validation.v1'
+              source_commit = (& git rev-parse HEAD).Trim()
+              source_tree = (& git rev-parse 'HEAD^{tree}').Trim()
+              source_root = 'C:\vera20k-ci-cell-audit\source'
+              runner_os = $env:RUNNER_OS
+              workflow_ref = $env:GITHUB_WORKFLOW_REF
+              run_id = $env:GITHUB_RUN_ID
+              compiler = @(Get-Content -LiteralPath (Join-Path $ciRecords 'rustc.txt'))
+              commands = @('cargo test --locked --workspace --lib --no-run --message-format=json', 'cargo build --locked --profile fast --bin vera20k --message-format=json')
+              outputs = $ciOutputs
+              tracked_files = $ciFiles
+          }
+          $ciManifest | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $ciArtifacts 'ci-build-manifest.json') -Encoding utf8
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: cell-audit-windows-validation
+          path: |
+            C:\vera20k-ci-cell-audit\artifacts\
+            C:\vera20k-ci-cell-audit\records\
+          if-no-files-found: error
+          retention-days: 1
